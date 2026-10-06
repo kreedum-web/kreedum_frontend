@@ -1,21 +1,33 @@
 import clsx from "clsx";
 import { Loader2 } from "lucide-react";
+import { COLORS } from "@/config/theme";
 
 const variants = {
-  primary:
-    "bg-[#2C62E0] text-white hover:bg-[#1F49B8] shadow-sm",
+  primary: {
+    backgroundColor: COLORS.blue,
+    color: COLORS.white,
+  },
 
-  secondary:
-    "bg-[#0E1A3D] text-white hover:bg-[#16234A]",
+  secondary: {
+    backgroundColor: COLORS.navy,
+    color: COLORS.white,
+  },
 
-  outline:
-    "border border-[#2C62E0] text-[#2C62E0] hover:bg-blue-50",
+  outline: {
+    backgroundColor: COLORS.white,
+    color: COLORS.blue,
+    border: `1px solid ${COLORS.blue}`,
+  },
 
-  danger:
-    "bg-red-600 text-white hover:bg-red-700",
+  danger: {
+    backgroundColor: "#DC2626",
+    color: COLORS.white,
+  },
 
-  ghost:
-    "text-gray-700 hover:bg-gray-100",
+  ghost: {
+    backgroundColor: "transparent",
+    color: COLORS.slate,
+  },
 };
 
 export default function Button({
@@ -25,6 +37,7 @@ export default function Button({
   loading = false,
   fullWidth = false,
   className,
+  style,
   ...props
 }) {
   const sizes = {
@@ -36,9 +49,15 @@ export default function Button({
   return (
     <button
       disabled={loading}
+      style={{
+        ...variants[variant],
+        fontFamily: '"Manrope", sans-serif',
+        ...style,
+      }}
       className={clsx(
-        "rounded-xl font-semibold transition duration-200 flex items-center justify-center gap-2",
-        variants[variant],
+        "rounded-lg font-semibold transition-all duration-200",
+        "flex items-center justify-center gap-2",
+        "active:scale-[0.98]",
         sizes[size],
         fullWidth && "w-full",
         loading && "opacity-80 cursor-not-allowed",
