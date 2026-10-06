@@ -2,13 +2,14 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 15000,
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 15000,
+
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request Interceptor
+// REQUEST INTERCEPTOR
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("kreedum_token");
@@ -22,15 +23,33 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor
+// RESPONSE INTERCEPTOR
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("kreedum_token");
-      localStorage.removeItem("kreedum_user");
+    const status = error.response?.status;
 
-      window.location.href = "/login";
+    switch (status) {
+      case 401:
+        localStorage.removeItem("kreedum_token");
+        localStorage.removeItem("kreedum_user");
+        window.location.href = "/login";
+        break;
+
+      case 403:
+        console.error("Access Forbidden");
+        break;
+
+      case 404:
+        console.error("API Not Found");
+        break;
+
+      case 500:
+        console.error("Internal Server Error");
+        break;
+
+      default:
+        break;
     }
 
     return Promise.reject(error);

@@ -5,7 +5,7 @@ import {
   Loader,
   SectionTitle,
   EmptyState,
-} from "../../components/common";
+} from "@/components/common";
 
 export default function HomePage() {
   return (
