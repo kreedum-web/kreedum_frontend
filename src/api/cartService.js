@@ -7,24 +7,33 @@ const cartService = {
   },
 
   addToCart(productId, quantity = 1) {
-    return api.post(API_ENDPOINTS.CART, {
-      productId,
-      quantity,
-    });
+    return api.post(
+      `${API_ENDPOINTS.CART}/${productId}`,
+      {
+        quantity,
+      }
+    );
   },
 
-  updateCartItem(cartItemId, quantity) {
-    return api.patch(`${API_ENDPOINTS.CART}/${cartItemId}`, {
-      quantity,
-    });
+  updateCartItem(productId, quantity) {
+    return api.patch(
+      `${API_ENDPOINTS.CART}/${productId}`,
+      {
+        quantity,
+      }
+    );
   },
 
-  removeCartItem(cartItemId) {
-    return api.delete(`${API_ENDPOINTS.CART}/${cartItemId}`);
+  removeCartItem(productId) {
+    return api.delete(
+      `${API_ENDPOINTS.CART}/${productId}`
+    );
   },
 
   clearCart() {
-    return api.delete(`${API_ENDPOINTS.CART}/clear`);
+    return api.delete(
+      API_ENDPOINTS.CART
+    );
   },
 };
 

@@ -12,6 +12,7 @@ import {
 import { COLORS } from "@/config/theme";
 import logo from "@/assets/logo.png";
 import { useAuth } from "@/contexts/AuthContext";
+import SearchBar from "@/components/search/SearchBar";
 
 export default function Navbar() {
   const location = useLocation();
@@ -111,6 +112,11 @@ const mobileMenuButtonRef = useRef(null);
             : "0 10px 35px rgba(14,26,61,0.14), 0 2px 8px rgba(14,26,61,0.06)",
         }}
       >
+        {/* Persistent mobile search — top row */}
+<div className="md:hidden bg-white px-4 pt-3 pb-2">
+  <SearchBar />
+</div>
+
         {/* Main navbar */}
         <div
           className="
@@ -219,50 +225,15 @@ const mobileMenuButtonRef = useRef(null);
             })}
           </nav>
 
+          {/* Persistent desktop search */}
+<div className="hidden md:flex min-w-0 flex-1 max-w-md mx-3">
+  <SearchBar />
+</div>
+
           {/* Desktop actions */}
           <div className="hidden md:flex items-center gap-3">
             {/* Search */}
-            <Link
-              to="/search"
-              aria-label="Search"
-              className="
-                group
-                flex
-                items-center
-                justify-center
-                w-10
-                h-10
-                rounded-full
-                transition-all
-                duration-300
-                ease-out
-                hover:-translate-y-1
-              "
-              style={{
-                color: scrolled ? COLORS.navy : COLORS.white,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(44,98,224,0.10)";
-                e.currentTarget.style.color = COLORS.blue;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "transparent";
-                e.currentTarget.style.color = scrolled
-                  ? COLORS.navy
-                  : COLORS.white;
-              }}
-            >
-              <Search
-                className="
-                  w-5 h-5
-                  transition-transform
-                  duration-300
-                  group-hover:scale-110
-                "
-              />
-            </Link>
+
 
             {/* Wishlist */}
             <Link
@@ -477,6 +448,11 @@ const mobileMenuButtonRef = useRef(null);
             </button>
           </div>
         </div>
+{/* 
+        Persistent mobile search
+        <div className="md:hidden px-4 pb-3">
+          <SearchBar />
+        </div> */}
 
         {/* Mobile menu */}
         <div
@@ -544,7 +520,7 @@ const mobileMenuButtonRef = useRef(null);
                 );
               })}
 
-              <Link
+              {/* <Link
                 to="/search"
                 className="
                   group
@@ -568,7 +544,7 @@ const mobileMenuButtonRef = useRef(null);
                 <span className="transition-transform duration-300 group-hover:translate-x-1">
                   →
                 </span>
-              </Link>
+              </Link> */}
 
               <Link
                 to="/wishlist"

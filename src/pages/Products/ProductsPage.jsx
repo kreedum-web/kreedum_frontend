@@ -12,6 +12,7 @@ import { productService } from "@/api";
 import { normalizeProducts } from "@/adapters/product.adapter";
 import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
+import InnerPageHeader from "@/components/layout/InnerPageHeader";
 
 const DEPARTMENTS = [
   { label: "All Departments", value: "" },
@@ -331,57 +332,24 @@ const queryParams = useMemo(() => {
       HEADER
   ====================================================== */}
 
-  <section className="relative overflow-hidden bg-gradient-to-br from-[#0E1A3D] via-[#16234A] to-[#2C62E0] text-white">
-
-    {/* Background glow */}
-    <div className="absolute inset-0 pointer-events-none">
-      <div className="absolute -right-20 -top-32 h-80 w-80 rounded-full bg-[#2C62E0] opacity-30 blur-3xl" />
-      <div className="absolute -left-20 bottom-0 h-64 w-64 rounded-full bg-[#1F49B8] opacity-30 blur-3xl" />
-    </div>
-
-    <div className="relative max-w-6xl mx-auto px-6 pt-32 pb-14">
-
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-
-        <div>
-
-          <p className="text-xs font-mono tracking-widest uppercase mb-3 text-blue-200">
-            Kreedum Sports
-          </p>
-
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
-            Shop All Products
-          </h1>
-
-          <p className="mt-3 text-blue-100 text-base md:text-lg">
-            Explore sports, fitness and gym equipment.
-          </p>
-
-        </div>
-
-        <div className="text-sm text-blue-100">
-
-          Showing{" "}
-
-          <span className="font-semibold text-white">
-            {products.length}
-          </span>{" "}
-
-          of{" "}
-
-          <span className="font-semibold text-white">
-            {pagination.totalProducts}
-          </span>{" "}
-
-          products
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
+ <InnerPageHeader
+  eyebrow="Kreedum Sports"
+  title="Shop All Products"
+  description="Explore sports, fitness and gym equipment."
+  rightContent={
+    <>
+      Showing{" "}
+      <span className="font-semibold text-white">
+        {products.length}
+      </span>{" "}
+      of{" "}
+      <span className="font-semibold text-white">
+        {pagination.totalProducts}
+      </span>{" "}
+      products
+    </>
+  }
+/>
 
       {/* =====================================================
           TOOLBAR
