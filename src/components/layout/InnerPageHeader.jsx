@@ -57,9 +57,6 @@ export default function InnerPageHeader({
           {/* Heading */}
           <div className="min-w-0">
 
-            {/* <p className="text-[11px] font-semibold tracking-[0.18em] uppercase mb-2 text-blue-200">
-              {eyebrow}
-            </p> */}
 
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white leading-tight">
               {title}

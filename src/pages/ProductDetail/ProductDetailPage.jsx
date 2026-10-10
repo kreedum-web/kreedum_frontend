@@ -184,23 +184,9 @@ async function handleAddToCart() {
     <main className="min-h-screen bg-[#F6F8FC]">
     <InnerPageHeader
      eyebrow="Kreedum Sports"
-  // eyebrow={
-  //   product.brand && product.brand !== "Unknown"
-  //     ? product.brand
-  //     : "Kreedum Sports"
-  // }
-   title={product.name}
-  // breadcrumbs={[
-  //   { label: "Home", to: "/" },
-  //   { label: "Shop", to: "/products" },
-  //   { label: product.name },
+    title={product.name}
   />
  
-    {/* =====================================================
-          PRODUCT HEADER / BREADCRUMB
-      ====================================================== */}
-
-
       {/* =====================================================
           PRODUCT MAIN
       ====================================================== */}

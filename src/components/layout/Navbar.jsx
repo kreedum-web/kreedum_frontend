@@ -6,7 +6,6 @@ import {
   User,
   Menu,
   X,
-  Search,
 } from "lucide-react";
 
 import { COLORS } from "@/config/theme";
@@ -20,6 +19,7 @@ export default function Navbar() {
 
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [hideMobileTopRow, setHideMobileTopRow] = useState(false);
 
 const mobileMenuRef = useRef(null);
 const mobileMenuButtonRef = useRef(null);
@@ -27,19 +27,48 @@ const mobileMenuButtonRef = useRef(null);
   const isHomePage = location.pathname === "/";
   const isTransparent = isHomePage && !scrolled;
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
+  //   const handleScroll = () => {
+  //     setScrolled(window.scrollY > 20);
+  //   };
 
-    handleScroll();
+  //   handleScroll();
 
-    window.addEventListener("scroll", handleScroll);
+  //   window.addEventListener("scroll", handleScroll);
 
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("scroll", handleScroll);
+  //   };
+  // }, []);
+
+useEffect(() => {
+  let previousScrollY = window.scrollY;
+
+  const handleScroll = () => {
+    const currentScrollY = window.scrollY;
+
+    setScrolled(currentScrollY > 20);
+
+    // Reveal both rows near the top of the page.
+    if (currentScrollY <= 20) {
+      setHideMobileTopRow(false);
+    } else if (currentScrollY > previousScrollY + 4) {
+      // Scrolling down: hide logo and action icons.
+      setHideMobileTopRow(true);
+    } else if (currentScrollY < previousScrollY - 4) {
+      // Scrolling up: reveal logo and action icons.
+      setHideMobileTopRow(false);
+    }
+
+    previousScrollY = currentScrollY;
+  };
+
+  handleScroll();
+  window.addEventListener("scroll", handleScroll, { passive: true });
+
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+  };
+}, []);
 
   useEffect(() => {
     setOpen(false);
@@ -113,17 +142,90 @@ const mobileMenuButtonRef = useRef(null);
         }}
       >
         {/* Persistent mobile search — top row */}
-<div className="md:hidden bg-white px-4 pt-3 pb-2">
+{/* <div className="md:hidden bg-white px-4 pt-3 pb-2">
+  <SearchBar />
+</div> */}
+
+
+
+{/* Mobile top row: hamburger, logo, profile, wishlist, cart */}
+<div
+  className={`md:hidden overflow-hidden bg-white transition-all duration-200 ${
+    hideMobileTopRow
+      ? "max-h-0 opacity-0"
+      : "max-h-20 opacity-100"
+  }`}
+>
+  <div className="flex h-16 items-center gap-3 px-4">
+    <button
+      ref={mobileMenuButtonRef}
+      type="button"
+      onClick={() => setOpen((current) => !current)}
+      aria-label={open ? "Close menu" : "Open menu"}
+      aria-expanded={open}
+      className="flex h-10 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
+    >
+      {open ? <X size={25} /> : <Menu size={25} />}
+    </button>
+
+    <Link
+      to="/"
+      className="flex min-w-0 flex-1 items-center gap-1"
+    >
+      <img
+        src={logo}
+        alt="Kreedum Sports"
+        className="h-8 w-8 shrink-0 object-contain"
+      />
+      <span className="whitespace-nowrap text-base font-bold tracking-tight text-[#0E1A3D]">
+        Kreedum<span className="text-[#2C62E0]">Sports</span>
+      </span>
+    </Link>
+
+    <Link
+      to={isAuthenticated ? "/account" : "/login"}
+      aria-label={isAuthenticated ? "My account" : "Login"}
+      className="flex h-9 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
+    >
+      <User size={22} />
+    </Link>
+
+    <Link
+      to="/wishlist"
+      aria-label="Wishlist"
+      className="flex h-9 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
+    >
+      <Heart size={22} />
+    </Link>
+
+    <Link
+      to="/cart"
+      aria-label="Cart"
+      className="flex h-9 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
+    >
+      <ShoppingCart size={22} />
+    </Link>
+  </div>
+</div>
+
+{/* Mobile search stays visible while scrolling */}
+<div className="md:hidden bg-white px-4 py-2">
   <SearchBar />
 </div>
+
+{/* Desktop navbar — preserve your existing desktop markup */}
+<div className="hidden md:block">
+  {/* Move the existing desktop navbar row and its desktop actions here. */}
+</div>
+
 
         {/* Main navbar */}
         <div
           className="
+          hidden md:flex
             max-w-7xl
             mx-auto
             px-6
-            flex
             items-center
             justify-between
             h-16
@@ -232,7 +334,7 @@ const mobileMenuButtonRef = useRef(null);
 
           {/* Desktop actions */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Search */}
+           
 
 
             {/* Wishlist */}
@@ -448,11 +550,6 @@ const mobileMenuButtonRef = useRef(null);
             </button>
           </div>
         </div>
-{/* 
-        Persistent mobile search
-        <div className="md:hidden px-4 pb-3">
-          <SearchBar />
-        </div> */}
 
         {/* Mobile menu */}
         <div
@@ -520,31 +617,6 @@ const mobileMenuButtonRef = useRef(null);
                 );
               })}
 
-              {/* <Link
-                to="/search"
-                className="
-                  group
-                  flex
-                  items-center
-                  justify-between
-                  px-4
-                  py-3.5
-                  rounded-2xl
-                  transition-all
-                  duration-300
-                  hover:bg-[#EAF0FF]
-                  hover:translate-x-1
-                "
-                style={{ color: COLORS.navy }}
-              >
-                <span className="text-sm font-medium">
-                  Search
-                </span>
-
-                <span className="transition-transform duration-300 group-hover:translate-x-1">
-                  →
-                </span>
-              </Link> */}
 
               <Link
                 to="/wishlist"
