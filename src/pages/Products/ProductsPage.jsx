@@ -396,7 +396,7 @@ const queryParams = useMemo(() => {
     </button>
 
     {/* Right side controls */}
-    <div className="flex items-center gap-4">
+    <div className="flex w-full items-center justify-between gap-4 sm:w-auto">
 
       <span className="text-sm text-gray-500">
         Page{" "}

@@ -144,8 +144,9 @@ const sort = SORT_OPTIONS.some(
         ) : (
           <>
            
-<div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-  <div>
+
+<div className="mb-5">
+  <div className="mb-4">
     <h2
       className="text-lg font-bold md:text-xl"
       style={{ color: COLORS.navy }}
@@ -158,34 +159,42 @@ const sort = SORT_OPTIONS.some(
     </p>
   </div>
 
- 
+  <div className="flex w-full items-center justify-between gap-3">
+    <span className="whitespace-nowrap text-sm text-gray-500">
+      Page{" "}
+      <span className="font-semibold" style={{ color: COLORS.navy }}>
+        {pagination?.page || page}
+      </span>{" "}
+      of{" "}
+      <span className="font-semibold" style={{ color: COLORS.navy }}>
+        {pagination?.totalPages || 1}
+      </span>
+    </span>
 
+    <div className="flex min-w-0 items-center gap-2">
+      <span className="whitespace-nowrap text-sm text-gray-500">
+        Sort By
+      </span>
 
+      <SortDropdown
+        value={sort}
+        options={SORT_OPTIONS}
+        onChange={(value) => {
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.set("sort", value);
+          nextParams.set("page", "1");
+          setSearchParams(nextParams);
 
-<div className="flex items-center justify-between gap-3 sm:justify-start">
-  <span className="whitespace-nowrap text-sm text-gray-500">
-    Sort By
-  </span>
-
-  <SortDropdown
-    value={sort}
-    options={SORT_OPTIONS}
-    onChange={(value) => {
-      const nextParams = new URLSearchParams(searchParams);
-      nextParams.set("sort", value);
-      nextParams.set("page", "1");
-      setSearchParams(nextParams);
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }}
-  />
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+          });
+        }}
+      />
+    </div>
+  </div>
 </div>
 
-
-</div>
 
 
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
