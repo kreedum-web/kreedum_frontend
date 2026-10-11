@@ -13,6 +13,7 @@ import { normalizeProducts } from "@/adapters/product.adapter";
 import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
+import SortDropdown from "@/components/common/SortDropdown";
 
 const DEPARTMENTS = [
   { label: "All Departments", value: "" },
@@ -419,60 +420,32 @@ const queryParams = useMemo(() => {
       </span>
 
       {/* Sort */}
-      <label className="flex items-center gap-2">
+      
+<div className="flex items-center gap-2">
+  <span className="whitespace-nowrap text-sm text-gray-500">
+    Sort By
+  </span>
 
-        <span className="text-sm text-gray-500 whitespace-nowrap">
-          Sort By
-        </span>
+  <SortDropdown
+    value={searchParams.get("sort") || "latest"}
+    options={SORT_OPTIONS}
+    onChange={(value) => {
+      updateFilter("sort", value);
 
-        <select
-          value={filters.sort}
-          onChange={(event) => {
-            const value = event.target.value;
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.set("sort", value);
+      nextParams.set("page", "1");
 
-            updateFilter("sort", value);
+      setSearchParams(nextParams);
 
-            const nextParams = new URLSearchParams(
-              searchParams
-            );
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }}
+  />
+</div>
 
-            nextParams.set("sort", value);
-            nextParams.set("page", "1");
-
-            setSearchParams(nextParams);
-
-            window.scrollTo({
-              top: 0,
-              behavior: "smooth",
-            });
-          }}
-          className="
-            rounded-xl
-            border
-            border-gray-200
-            bg-white
-            px-4
-            py-2.5
-            text-sm
-            outline-none
-            focus:border-[#2C62E0]
-            font-medium
-          "
-          style={{
-            color: COLORS.navy,
-          }}
-        >
-          {SORT_OPTIONS.map((option) => (
-            <option
-              key={option.value}
-              value={option.value}
-            >
-              {option.label}
-            </option>
-          ))}
-        </select>
-
-      </label>
 
     </div>
 
