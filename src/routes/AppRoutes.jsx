@@ -11,11 +11,13 @@ import NotFoundPage from "@/pages/Error/NotFoundPage";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import ProductDetailPage from "@/pages/ProductDetail/ProductDetailPage";
 import SearchResultsPage from "@/pages/Search/SearchResultsPage";
+import FloatingContactActions from "@/components/common/FloatingContactActions";
 
 export default function AppRoutes() {
   return (
     <>
     <ScrollToTop />
+      <FloatingContactActions />
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
