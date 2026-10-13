@@ -1,8 +1,8 @@
 
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link, useLocation } from "react-router-dom";
-import { Heart, Menu, ShoppingCart, User, X } from "lucide-react";
+import { useQuery, useQueryClient} from "@tanstack/react-query";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Heart, Menu, ShoppingCart, User, X ,LogOut} from "lucide-react";
 
 import { COLORS } from "@/config/theme";
 import logo from "@/assets/logo.png";
@@ -12,7 +12,9 @@ import { cartService,wishlistService} from "@/api";
 
 export default function Navbar() {
   const location = useLocation();
-  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+const queryClient = useQueryClient();
+  const { user, isAuthenticated,logout } = useAuth();
 
   const userKey = user?.id || user?._id || "current";
 
@@ -111,6 +113,19 @@ const wishlistCount = Number(
     };
   }, [open]);
 
+  function handleLogout() {
+  // Clear private cached data for the logged-out user.
+  queryClient.removeQueries({ queryKey: ["cart"] });
+  queryClient.removeQueries({ queryKey: ["wishlist"] });
+
+  // Clear authentication state and stored credentials.
+  logout();
+
+  // Return to Login and prevent navigating back to the prior page.
+  setOpen(false);
+  navigate("/login", { replace: true });
+}
+
   const desktopTransparent = location.pathname === "/" && !scrolled;
 
   return (
@@ -155,7 +170,10 @@ className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opac
               className="flex h-9 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
             >
               <User size={22} />
+
             </Link>
+
+            
 
             
 <Link
@@ -269,6 +287,17 @@ className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opac
       {isAuthenticated ? "My Account" : "Login"}
       <User size={17} />
     </Link>
+
+    {isAuthenticated && (
+  <button
+    type="button"
+    onClick={handleLogout}
+    className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
+  >
+    <span>Logout</span>
+    <LogOut size={17} />
+  </button>
+)}
   </div>
 </div>
 
@@ -419,6 +448,22 @@ className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opac
                 Login
               </Link>
             )}
+            {isAuthenticated && (
+  <button
+    type="button"
+    onClick={handleLogout}
+    className="inline-flex items-center gap-2 rounded-full border border-[#E5E9F2] px-3 py-2 text-sm font-semibold transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+    style={{
+      color: scrolled ? COLORS.navy : COLORS.white,
+      borderColor: scrolled
+        ? "#E5E9F2"
+        : "rgba(255,255,255,0.3)",
+    }}
+  >
+    <LogOut size={16} />
+    Logout
+  </button>
+)}
           </div>
         </div>
       </div>
