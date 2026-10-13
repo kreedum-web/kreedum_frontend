@@ -14,6 +14,7 @@ import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import SortDropdown from "@/components/common/SortDropdown";
+import Pagination from "@/components/common/Pagination";
 
 const DEPARTMENTS = [
   { label: "All Departments", value: "" },
@@ -662,150 +663,15 @@ const queryParams = useMemo(() => {
           PAGINATION
       ====================================================== */}
 
-      {pagination.totalPages > 1 && (
-        <Pagination
-          pagination={pagination}
-          searchParams={searchParams}
-          onPageChange={goToPage}
-        />
-      )}
+     <Pagination
+  pagination={pagination}
+  onPageChange={goToPage}
+/>
     </main>
   );
 }
 
-/* =========================================================
-   PAGINATION
-========================================================= */
 
-function Pagination({
-  pagination,
-  onPageChange,
-}) {
-  const {
-    page,
-    totalPages,
-    hasPrevPage,
-    hasNextPage,
-  } = pagination;
-
-  const pages = getPageNumbers(
-    page,
-    totalPages
-  );
-
-  return (
-    <section className="max-w-6xl mx-auto px-6 pb-16">
-      <div className="flex justify-center">
-        <div className="flex items-center gap-1 sm:gap-2 bg-white border border-gray-200 rounded-2xl p-1.5 shadow-sm">
-          <button
-            type="button"
-            disabled={!hasPrevPage}
-            onClick={() =>
-              onPageChange(page - 1)
-            }
-            className="flex items-center gap-1 px-3 sm:px-4 py-2.5 rounded-xl text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              Previous
-            </span>
-          </button>
-
-          {pages.map((item, index) =>
-            item === "..." ? (
-              <span
-                key={`ellipsis-${index}`}
-                className="px-2 text-gray-400"
-              >
-                ...
-              </span>
-            ) : (
-              <button
-                key={item}
-                type="button"
-                onClick={() =>
-                  onPageChange(item)
-                }
-                className={`min-w-10 h-10 px-3 rounded-xl text-sm font-semibold ${
-                  item === page
-                    ? "text-white"
-                    : "hover:bg-gray-100"
-                }`}
-                style={
-                  item === page
-                    ? {
-                        backgroundColor:
-                          COLORS.blue,
-                      }
-                    : {
-                        color:
-                          COLORS.navy,
-                      }
-                }
-              >
-                {item}
-              </button>
-            )
-          )}
-
-          <button
-            type="button"
-            disabled={!hasNextPage}
-            onClick={() =>
-              onPageChange(page + 1)
-            }
-            className="flex items-center gap-1 px-3 sm:px-4 py-2.5 rounded-xl text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
-          >
-            <span className="hidden sm:inline">
-              Next
-            </span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function getPageNumbers(
-  currentPage,
-  totalPages
-) {
-  if (totalPages <= 7) {
-    return Array.from(
-      { length: totalPages },
-      (_, index) => index + 1
-    );
-  }
-
-  const pages = [1];
-
-  if (currentPage > 4) {
-    pages.push("...");
-  }
-
-  const start = Math.max(
-    2,
-    currentPage - 1
-  );
-
-  const end = Math.min(
-    totalPages - 1,
-    currentPage + 1
-  );
-
-  for (let page = start; page <= end; page++) {
-    pages.push(page);
-  }
-
-  if (currentPage < totalPages - 3) {
-    pages.push("...");
-  }
-
-  pages.push(totalPages);
-
-  return pages;
-}
 
 /* =========================================================
    FILTER COMPONENTS

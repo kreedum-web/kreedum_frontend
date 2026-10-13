@@ -15,12 +15,12 @@ import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import SortDropdown from "@/components/common/SortDropdown";
+import Pagination from "@/components/common/Pagination";
 
 const LIMIT = 20;
 
 const SORT_OPTIONS = [
   { label: "Relevance", value: "relevance" },
-  { label: "Newest Arrivals", value: "newest" },
   { label: "Price: Low to High", value: "price_low_high" },
   { label: "Price: High to Low", value: "price_high_low" },
   { label: "Highest Discount", value: "discount" },
@@ -206,35 +206,10 @@ const sort = SORT_OPTIONS.some(
               ))}
             </div>
 
-            {pagination && pagination.totalPages > 1 && (
-              <div className="mt-10 flex items-center justify-center gap-4">
-                <button
-                  type="button"
-                  disabled={!pagination.hasPrevPage}
-                  onClick={() => changePage(page - 1)}
-                  className="flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-                  style={{ color: COLORS.navy }}
-                >
-                  <ChevronLeft size={17} />
-                  Previous
-                </button>
-
-                <span className="text-sm text-gray-600">
-                  Page {pagination.page} of {pagination.totalPages}
-                </span>
-
-                <button
-                  type="button"
-                  disabled={!pagination.hasNextPage}
-                  onClick={() => changePage(page + 1)}
-                  className="flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-                  style={{ color: COLORS.navy }}
-                >
-                  Next
-                  <ChevronRight size={17} />
-                </button>
-              </div>
-            )}
+            <Pagination
+  pagination={pagination}
+  onPageChange={changePage}
+/>
           </>
         )}
       </section>
