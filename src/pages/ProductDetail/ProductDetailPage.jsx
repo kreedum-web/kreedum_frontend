@@ -2,7 +2,7 @@ import { useMutation,
   useQuery,
   useQueryClient, } from "@tanstack/react-query";
 
-import { cartService } from "@/api";
+import { cartService,wishlistService } from "@/api";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   ArrowLeft,
@@ -61,6 +61,10 @@ async function handleAddToCart() {
       product._id,
       quantity
     );
+
+    await queryClient.invalidateQueries({
+  queryKey: ["cart"],
+});
 
     setCartSuccess(true);
 

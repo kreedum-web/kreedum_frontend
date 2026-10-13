@@ -1,5 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "react-router-dom";
 import { Heart, Menu, ShoppingCart, User, X } from "lucide-react";
 
@@ -7,10 +8,38 @@ import { COLORS } from "@/config/theme";
 import logo from "@/assets/logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 import SearchBar from "@/components/search/SearchBar";
+import { cartService,wishlistService} from "@/api";
 
 export default function Navbar() {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
+
+  const userKey = user?.id || user?._id || "current";
+
+const cartQuery = useQuery({
+  queryKey: ["cart", userKey],
+  queryFn: () => cartService.getCart(),
+  enabled: isAuthenticated,
+  retry: false,
+});
+
+
+const cartCount = Number(
+  cartQuery.data?.data?.data?.totalItems ?? 0
+);
+
+
+const wishlistQuery = useQuery({
+  queryKey: ["wishlist", userKey],
+  queryFn: () => wishlistService.getWishlist(),
+  enabled: isAuthenticated,
+  retry: false,
+});
+
+const wishlistCount = Number(
+  wishlistQuery.data?.data?.data?.totalItems ?? 0
+);
+
 
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -128,21 +157,41 @@ className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opac
               <User size={22} />
             </Link>
 
-            <Link
-              to="/wishlist"
-              aria-label="Wishlist"
-              className="flex h-9 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
-            >
-              <Heart size={22} />
-            </Link>
+            
+<Link
+  to="/wishlist"
+  aria-label={`Wishlist${wishlistCount > 0 ? `, ${wishlistCount} items` : ""}`}
+  className="flex h-9 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
+>
+  <span className="relative inline-flex">
+    <Heart size={22} />
 
-            <Link
-              to="/cart"
-              aria-label="Cart"
-              className="flex h-9 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
-            >
-              <ShoppingCart size={22} />
-            </Link>
+    {wishlistCount > 0 && (
+      <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#2C62E0] px-1 text-[10px] font-bold leading-none text-white">
+        {wishlistCount > 99 ? "99+" : wishlistCount}
+      </span>
+    )}
+  </span>
+</Link>
+
+
+            
+<Link
+  to="/cart"
+  aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ""}`}
+  className="flex h-9 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
+>
+  <span className="relative inline-flex">
+    <ShoppingCart size={22} />
+
+    {cartCount > 0 && (
+      <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#2C62E0] px-1 text-[10px] font-bold leading-none text-white">
+        {cartCount > 99 ? "99+" : cartCount}
+      </span>
+    )}
+  </span>
+</Link>
+
           </div>
         </div>
 
@@ -311,8 +360,15 @@ className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opac
                 event.currentTarget.style.color = scrolled ? COLORS.navy : COLORS.white;
               }}
             >
-              <Heart className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-            </Link>
+<span className="relative inline-flex">
+  <Heart className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
+
+  {wishlistCount > 0 && (
+    <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#2C62E0] px-1 text-[10px] font-bold leading-none text-white">
+      {wishlistCount > 99 ? "99+" : wishlistCount}
+    </span>
+  )}
+</span>            </Link>
 
             <Link
               to="/cart"
@@ -328,7 +384,16 @@ className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opac
                 event.currentTarget.style.color = scrolled ? COLORS.navy : COLORS.white;
               }}
             >
-              <ShoppingCart className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
+
+              <span className="relative inline-flex">
+  <ShoppingCart className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
+
+  {cartCount > 0 && (
+    <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#2C62E0] px-1 text-[10px] font-bold leading-none text-white">
+      {cartCount > 99 ? "99+" : cartCount}
+    </span>
+  )}
+</span>
             </Link>
 
             {isAuthenticated ? (
