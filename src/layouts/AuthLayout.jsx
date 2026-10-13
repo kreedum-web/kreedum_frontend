@@ -107,7 +107,7 @@ className="min-h-screen bg-gradient-to-br from-[#0E1A3D] via-[#1F49B8] to-[#2C62
 
         {/* Form panel */}
         <section className="flex min-w-0 items-center justify-center px-1 py-2 sm:px-8 sm:py-6 lg:bg-white lg:px-12 lg:py-10 xl:px-20">
-          <div className="w-full max-w-md rounded-3xl border border-[#E5E9F2] bg-white p-4 shadow-2xl shadow-[#0E1A3D]/20 sm:p-8 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+          <div className="w-full max-w-md rounded-3xl border border-[#E5E9F2] bg-white p-3.5 shadow-2xl shadow-[#0E1A3D]/20 sm:p-6 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
             <Link
               to="/"
               className="mb-6 inline-flex items-center gap-2 text-sm font-semibold transition-colors hover:text-[#2C62E0] lg:mb-12"
