@@ -1,4 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation,
+  useQuery,
+  useQueryClient, } from "@tanstack/react-query";
 
 import { cartService } from "@/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +12,8 @@ import {
   Minus,
   Plus,
   ShoppingCart,
+  Heart,
+  Share2
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -89,6 +93,89 @@ async function handleAddToCart() {
   const data = response?.data;
   const product = data?.product;
   const relatedProducts = data?.relatedProducts || [];
+
+
+  
+const queryClient = useQueryClient();
+const [shareMessage, setShareMessage] = useState("");
+
+const wishlistStatusQuery = useQuery({
+  queryKey: ["wishlist-status", product?._id],
+  queryFn: async () => {
+    const response = await wishlistService.checkWishlist(
+      product._id
+    );
+
+    return Boolean(response?.data?.data?.wishlisted);
+  },
+  enabled: Boolean(product?._id && isAuthenticated),
+  retry: false,
+});
+
+const isWishlisted = Boolean(wishlistStatusQuery.data);
+
+const wishlistMutation = useMutation({
+  mutationFn: ({ productId, remove }) =>
+    remove
+      ? wishlistService.removeFromWishlist(productId)
+      : wishlistService.addToWishlist(productId),
+
+  onSuccess: async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ["wishlist-status", product?._id],
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["wishlist"],
+    });
+  },
+});
+
+async function handleShare() {
+  const url = window.location.href;
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: product.name,
+        text: `Check out ${product.name} at Kreedum Sports.`,
+        url,
+      });
+      return;
+    }
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+      setShareMessage("Product link copied!");
+      return;
+    }
+
+    window.prompt("Copy this product link:", url);
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+
+    setShareMessage("Unable to share. Copy the product URL from your browser.");
+  }
+}
+
+function handleWishlist() {
+  if (!isAuthenticated) {
+    navigate("/login", {
+      state: {
+        from: window.location.pathname,
+      },
+    });
+    return;
+  }
+
+  if (!product?._id || wishlistMutation.isPending) return;
+
+  wishlistMutation.mutate({
+    productId: product._id,
+    remove: isWishlisted,
+  });
+}
+
 
   const images = useMemo(() => {
     if (!product) return [];
@@ -305,6 +392,74 @@ async function handleAddToCart() {
                 SKU: {product.sku}
               </p>
             )}
+
+            
+{/* Share and Wishlist */}
+<div className="mt-5 flex flex-wrap items-center gap-3">
+  <button
+    type="button"
+    onClick={handleShare}
+    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-[#EAF0FF]"
+    style={{
+      color: COLORS.navy,
+      borderColor: "rgba(14,26,61,0.15)",
+      backgroundColor: COLORS.white,
+    }}
+  >
+    <Share2 className="h-4 w-4" />
+    Share
+  </button>
+
+  <button
+    type="button"
+    onClick={handleWishlist}
+    disabled={
+      wishlistMutation.isPending ||
+      wishlistStatusQuery.isLoading
+    }
+    aria-pressed={isWishlisted}
+    aria-label={
+      isWishlisted
+        ? "Remove product from wishlist"
+        : "Add product to wishlist"
+    }
+    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-[#EAF0FF] disabled:cursor-wait disabled:opacity-60"
+    style={{
+      color: isWishlisted ? COLORS.blue : COLORS.navy,
+      borderColor: isWishlisted
+        ? COLORS.blue
+        : "rgba(14,26,61,0.15)",
+      backgroundColor: isWishlisted
+        ? COLORS.tint
+        : COLORS.white,
+    }}
+  >
+    <Heart
+      className="h-4 w-4"
+      fill={isWishlisted ? "currentColor" : "none"}
+    />
+
+    {wishlistMutation.isPending
+      ? "Updating..."
+      : isWishlisted
+      ? "Wishlisted"
+      : "Add to Wishlist"}
+  </button>
+</div>
+
+{shareMessage && (
+  <p className="mt-2 text-sm" role="status" aria-live="polite">
+    {shareMessage}
+  </p>
+)}
+
+{wishlistMutation.isError && (
+  <p className="mt-2 text-sm text-red-600" role="alert">
+    {wishlistMutation.error?.response?.data?.message ||
+      "Unable to update your wishlist. Please try again."}
+  </p>
+)}
+
 
             {/* Price */}
             <div className="mt-7 flex items-end gap-3 flex-wrap">
