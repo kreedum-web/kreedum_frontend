@@ -332,16 +332,27 @@ export default function CheckoutPage() {
     );
   }
 
-  if (placedOrder) {
-    return (
-      <main className="min-h-[60vh] bg-[#F6F8FC] px-4 py-6 sm:py-10">
-        <section className="mx-auto max-w-xl rounded-3xl border border-[#E5EAF4] bg-white p-6 text-center shadow-sm sm:p-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-50">
+ if (placedOrder) {
+  return (
+<main className="min-h-screen bg-[#F6F8FC]">
+      <InnerPageHeader
+        eyebrow="Kreedum Sports"
+        title="Order confirmed"
+        description="Your order has been placed successfully. Keep your order details for reference."
+        breadcrumbs={[
+          { label: "Home", to: "/" },
+          { label: "Shop", to: "/products" },
+          { label: "Order confirmed" },
+        ]}
+      />    
+   
+      <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+        <div className="mx-auto w-full max-w-xl rounded-3xl border border-[#E5EAF4] bg-white p-6 text-center shadow-sm sm:p-10">
             <CheckCircle2
               size={42}
               className="text-emerald-600"
             />
-          </div>
+          
 
           <p className="mt-6 text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-700">
             Order confirmed
@@ -394,6 +405,7 @@ export default function CheckoutPage() {
             <ShoppingBag size={17} />
             Continue shopping
           </Link>
+          </div>
         </section>
       </main>
     );
