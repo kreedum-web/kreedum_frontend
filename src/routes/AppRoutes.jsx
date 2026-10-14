@@ -12,7 +12,11 @@ import ScrollToTop from "@/components/layout/ScrollToTop";
 import ProductDetailPage from "@/pages/ProductDetail/ProductDetailPage";
 import SearchResultsPage from "@/pages/Search/SearchResultsPage";
 import FloatingContactActions from "@/components/common/FloatingContactActions";
+import CartPage from "@/pages/Cart/CartPage";
 import WishlistPage from "@/pages/Wishlist/WishlistPage";
+import CheckoutPage from "@/pages/Checkout/CheckoutPage";
+
+
 export default function AppRoutes() {
   return (
     <>
@@ -24,7 +28,9 @@ export default function AppRoutes() {
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/products/:slug" element={<ProductDetailPage />}/>
         <Route path="/wishlist" element={<WishlistPage />} />
+        <Route path="/cart" element={<CartPage />} />
         <Route path="/search" element={<SearchResultsPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
       </Route>
 
       {/* Auth pages */}

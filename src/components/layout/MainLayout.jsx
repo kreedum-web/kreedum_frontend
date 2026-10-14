@@ -13,6 +13,9 @@ export default function MainLayout() {
     >
       <Navbar />
 
+      {/* Reserve space for the fixed navbar */}
+      {/* <div className="h-[112px] shrink-0 md:h-[80px]" /> */}
+
       <main className="flex-1">
         <Outlet />
       </main>
