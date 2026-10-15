@@ -15,6 +15,7 @@ import FloatingContactActions from "@/components/common/FloatingContactActions";
 import CartPage from "@/pages/Cart/CartPage";
 import WishlistPage from "@/pages/Wishlist/WishlistPage";
 import CheckoutPage from "@/pages/Checkout/CheckoutPage";
+import AddressesPage from "@/pages/Account/AddressesPage";
 
 
 export default function AppRoutes() {
@@ -31,6 +32,7 @@ export default function AppRoutes() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/account/addresses" element={<AddressesPage />}/>
       </Route>
 
       {/* Auth pages */}

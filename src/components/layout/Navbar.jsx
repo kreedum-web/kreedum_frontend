@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient} from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Heart, Menu, ShoppingCart, User, X ,LogOut} from "lucide-react";
+import { Heart, Menu, ShoppingCart, User, X , LogOut,  ChevronDown,  Package,MapPin,UserRoundPen,} from "lucide-react";
 
 import { COLORS } from "@/config/theme";
 import logo from "@/assets/logo.png";
@@ -45,6 +45,9 @@ const wishlistCount = Number(
 
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+const accountMenuRef = useRef(null);
+const accountButtonRef = useRef(null);
   const [hideMobileTopRow, setHideMobileTopRow] = useState(false);
 
   const mobileMenuRef = useRef(null);
@@ -85,6 +88,7 @@ const wishlistCount = Number(
 
   useEffect(() => {
     setOpen(false);
+    setAccountOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -112,6 +116,33 @@ const wishlistCount = Number(
       document.removeEventListener("touchstart", handleOutsideInteraction);
     };
   }, [open]);
+
+useEffect(() => {
+  if (!accountOpen) return;
+
+  const handleOutsideInteraction = (event) => {
+    const menu = accountMenuRef.current;
+    const button = accountButtonRef.current;
+
+    if (
+      menu &&
+      !menu.contains(event.target) &&
+      button &&
+      !button.contains(event.target)
+    ) {
+      setAccountOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleOutsideInteraction);
+  document.addEventListener("touchstart", handleOutsideInteraction);
+
+  return () => {
+    document.removeEventListener("mousedown", handleOutsideInteraction);
+    document.removeEventListener("touchstart", handleOutsideInteraction);
+  };
+}, [accountOpen]);
+
 
   function handleLogout() {
   // Clear private cached data for the logged-out user.
@@ -145,7 +176,12 @@ className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opac
                   mobileMenuOriginRef.current = node;
                  }}
               type="button"
-              onClick={() => setOpen((current) => !current)}
+              
+onClick={() => {
+  setAccountOpen(false);
+  setOpen((current) => !current);
+}}
+
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
               className="flex h-10 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
@@ -164,14 +200,22 @@ className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opac
               </span>
             </Link>
 
-            <Link
-              to={isAuthenticated ? "/account" : "/login"}
-              aria-label={isAuthenticated ? "My account" : "Login"}
-              className="flex h-9 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
-            >
-              <User size={22} />
+            
+<button
+  ref={accountButtonRef}
+  type="button"
+  onClick={() => {
+    setOpen(false);
+    setAccountOpen((current) => !current);
+  }}
+  aria-label={accountOpen ? "Close account menu" : "Open account menu"}
+  aria-expanded={accountOpen}
+  aria-haspopup="true"
+  className="flex h-9 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
+>
+  <User size={22} />
+</button>
 
-            </Link>
 
             
 
@@ -302,6 +346,115 @@ className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opac
 </div>
 
 
+{/* Mobile account dropdown */}
+<div
+  className={`fixed inset-0 z-[60] bg-[#0E1A3D]/20 backdrop-blur-[1px] transition-opacity duration-200 md:hidden ${
+    accountOpen
+      ? "opacity-100"
+      : "pointer-events-none opacity-0"
+  }`}
+  onClick={() => setAccountOpen(false)}
+  aria-hidden="true"
+/>
+
+<div
+  ref={accountMenuRef}
+  aria-hidden={!accountOpen}
+  className={`fixed right-3 top-[72px] z-[70] w-[min(280px,calc(100vw-24px))]
+    rounded-2xl border border-[#E5E9F2] bg-white p-2 shadow-xl md:hidden
+    transition-all duration-200 ${
+      accountOpen
+        ? "translate-y-0 scale-100 opacity-100"
+        : "pointer-events-none -translate-y-2 scale-95 opacity-0"
+    }`}
+>
+  <div className="border-b border-[#E5E9F2] px-3 py-3">
+    <p className="text-xs text-[#8A93A6]">
+      {isAuthenticated ? "Signed in as" : "Welcome to Kreedum"}
+    </p>
+    <p className="mt-1 truncate text-sm font-bold text-[#0E1A3D]">
+      {isAuthenticated
+        ? user?.name || user?.firstName || "Account"
+        : "Sign in to your account"}
+    </p>
+  </div>
+
+  {isAuthenticated ? (
+    <>
+      <Link
+        to="/account"
+        onClick={() => setAccountOpen(false)}
+        className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] hover:bg-[#EAF0FF]"
+      >
+        My Account
+        <User size={17} />
+      </Link>
+
+      <Link
+        to="/account/orders"
+        onClick={() => setAccountOpen(false)}
+        className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] hover:bg-[#EAF0FF]"
+      >
+        My Orders
+        <Package size={17} />
+      </Link>
+
+      <Link
+        to="/account/addresses"
+        onClick={() => setAccountOpen(false)}
+        className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] hover:bg-[#EAF0FF]"
+      >
+        Saved Addresses
+        <MapPin size={17} />
+      </Link>
+{/* 
+      <Link
+        to="/wishlist"
+        onClick={() => setAccountOpen(false)}
+        className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] hover:bg-[#EAF0FF]"
+      >
+        Wishlist
+        <Heart size={17} />
+      </Link> */}
+
+      <div className="my-2 border-t border-[#E5E9F2]" />
+
+      <button
+        type="button"
+        onClick={() => {
+          setAccountOpen(false);
+          handleLogout();
+        }}
+        className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-red-600 hover:bg-red-50"
+      >
+        Logout
+        <LogOut size={17} />
+      </button>
+    </>
+  ) : (
+    <>
+      <Link
+        to="/login"
+        onClick={() => setAccountOpen(false)}
+        className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-[#0E1A3D] hover:bg-[#EAF0FF]"
+      >
+        Login
+        <User size={17} />
+      </Link>
+
+      <Link
+        to="/register"
+        onClick={() => setAccountOpen(false)}
+        className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-[#0E1A3D] hover:bg-[#EAF0FF]"
+      >
+        Create Account
+        <UserRoundPen size={17} />
+      </Link>
+    </>
+  )}
+</div>
+
+
       </div>
 
       {/* Desktop navbar: independent of the mobile rows and scroll behavior */}
@@ -425,45 +578,130 @@ className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opac
 </span>
             </Link>
 
-            {isAuthenticated ? (
-              <Link
-                to="/account"
-                className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#EAF0FF]"
-                style={{ color: scrolled ? COLORS.navy : COLORS.white }}
-              >
-                <User className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-                <span>{user?.name || "Account"}</span>
-              </Link>
-            ) : (
-              <Link
-                to="/login"
-                className="rounded-full border px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out hover:-translate-y-1 hover:border-[#2C62E0] hover:bg-[#2C62E0] hover:text-white hover:shadow-md"
-                style={{
-                  borderColor: scrolled
-                    ? "rgba(14,26,61,0.2)"
-                    : "rgba(255,255,255,0.3)",
-                  color: scrolled ? COLORS.navy : COLORS.white,
-                }}
-              >
-                Login
-              </Link>
-            )}
-            {isAuthenticated && (
-  <button
-    type="button"
-    onClick={handleLogout}
-    className="inline-flex items-center gap-2 rounded-full border border-[#E5E9F2] px-3 py-2 text-sm font-semibold transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+
+{isAuthenticated ? (
+  <div className="relative group">
+    <button
+      type="button"
+      aria-haspopup="true"
+      className="flex items-center gap-2 rounded-full px-3 py-2
+        text-sm font-semibold transition-colors
+        hover:bg-[#EAF0FF] focus:outline-none
+        focus-visible:ring-2 focus-visible:ring-[#2C62E0]"
+      style={{ color: scrolled ? COLORS.navy : COLORS.white }}
+    >
+      <User className="h-5 w-5 shrink-0" />
+
+      <span className="max-w-28 truncate">
+        {user?.firstName ||
+          user?.name?.trim().split(/\s+/)[0] ||
+          "Account"}
+      </span>
+
+      <ChevronDown
+        size={15}
+        className="transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180"
+      />
+    </button>
+
+    <div
+      className="absolute right-0 top-full z-50 hidden w-56 pt-2
+        group-hover:block group-focus-within:block"
+    >
+      <div className="overflow-hidden rounded-2xl border border-[#E5E9F2]
+        bg-white p-2 shadow-xl">
+
+        <div className="border-b border-[#E5E9F2] px-3 py-3">
+          <p className="text-xs text-[#8A93A6]">Signed in as</p>
+          <p className="mt-1 truncate text-sm font-bold text-[#0E1A3D]">
+            {user?.name || user?.firstName || "Account"}
+          </p>
+        </div>
+
+  
+{/* My Orders */}
+<Link
+  to="/account/orders"
+  className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] transition-colors hover:bg-[#EAF0FF]"
+>
+  My Orders
+  <Package size={17} />
+</Link>
+
+{/* My Addresses */}
+<Link
+  to="/account/addresses"
+  className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] transition-colors hover:bg-[#EAF0FF]"
+>
+  My Addresses
+  <MapPin size={17} />
+</Link>
+
+{/* Edit Profile */}
+<Link
+  to="/account/profile"
+  className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] transition-colors hover:bg-[#EAF0FF]"
+>
+  Edit Profile
+  <UserRoundPen size={17} />
+</Link>
+
+
+        {/* <Link
+          to="/wishlist"
+          className="mt-2 flex items-center justify-between
+            rounded-xl px-3 py-2.5 text-sm font-medium
+            text-[#0E1A3D] transition-colors hover:bg-[#EAF0FF]
+            hover:text-[#2C62E0]"
+        >
+          Wishlist
+          <Heart size={16} />
+        </Link> */}
+
+        {/* <Link
+          to="/cart"
+          className="flex items-center justify-between rounded-xl
+            px-3 py-2.5 text-sm font-medium text-[#0E1A3D]
+            transition-colors hover:bg-[#EAF0FF]
+            hover:text-[#2C62E0]"
+        >
+          My Cart
+          <ShoppingCart size={16} />
+        </Link> */}
+
+        <div className="my-2 border-t border-[#E5E9F2]" />
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex w-full items-center justify-between
+            rounded-xl px-3 py-2.5 text-left text-sm font-semibold
+            text-red-600 transition-colors hover:bg-red-50"
+        >
+          Logout
+          <LogOut size={16} />
+        </button>
+      </div>
+    </div>
+  </div>
+) : (
+  <Link
+    to="/login"
+    className="rounded-full border px-5 py-2.5 text-sm
+      font-semibold transition-all duration-300 ease-out
+      hover:-translate-y-1 hover:border-[#2C62E0]
+      hover:bg-[#2C62E0] hover:text-white hover:shadow-md"
     style={{
-      color: scrolled ? COLORS.navy : COLORS.white,
       borderColor: scrolled
-        ? "#E5E9F2"
+        ? "rgba(14,26,61,0.2)"
         : "rgba(255,255,255,0.3)",
+      color: scrolled ? COLORS.navy : COLORS.white,
     }}
   >
-    <LogOut size={16} />
-    Logout
-  </button>
+    Login
+  </Link>
 )}
+
           </div>
         </div>
       </div>
