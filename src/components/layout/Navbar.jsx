@@ -406,7 +406,7 @@ onClick={() => {
         onClick={() => setAccountOpen(false)}
         className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] hover:bg-[#EAF0FF]"
       >
-        Edit Profile
+        My Account
         <User size={17} />
       </Link>
 
@@ -633,10 +633,10 @@ onClick={() => {
 
 {/* Edit Profile */}
 <Link
-  to="/account/profile"
+  to="/account"
   className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] transition-colors hover:bg-[#EAF0FF]"
 >
-  Edit Profile
+  My Account
   <UserRoundPen size={17} />
 </Link>
 
