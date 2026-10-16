@@ -18,8 +18,12 @@ import CheckoutPage from "@/pages/Checkout/CheckoutPage";
 import AddressesPage from "@/pages/Account/AddressesPage";
 import OrdersPage from "@/pages/Account/OrdersPage";
 import AccountPage from "@/pages/Account/AccountPage";
-
-
+import ProfilePage from "@/pages/Account/ProfilePage";
+import ContactPage from "@/pages/Contact/ContactPage";
+import PrivacyPolicyPage from "@/pages/Company/PrivacyPolicyPage";
+import TermsAndConditionsPage from "@/pages/Company/TermsAndConditionsPage";
+import ReturnPolicyPage from "@/pages/Company/ReturnPolicyPage";
+import AboutUsPage from "@/pages/Company/AboutUsPage";
 export default function AppRoutes() {
   return (
     <>
@@ -37,6 +41,12 @@ export default function AppRoutes() {
         <Route path="/account/addresses" element={<AddressesPage />}/>
         <Route path="/account/orders" element={<OrdersPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/account/profile" element={<ProfilePage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+        <Route path="/refund-policy" element={<ReturnPolicyPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />}/>
+        <Route path="/about-us" element={<AboutUsPage />} />
       </Route>
 
       {/* Auth pages */}

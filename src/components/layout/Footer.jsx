@@ -1,19 +1,29 @@
+
 import { Link } from "react-router-dom";
+import {
+  ArrowUpRight,
+  Mail,
+  MapPin,
+  Phone,
+} from "lucide-react";
 import { COLORS } from "@/config/theme";
 import logo from "@/assets/logo.png";
+import SocialLinks from "@/components/common/SocialLinks";
 
-const SHOP_LINKS = [
-  { label: "Shop All", to: "/products" },
-  { label: "Categories", to: "/categories" },
-  { label: "Brands", to: "/brands" },
-  { label: "Deals", to: "/deals" },
+const COMPANY_LINKS = [
+  { label: "About Us", to: "/about-us" },
+  { label: "Contact Us", to: "/contact" },
+  { label: "Privacy Policy", to: "/privacy-policy" },
+  { label: "Terms & Conditions", to: "/terms-and-conditions" },
+  { label: "Refund Polic & Shipping Policy", to: "/refund-policy" },
 ];
 
-const ACCOUNT_LINKS = [
-  { label: "My Account", to: "/account" },
-  { label: "My Orders", to: "/orders" },
-  { label: "Wishlist", to: "/wishlist" },
-  { label: "Cart", to: "/cart" },
+const SOCIALS = [
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/kreedum_official/",
+    // Icon: Instagram,
+  },
 ];
 
 export default function Footer() {
@@ -24,169 +34,111 @@ export default function Footer() {
         fontFamily: '"Manrope", sans-serif',
       }}
     >
-      <div className="max-w-6xl mx-auto px-6 pt-16 pb-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
-        {/* Brand */}
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-6 pb-10 pt-14 sm:grid-cols-2 md:grid-cols-4">
         <div>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 mb-4"
-          >
+          <Link to="/" className="mb-4 inline-flex items-center gap-2">
             <img
               src={logo}
-              alt="Kreedum logo"
-              className="w-8 h-8 object-contain"
+              alt="Kreedum Sports logo"
+              className="h-9 w-9 object-contain"
             />
-
-            <span
-              className="font-semibold text-sm"
-              style={{ color: COLORS.white }}
-            >
-              Kreedum
-              <span style={{ color: "#8FADFF" }}>
-                Sports
-              </span>
+            <span className="text-sm font-bold text-white">
+              Kreedum<span className="text-[#8FADFF]">Sports</span>
             </span>
           </Link>
 
-          <p
-            className="text-sm leading-relaxed max-w-xs"
-            style={{
-              color: "rgba(255,255,255,0.5)",
-            }}
-          >
-            Sports goods, fitness equipment, and
-            sports infrastructure — all under one
-            trusted name.
+          <p className="max-w-xs text-sm leading-6 text-white/55">
+            Sports goods, fitness equipment, apparel, footwear and sports
+            infrastructure — all under one trusted name.
           </p>
+
+        
         </div>
 
-        {/* Shop */}
         <div>
-          <div
-            className="text-xs tracking-widest uppercase mb-4"
-            style={{ color: "#8FADFF" }}
-          >
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-[#8FADFF]">
             Shop
-          </div>
+          </h2>
+          <ul className="space-y-3 text-sm text-white/65">
+            <li><Link className="hover:text-white" to="/products">Shop All</Link></li>
+            <li><Link className="hover:text-white" to="/products">Products</Link></li>
+            <li><Link className="hover:text-white" to="/wishlist">Wishlist</Link></li>
+            <li><Link className="hover:text-white" to="/cart">Cart</Link></li>
+          </ul>
+        </div>
 
-          <ul className="space-y-2.5">
-            {SHOP_LINKS.map((link) => (
-              <li key={link.label}>
-                <Link
-                  to={link.to}
-                  className="text-sm transition-opacity hover:opacity-80"
-                  style={{
-                    color: "rgba(255,255,255,0.65)",
-                  }}
-                >
-                  {link.label}
+        <div>
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-[#8FADFF]">
+            Company
+          </h2>
+          <ul className="space-y-3 text-sm text-white/65">
+            {COMPANY_LINKS.map((item) => (
+              <li key={item.to}>
+                <Link className="hover:text-white" to={item.to}>
+                  {item.label}
                 </Link>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Account */}
         <div>
-          <div
-            className="text-xs tracking-widest uppercase mb-4"
-            style={{ color: "#8FADFF" }}
-          >
-            Account
-          </div>
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-[#8FADFF]">
+            Get in touch
+          </h2>
 
-          <ul className="space-y-2.5">
-            {ACCOUNT_LINKS.map((link) => (
-              <li key={link.label}>
-                <Link
-                  to={link.to}
-                  className="text-sm transition-opacity hover:opacity-80"
-                  style={{
-                    color: "rgba(255,255,255,0.65)",
-                  }}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Contact */}
-        <div>
-          <div
-            className="text-xs tracking-widest uppercase mb-4"
-            style={{ color: "#8FADFF" }}
-          >
-            Contact
-          </div>
-
-          <ul className="space-y-2.5">
-            <li>
+          <ul className="space-y-4 text-sm text-white/65">
+            <li className="flex items-start gap-3">
+              <MapPin size={17} className="mt-0.5 shrink-0 text-[#8FADFF]" />
               <a
-                href="mailto:info@kreedum.com"
-                className="text-sm transition-opacity hover:opacity-80"
-                style={{
-                  color: "rgba(255,255,255,0.65)",
-                }}
+                href="https://www.google.com/maps/search/?api=1&query=Krishna%20Plaza%20Nazirabad%20Road%20Aminabad%20Lucknow%20226018"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white"
               >
-                info@kreedum.com
+                Upper ground floor, Krishna Plaza, Nazirabad Road, Aminabad,
+                Lucknow - 226018
               </a>
             </li>
 
-            <li>
-              <Link
-                to="/contact"
-                className="text-sm transition-opacity hover:opacity-80"
-                style={{
-                  color: "rgba(255,255,255,0.65)",
-                }}
-              >
-                Contact Us
-              </Link>
+            <li className="flex items-center gap-3">
+              <Phone size={17} className="shrink-0 text-[#8FADFF]" />
+              <a href="tel:+917570002458" className="hover:text-white">
+                +91 75700 02458
+              </a>
+            </li>
+
+            <li className="flex items-center gap-3">
+              <Mail size={17} className="shrink-0 text-[#8FADFF]" />
+              <a href="mailto:info@kreedum.com" className="break-all hover:text-white">
+                info@kreedum.com
+              </a>
             </li>
           </ul>
+
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=Krishna%20Plaza%20Nazirabad%20Road%20Aminabad%20Lucknow%20226018"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#2C62E0] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1F49B8]"
+          >
+            Get directions <ArrowUpRight size={16} />
+          </a>
+          <SocialLinks/>
         </div>
       </div>
 
-      {/* Bottom bar */}
-      <div
-        className="border-t"
-        style={{
-          borderColor: "rgba(255,255,255,0.08)",
-        }}
-      >
-        <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p
-            className="text-xs tracking-widest uppercase text-center md:text-left"
-            style={{
-              color: "rgba(255,255,255,0.35)",
-            }}
-          >
-            © {new Date().getFullYear()} Kreedum International
-            Private Limited
+      <div className="border-t border-white/10">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-6 md:flex-row md:items-center md:justify-between">
+          <p className="text-center text-xs text-white/40 md:text-left">
+            © {new Date().getFullYear()} Kreedum International Private Limited.
+            All rights reserved.
           </p>
 
-          <div className="flex items-center gap-5">
-            <Link
-              to="/privacy-policy"
-              className="text-xs tracking-widest uppercase transition-colors hover:text-white"
-              style={{
-                color: "rgba(255,255,255,0.3)",
-              }}
-            >
-              Privacy Policy
-            </Link>
-
-            <Link
-              to="/terms-and-conditions"
-              className="text-xs tracking-widest uppercase transition-colors hover:text-white"
-              style={{
-                color: "rgba(255,255,255,0.3)",
-              }}
-            >
-              Terms & Conditions
-            </Link>
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 text-xs text-white/55 md:justify-end">
+            <Link to="/privacy-policy" className="hover:text-white">Privacy Policy</Link>
+            <Link to="/terms-and-conditions" className="hover:text-white">Terms & Conditions</Link>
+            <Link to="/refund-policy" className="hover:text-white">Refund Policy</Link>
           </div>
         </div>
       </div>
