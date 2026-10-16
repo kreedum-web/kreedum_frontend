@@ -16,7 +16,7 @@ import CartPage from "@/pages/Cart/CartPage";
 import WishlistPage from "@/pages/Wishlist/WishlistPage";
 import CheckoutPage from "@/pages/Checkout/CheckoutPage";
 import AddressesPage from "@/pages/Account/AddressesPage";
-
+import OrdersPage from "@/pages/Account/OrdersPage";
 
 export default function AppRoutes() {
   return (
@@ -33,6 +33,7 @@ export default function AppRoutes() {
         <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/account/addresses" element={<AddressesPage />}/>
+        <Route path="/account/orders" element={<OrdersPage />} />
       </Route>
 
       {/* Auth pages */}
