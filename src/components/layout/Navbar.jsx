@@ -312,8 +312,8 @@ onClick={() => {
       );
     })}
 
-    <div className="my-2 border-t border-[#E5E9F2]" />
-
+    {/* <div className="my-2 border-t border-[#E5E9F2]" /> */}
+{/* 
     <Link
       to="/wishlist"
       onClick={() => setOpen(false)}
@@ -321,18 +321,18 @@ onClick={() => {
     >
       Wishlist
       <Heart size={17} />
-    </Link>
+    </Link> */}
 
-    <Link
+    {/* <Link
       to={isAuthenticated ? "/account" : "/login"}
       onClick={() => setOpen(false)}
       className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-[#0E1A3D] hover:bg-[#EAF0FF]"
     >
       {isAuthenticated ? "My Account" : "Login"}
       <User size={17} />
-    </Link>
+    </Link> */}
 
-    {isAuthenticated && (
+    {/* {isAuthenticated && (
   <button
     type="button"
     onClick={handleLogout}
@@ -341,7 +341,7 @@ onClick={() => {
     <span>Logout</span>
     <LogOut size={17} />
   </button>
-)}
+)} */}
   </div>
 </div>
 
@@ -381,14 +381,7 @@ onClick={() => {
 
   {isAuthenticated ? (
     <>
-      <Link
-        to="/account"
-        onClick={() => setAccountOpen(false)}
-        className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] hover:bg-[#EAF0FF]"
-      >
-        My Account
-        <User size={17} />
-      </Link>
+      
 
       <Link
         to="/account/orders"
@@ -404,18 +397,19 @@ onClick={() => {
         onClick={() => setAccountOpen(false)}
         className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] hover:bg-[#EAF0FF]"
       >
-        Saved Addresses
+        My Addresses
         <MapPin size={17} />
       </Link>
-{/* 
+
       <Link
-        to="/wishlist"
+        to="/account"
         onClick={() => setAccountOpen(false)}
         className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-[#0E1A3D] hover:bg-[#EAF0FF]"
       >
-        Wishlist
-        <Heart size={17} />
-      </Link> */}
+        Edit Profile
+        <User size={17} />
+      </Link>
+
 
       <div className="my-2 border-t border-[#E5E9F2]" />
 
