@@ -3,6 +3,16 @@
 @import "tailwindcss";
 
 
+.testimonials-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.testimonials-track::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
 
 :root {
   font-family: "Manrope", sans-serif;
@@ -15,3 +25,5 @@ body {
   font-family: "Manrope", sans-serif;
   background: #F6F8FC;
 }
+
+

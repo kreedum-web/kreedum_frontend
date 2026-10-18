@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, } from "@tanstack/react-query";
 import {
   ArrowRight,
   ChevronLeft,
@@ -7,7 +7,7 @@ import {
   ShieldCheck,
   Truck,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef,useState } from "react";
 import { Link } from "react-router-dom";
 
 import { homepageService } from "@/api";
@@ -20,6 +20,172 @@ import { normalizeHomepage } from "@/adapters/homepage.adapter";
 import { COLORS } from "@/config/theme";
 
 import ProductCard from "@/components/product/ProductCard";
+
+
+
+import { Star, Quote } from "lucide-react";
+
+const DEMO_TESTIMONIALS = [
+  {
+    name: "Aarav Sharma",
+    rating: 5,
+    review:
+      "Good range of sports products and a smooth shopping experience.",
+  },
+  {
+    name: "Priya Verma",
+    rating: 5,
+    review:
+      "Found the fitness essentials I needed. The product selection is useful.",
+  },
+  {
+    name: "Rahul Mehta",
+    rating: 4,
+    review:
+      "Easy to browse and compare equipment for my workouts.",
+  },
+  {
+    name: "Ananya Singh",
+    rating: 5,
+    review:
+      "The website is simple to use and the product details are clear.",
+  },
+  {
+    name: "Karan Gupta",
+    rating: 5,
+    review:
+      "A helpful place to explore sports and gym equipment.",
+  },
+  {
+    name: "Neha Agarwal",
+    rating: 4,
+    review:
+      "Nice variety across fitness and sports categories.",
+  },
+  {
+    name: "Aditya Jain",
+    rating: 5,
+    review:
+      "Checkout was straightforward and the layout is easy to navigate.",
+  },
+  {
+    name: "Ishita Rao",
+    rating: 5,
+    review:
+      "Good options for both sports practice and everyday fitness.",
+  },
+  {
+    name: "Vikram Patel",
+    rating: 4,
+    review:
+      "Useful product range and a clean shopping experience.",
+  },
+  {
+    name: "Meera Kapoor",
+    rating: 5,
+    review:
+      "Easy to discover equipment for different fitness goals.",
+  },
+];
+  
+function TestimonialsSection() {
+const trackRef = useRef(null);
+  const animationRef = useRef(null);
+  const lastTimeRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const speed = 25; // pixels per second
+
+    const animate = (time) => {
+      if (lastTimeRef.current !== null && !isPaused) {
+        const delta = time - lastTimeRef.current;
+
+        track.scrollLeft += (speed * delta) / 1000;
+
+        // Loop smoothly back to the start
+        if (track.scrollLeft >= track.scrollWidth / 2) {
+          track.scrollLeft = 0;
+        }
+      }
+
+      lastTimeRef.current = time;
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationRef.current);
+  }, [isPaused]);
+
+  return (
+    <section className="relative overflow-hidden bg-[#F6F8FC] py-12 md:py-20">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-8 text-center md:mb-12">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#2C62E0]">
+            Customer Stories
+          </p>
+
+          <h2 className="text-2xl font-bold text-[#0E1A3D] sm:text-3xl md:text-4xl">
+            What Our Customers Say
+          </h2>
+        </div>
+
+        <div
+          ref={trackRef}
+          className="testimonials-track flex gap-4 overflow-x-auto pb-4"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
+          onWheel={() => setIsPaused(true)}
+        >
+          {/* Duplicate cards for seamless looping */}
+          {[...DEMO_TESTIMONIALS, ...DEMO_TESTIMONIALS].map(
+            (testimonial, index) => (
+              <article
+                key={`${testimonial.name}-${index}`}
+                className="flex w-[82vw] max-w-[300px] shrink-0 flex-col rounded-xl border border-white bg-white p-5 shadow-[0_8px_28px_rgba(14,26,61,0.07)] sm:w-[280px]"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-3xl font-bold leading-none text-[#2C62E0]/25">
+                    &ldquo;
+                  </span>
+
+                  <div
+                    className="flex gap-0.5 text-sm text-[#F59E0B]"
+                    aria-label={`${testimonial.rating} out of 5 stars`}
+                  >
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span key={i}>
+                        {i < testimonial.rating ? "★" : "☆"}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="mb-5 text-sm leading-6 text-[#4B5568]">
+                  {testimonial.review}
+                </p>
+
+                <div className="mt-auto border-t border-gray-100 pt-3">
+                  <h3 className="text-sm font-semibold text-[#0E1A3D]">
+                    {testimonial.name}
+                  </h3>
+                  <p className="mt-0.5 text-xs text-gray-400">Customer</p>
+                </div>
+              </article>
+            )
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 function getBackendOrigin() {
   const apiUrl = import.meta.env.VITE_API_BASE_URL || "";
@@ -246,35 +412,16 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* =====================================================
-          TRUST STRIP
-      ====================================================== */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <TrustItem
-            icon={<Truck className="w-6 h-6" />}
-            title="Reliable Delivery"
-            description="Sports equipment delivered safely"
-          />
 
-          <TrustItem
-            icon={<ShieldCheck className="w-6 h-6" />}
-            title="Trusted Products"
-            description="Quality sports & fitness equipment"
-          />
 
-          <TrustItem
-            icon={<RotateCcw className="w-6 h-6" />}
-            title="Customer Support"
-            description="We're here when you need us"
-          />
-        </div>
-      </section>
+<TestimonialsSection />
+
+ 
 
       {/* =====================================================
           CATEGORIES
       ====================================================== */}
-      {categories.length > 0 && (
+      {/* {categories.length > 0 && (
         <section className="max-w-6xl mx-auto px-6 py-16">
           <SectionTitle
             title="Shop by Category"
@@ -326,7 +473,7 @@ export default function HomePage() {
             ))}
           </div>
         </section>
-      )}
+      )} */}
 
       {/* =====================================================
           FEATURED PRODUCTS
