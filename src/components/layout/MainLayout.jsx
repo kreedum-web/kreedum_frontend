@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import BirthdayPopup from "@/components/common/BirthdayPopup";
+import AnnouncementBanner from "./AnnouncementBanner";
 
 
 export default function MainLayout() {
@@ -13,6 +14,7 @@ export default function MainLayout() {
         backgroundColor: "#F6F8FC",
       }}
     >
+      <AnnouncementBanner />
       <Navbar />
 
       {/* Reserve space for the fixed navbar */}
