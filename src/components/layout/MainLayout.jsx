@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import BirthdayPopup from "@/components/common/BirthdayPopup";
+import AnnouncementBanner from "./AnnouncementBanner";
 
 
 export default function MainLayout() {
