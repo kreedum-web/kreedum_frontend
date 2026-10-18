@@ -23,6 +23,23 @@ const values = [
   },
 ];
 
+const leaders = [
+  {
+    name: "Richa Kothari",
+    role: "Managing Director",
+    image: "/images/richa-kothari.jpeg",
+    quote:
+      "Our vision is to make quality sports and fitness equipment accessible, helping more people pursue their goals with confidence.",
+  },
+  {
+    name: "Shivam Gupta",
+    role: "CEO",
+    image: "/images/shivam-gupta.jpeg",
+    quote:
+      "We believe every sporting ambition deserves the right support. Our focus is on building a dependable experience for every customer we serve.",
+  },
+];
+
 export default function AboutUsPage() {
   return (
     <main className="min-h-screen bg-white">
@@ -157,6 +174,76 @@ export default function AboutUsPage() {
           ))}
         </div>
       </section>
+
+{/* Leadership */}
+<section className="bg-[#F6F8FC] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+  <div className="mx-auto max-w-7xl">
+    <div className="mx-auto max-w-2xl text-center">
+      <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#2C62E0]">
+        Our Leadership
+      </p>
+
+      <h2 className="mt-3 text-3xl font-bold text-[#0E1A3D] sm:text-4xl">
+        The people behind Kreedum
+      </h2>
+
+      <p className="mt-4 leading-7 text-slate-600">
+        Meet the leadership guiding our vision for sports, fitness,
+        and customer experience.
+      </p>
+    </div>
+
+    <div className="mx-auto mt-10 grid max-w-5xl gap-8 md:grid-cols-2">
+      {leaders.map((leader) => (
+        <article
+          key={leader.name}
+          className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+        >
+          <div className="grid sm:grid-cols-[200px_1fr]">
+            {/* Portrait */}
+            <div className="relative min-h-[260px] overflow-hidden bg-[#EAF0FF] sm:min-h-full">
+              <img
+                src={leader.image}
+                alt={`${leader.name}, ${leader.role} at Kreedum`}
+                className="absolute inset-0 h-full w-full object-cover object-top"
+                loading="lazy"
+              />
+            </div>
+
+            {/* Profile */}
+            <div className="flex flex-col p-6 sm:p-7">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2C62E0]">
+                {leader.role}
+              </p>
+
+              <h3 className="mt-2 text-2xl font-bold text-[#0E1A3D]">
+                {leader.name}
+              </h3>
+
+              <div className="mt-5 border-l-2 border-[#2C62E0] pl-4">
+                <span
+                  aria-hidden="true"
+                  className="text-3xl font-bold leading-none text-[#2C62E0]"
+                >
+                  “
+                </span>
+
+                <p className="mt-1 text-sm leading-7 text-slate-600">
+                  {leader.quote}
+                </p>
+              </div>
+
+              <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Kreedum Sports
+              </p>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
 
       {/* CTA */}
       <section className="px-4 pb-14 sm:px-6 lg:px-8 lg:pb-20">
