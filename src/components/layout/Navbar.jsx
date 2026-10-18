@@ -9,6 +9,7 @@ import logo from "@/assets/logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 import SearchBar from "@/components/search/SearchBar";
 import { cartService,wishlistService} from "@/api";
+import AnnouncementBanner from "./AnnouncementBanner";
 
 export default function Navbar() {
   const location = useLocation();
@@ -161,6 +162,7 @@ useEffect(() => {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
+      <AnnouncementBanner />
       {/* Mobile header: exactly one controls row and one persistent search */}
       <div className="md:hidden">
         <div

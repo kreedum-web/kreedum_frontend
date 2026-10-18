@@ -14,7 +14,6 @@ export default function MainLayout() {
         backgroundColor: "#F6F8FC",
       }}
     >
-      <AnnouncementBanner />
       <Navbar />
 
       {/* Reserve space for the fixed navbar */}
