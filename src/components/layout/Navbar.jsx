@@ -280,7 +280,7 @@ onClick={() => {
 {/* Mobile floating dropdown menu */}
 <div
   ref={mobileMenuRef}
-  className={`fixed right-20 top-[76px] z-[70]
+  className={`fixed right-20 top-[110px] z-[70]
     w-[min(290px,calc(100vw-24px))]
     max-h-[calc(100dvh-92px)] overflow-y-auto
     rounded-2xl border border-[#E5E9F2]
@@ -362,7 +362,7 @@ onClick={() => {
 <div
   ref={accountMenuRef}
   aria-hidden={!accountOpen}
-  className={`fixed right-3 top-[72px] z-[70] w-[min(280px,calc(100vw-24px))]
+  className={`fixed right-3 top-[110px] z-[70] w-[min(280px,calc(100vw-24px))]
     rounded-2xl border border-[#E5E9F2] bg-white p-2 shadow-xl md:hidden
     transition-all duration-200 ${
       accountOpen
