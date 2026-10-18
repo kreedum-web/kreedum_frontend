@@ -1,6 +1,8 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import BirthdayPopup from "@/components/common/BirthdayPopup";
+
 
 export default function MainLayout() {
   return (
@@ -19,8 +21,8 @@ export default function MainLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
-
       <Footer />
+      <BirthdayPopup />
     </div>
   );
 }

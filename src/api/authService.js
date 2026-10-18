@@ -13,6 +13,10 @@ const authService = {
   getCurrentUser() {
     return api.get(API_ENDPOINTS.AUTH.ME);
   },
+
+  updateProfile(payload) {
+    return api.put(API_ENDPOINTS.AUTH.PROFILE, payload);
+  },
 };
 
 export default authService;

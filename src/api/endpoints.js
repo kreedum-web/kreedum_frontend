@@ -3,20 +3,15 @@ const API_ENDPOINTS = {
     REGISTER: "/auth/register",
     LOGIN: "/auth/login",
     ME: "/auth/me",
+    PROFILE: "/auth/profile",
   },
 
   PRODUCTS: "/products",
-
   HOMEPAGE: "/homepage",
-
   SEARCH: "/search",
-
   CATEGORIES: "/categories",
-
   BRANDS: "/brands",
-
   WISHLIST: "/wishlist",
-
   CART: "/cart",
 
   ADDRESS: {
@@ -25,7 +20,6 @@ const API_ENDPOINTS = {
   },
 
   ORDERS: "/orders",
-
   PROFILE: "/profile",
 };
 
