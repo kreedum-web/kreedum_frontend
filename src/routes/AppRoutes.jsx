@@ -24,6 +24,9 @@ import PrivacyPolicyPage from "@/pages/Company/PrivacyPolicyPage";
 import TermsAndConditionsPage from "@/pages/Company/TermsAndConditionsPage";
 import ReturnPolicyPage from "@/pages/Company/ReturnPolicyPage";
 import AboutUsPage from "@/pages/Company/AboutUsPage";
+import OrderDetailsPage from "@/pages/Account/OrderDetailsPage";
+
+
 export default function AppRoutes() {
   return (
     <>
@@ -47,6 +50,7 @@ export default function AppRoutes() {
         <Route path="/refund-policy" element={<ReturnPolicyPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />}/>
         <Route path="/about-us" element={<AboutUsPage />} />
+        <Route path="/account/orders/:orderId" element={<OrderDetailsPage />}/>
       </Route>
 
       {/* Auth pages */}

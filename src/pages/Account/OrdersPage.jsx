@@ -273,112 +273,55 @@ export default function OrdersPage() {
 
               const items = Array.isArray(order.items) ? order.items : [];
 
-              return (
-                <article
-                  key={orderId}
-                  className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"
-                >
-                  <div className="flex flex-col gap-4 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                        Order number
-                      </p>
-                      <p className="mt-1 break-all text-sm font-bold text-[#0E1A3D]">
-                        {order.orderNumber || orderId}
-                      </p>
+           return (
+  <Link
+    key={orderId}
+    to={`/account/orders/${orderId}`}
+    className="block overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-[#2C62E0] hover:shadow-sm"
+  >
+    <div className="flex min-h-[116px] items-stretch">
+      {/* Product thumbnail */}
+      <div className="flex w-28 shrink-0 items-center justify-center bg-slate-100 sm:w-36">
+        {items[0]?.thumbnail ? (
+          <img
+            src={items[0].thumbnail}
+            alt={items[0].name || "Product"}
+            className="h-full max-h-32 w-full object-contain p-3"
+            loading="lazy"
+          />
+        ) : (
+          <Package className="h-9 w-9 text-slate-400" />
+        )}
+      </div>
 
-                      <p className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-                        <CalendarDays size={14} />
-                        Placed on {formatDate(order.createdAt)}
-                      </p>
-                    </div>
+      {/* Order summary */}
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 p-3 sm:p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <StatusBadge status={order.orderStatus} />
+          <span className="text-xs text-slate-500">
+            {formatDate(order.createdAt)}
+          </span>
+        </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <StatusBadge status={order.orderStatus} />
-                      <StatusBadge status={order.paymentStatus} />
-                    </div>
-                  </div>
+        <p className="line-clamp-2 text-sm font-semibold text-[#0E1A3D] sm:text-base">
+          {items[0]?.name || "Order"}
+          {items.length > 1 && ` + ${items.length - 1} more`}
+        </p>
 
-                  <div className="space-y-4 p-4 sm:px-6">
-                    {items.map((item, index) => (
-                      <div
-                        key={item._id || item.product || `${item.name}-${index}`}
-                        className="flex gap-3"
-                      >
-                        {item.thumbnail ? (
-                          <img
-                            src={item.thumbnail}
-                            alt={item.name || "Product"}
-                            className="h-20 w-20 shrink-0 rounded-xl border border-slate-100 bg-slate-50 object-contain p-1"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-slate-50">
-                            <Package className="h-7 w-7 text-slate-400" />
-                          </div>
-                        )}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-sm font-bold text-[#0E1A3D]">
+            {formatPrice(order.pricing?.total)}
+          </span>
 
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-[#0E1A3D]">
-                            {item.name || "Product"}
-                          </p>
-                          {item.sku && (
-                            <p className="mt-1 text-xs text-slate-500">
-                              SKU: {item.sku}
-                            </p>
-                          )}
-                          <p className="mt-1 text-sm text-slate-500">
-                            Qty: {item.quantity || 0}
-                          </p>
-                          <p className="mt-1 text-sm font-semibold text-[#0E1A3D]">
-                            {formatPrice(
-                              item.total ??
-                                Number(item.price || 0) *
-                                  Number(item.quantity || 0)
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50/70 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    <div>
-                      <p className="text-xs text-slate-500">Order total</p>
-                      <p className="mt-1 text-xl font-bold text-[#0E1A3D]">
-                        {formatPrice(order.pricing?.total)}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Payment: {order.paymentMethod || "Not specified"}
-                      </p>
-                    </div>
-
-                    {canCancel && (
-                      <button
-                        type="button"
-                        disabled={cancelMutation.isPending}
-                        onClick={() => {
-                          const confirmed = window.confirm(
-                            `Cancel order ${order.orderNumber || orderId}?`
-                          );
-
-                          if (confirmed) {
-                            setActionMessage("");
-                            setActionError("");
-                            cancelMutation.mutate(orderId);
-                          }
-                        }}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        <XCircle size={17} />
-                        {cancelMutation.isPending
-                          ? "Cancelling..."
-                          : "Cancel order"}
-                      </button>
-                    )}
-                  </div>
-                </article>
-              );
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#2C62E0]">
+            View details
+            <ArrowLeft className="h-3.5 w-3.5 rotate-180" />
+          </span>
+        </div>
+      </div>
+    </div>
+  </Link>
+);
             })}
           </div>
         )}
