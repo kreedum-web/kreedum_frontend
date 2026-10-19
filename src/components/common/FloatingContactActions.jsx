@@ -1,31 +1,104 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircle, Phone } from "lucide-react";
 import { useMatch } from "react-router-dom";
 
-import { productService } from "@/api";
+import { orderService, productService } from "@/api";
 import { COLORS } from "@/config/theme";
 
 const WHATSAPP_NUMBER = "917570002458";
 const CALL_NUMBER = "+917570002458";
 
+const getResponseData = (response) => response?.data?.data;
+
+const formatDate = (value) => {
+  if (!value) return "Date unavailable";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Date unavailable";
+  }
+
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
 export default function FloatingContactActions() {
+  // Product page
   const productMatch = useMatch("/products/:slug");
   const slug = productMatch?.params?.slug;
 
-  const { data: response } = useQuery({
+  // Order details page
+  const orderMatch = useMatch("/account/orders/:orderId");
+  const orderId = orderMatch?.params?.orderId;
+
+  // Existing product query
+  const { data: productResponse } = useQuery({
     queryKey: ["product", slug],
     queryFn: () => productService.getProductBySlug(slug),
-    enabled: Boolean(slug),
+    enabled: Boolean(slug) && !orderId,
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
 
-  const product = response?.data?.product;
+  const product = productResponse?.data?.product;
+
+  // Reuse the same orders query as OrderDetailsPage
+  const { data: ordersResponse } = useQuery({
+    queryKey: ["orders"],
+    queryFn: () => orderService.getOrders(),
+    enabled: Boolean(orderId),
+    retry: false,
+  });
+
+  const responseData = getResponseData(ordersResponse);
+
+  const orders = Array.isArray(responseData)
+    ? responseData
+    : Array.isArray(responseData?.orders)
+      ? responseData.orders
+      : [];
+
+  const order = orders.find(
+    (item) => String(item._id) === String(orderId)
+  );
+
+  const orderItems = Array.isArray(order?.items)
+    ? order.items
+    : [];
+
+  const orderMessage = order
+    ? [
+        "Hi Kreedum Sports Support, I need help with my order.",
+        "",
+        `Customer: ${
+          order.shippingAddress?.fullName || "Customer"
+        }`,
+        `Order number: ${
+          order.orderNumber || order._id
+        }`,
+        `Item(s): ${
+          orderItems.map((item) => item.name).filter(Boolean).join(", ") ||
+          "Order details"
+        }`,
+        `Order date: ${formatDate(order.createdAt)}`,
+        `Payment method: ${order.paymentMethod || "Not specified"}`,
+        `Order total: ₹${(
+          Number(order.pricing?.total) || 0
+        ).toLocaleString("en-IN")}`,
+        "",
+        "Please assist me with this order. Thank you.",
+      ].join("\n")
+    : null;
 
   const productUrl =
     typeof window !== "undefined" ? window.location.href : "";
 
-  const message = product
+  const productMessage = product
     ? [
         `Hi Kreedum Sports, I'm interested in ${product.name}.`,
         `Price: ₹${(
@@ -35,6 +108,12 @@ export default function FloatingContactActions() {
         "Please share more details. Thanks!",
       ].join("\n")
     : "Hi Kreedum Sports, I'd like to know more about your sports and fitness products.";
+
+  // Order-specific message takes priority on order details pages
+  const message = orderId
+    ? orderMessage ||
+      `Hi Kreedum Sports Support, I need help with order ${orderId}.`
+    : productMessage;
 
   const whatsappUrl =
     `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
