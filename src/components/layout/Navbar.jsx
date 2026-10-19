@@ -58,8 +58,8 @@ const accountButtonRef = useRef(null);
   const navLinks = [
     { label: "Home", to: "/" },
     { label: "Shop", to: "/products" },
-    { label: "Categories", to: "/categories" },
-    { label: "Brands", to: "/brands" },
+    // { label: "Categories", to: "/categories" },
+    // { label: "Brands", to: "/brands" },
   ];
 
   useEffect(() => {

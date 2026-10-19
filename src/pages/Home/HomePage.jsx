@@ -22,8 +22,11 @@ import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
 
 
-
-import { Star, Quote } from "lucide-react";
+const HERO_FALLBACK_IMAGES = [
+  "/images/home-hero/aerofit-gym.jpg",
+  "/images/home-hero/home-gym-setup.jpg",
+  "/images/home-hero/sports-courts.jpg",
+];
 
 const DEMO_TESTIMONIALS = [
   {
@@ -92,7 +95,43 @@ function TestimonialsSection() {
 const trackRef = useRef(null);
   const animationRef = useRef(null);
   const lastTimeRef = useRef(null);
+//   const touchStartX = useRef(null);
+// const touchStartY = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
+
+
+
+//   const handleTouchStart = (event) => {
+//   touchStartX.current = event.touches[0].clientX;
+//   touchStartY.current = event.touches[0].clientY;
+// };
+
+// const handleTouchEnd = (event) => {
+//   if (
+//     touchStartX.current === null ||
+//     touchStartY.current === null
+//   ) {
+//     return;
+//   }
+
+//   const deltaX =
+//     event.changedTouches[0].clientX - touchStartX.current;
+
+//   const deltaY =
+//     event.changedTouches[0].clientY - touchStartY.current;
+
+//   // Ignore vertical scrolling and small movements.
+//   if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+//     if (deltaX < 0) {
+//       goNext();
+//     } else {
+//       goPrevious();
+//     }
+//   }
+
+//   touchStartX.current = null;
+//   touchStartY.current = null;
+// };
 
   useEffect(() => {
     const track = trackRef.current;
@@ -209,6 +248,9 @@ function resolveImageUrl(image) {
 
 export default function HomePage() {
   const [activeBanner, setActiveBanner] = useState(0);
+  const [heroImageFailed, setHeroImageFailed] = useState(false);
+  const touchStartX = useRef(null);
+const touchStartY = useRef(null);
 
   const {
     data: response,
@@ -284,25 +326,65 @@ export default function HomePage() {
   const currentBanner =
     heroBanners[activeBanner];
 
-  const goNext = () => {
-    if (!heroBanners.length) return;
+const goNext = () => {
+  if (!heroBanners.length) return;
 
-    setActiveBanner(
-      (current) =>
-        (current + 1) % heroBanners.length
-    );
-  };
+  setHeroImageFailed(false);
 
-  const goPrevious = () => {
-    if (!heroBanners.length) return;
+  setActiveBanner(
+    (current) => (current + 1) % heroBanners.length
+  );
+};
 
-    setActiveBanner(
-      (current) =>
-        (current - 1 + heroBanners.length) %
-        heroBanners.length
-    );
-  };
+const goPrevious = () => {
+  if (!heroBanners.length) return;
 
+  setHeroImageFailed(false);
+
+  setActiveBanner(
+    (current) =>
+      (current - 1 + heroBanners.length) %
+      heroBanners.length
+  );
+};
+
+const handleHeroTouchStart = (event) => {
+  const touch = event.touches[0];
+
+  touchStartX.current = touch.clientX;
+  touchStartY.current = touch.clientY;
+};
+
+const handleHeroTouchEnd = (event) => {
+  if (
+    touchStartX.current === null ||
+    touchStartY.current === null
+  ) {
+    return;
+  }
+
+  const touch = event.changedTouches[0];
+
+  const deltaX = touch.clientX - touchStartX.current;
+  const deltaY = touch.clientY - touchStartY.current;
+
+  // Only respond to horizontal swipes.
+  if (
+    Math.abs(deltaX) > 50 &&
+    Math.abs(deltaX) > Math.abs(deltaY)
+  ) {
+    if (deltaX < 0) {
+      goNext();
+    } else {
+      goPrevious();
+    }
+  }
+
+  touchStartX.current = null;
+  touchStartY.current = null;
+};
+
+  
   return (
     <div
       className="bg-[#F6F8FC]"
@@ -312,21 +394,32 @@ export default function HomePage() {
           HERO
       ====================================================== */}
       {currentBanner && (
-        <section className="relative min-h-[620px] md:min-h-[680px] overflow-hidden bg-[#0E1A3D]">
-          {currentBanner.image && (
+<section
+  className="relative min-h-[700px] md:min-h-[680px] overflow-hidden bg-[#0E1A3D] touch-pan-y"
+  onTouchStart={handleHeroTouchStart}
+  onTouchEnd={handleHeroTouchEnd}
+>      {currentBanner.image && (
             <img
-              src={resolveImageUrl(
-                currentBanner.image
-              )}
-              alt={currentBanner.title}
-              className="absolute inset-0 w-full h-full object-cover"
+                src={
+    !heroImageFailed && currentBanner?.image
+      ? resolveImageUrl(currentBanner.image)
+      : HERO_FALLBACK_IMAGES[
+          activeBanner % HERO_FALLBACK_IMAGES.length
+        ]
+  }
+              alt={currentBanner?.title || "Kreedum Sports fitness equipment"}
+  className="absolute inset-0 h-full w-full object-cover"
+  onError={() => {
+    if (!heroImageFailed) {
+      setHeroImageFailed(true);
+    }
+  }}
             />
           )}
 
           <div className="absolute inset-0 bg-gradient-to-r from-[#0E1A3D]/95 via-[#0E1A3D]/70 to-[#0E1A3D]/20" />
 
-          <div className="relative max-w-7xl mx-auto px-6 pt-36 md:pt-44 pb-28">
-            <div className="max-w-3xl">
+<div className="relative max-w-7xl mx-auto px-6 pt-56 md:pt-44 pb-32">            <div className="max-w-3xl">
               <Badge type="new">
                 KREEDUM SPORTS
               </Badge>
@@ -369,8 +462,7 @@ export default function HomePage() {
               type="button"
               onClick={goPrevious}
               aria-label="Previous banner"
-              className="absolute left-5 md:left-8 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/25 transition"
-            >
+className="hidden md:flex absolute left-5 md:left-8 bottom-20 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/25 transition"            >
               <ChevronLeft className="w-5 h-5" />
             </button>
           )}
@@ -381,15 +473,14 @@ export default function HomePage() {
               type="button"
               onClick={goNext}
               aria-label="Next banner"
-              className="absolute right-5 md:right-8 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/25 transition"
-            >
+className="hidden md:flex absolute right-5 md:right-8 bottom-20 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/25 transition"            >
               <ChevronRight className="w-5 h-5" />
             </button>
           )}
 
           {/* Indicators */}
           {heroBanners.length > 1 && (
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2">
               {heroBanners.map((banner, index) => (
                 <button
                   key={banner.id || index}
