@@ -19,7 +19,7 @@ export default function InnerPageHeader({
 
       {/* <div className="relative max-w-6xl mx-auto px-6 pt-24 pb-9"> */}
         
-<div className="relative max-w-6xl mx-auto px-6 pt-36 pb-9 md:pt-24">
+<div className="relative max-w-6xl mx-auto px-6 pt-48 pb-9 md:pt-28 md:pb-10">
         {/* Breadcrumb */}
         {breadcrumbs.length > 0 && (
           <nav
