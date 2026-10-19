@@ -24,36 +24,45 @@ api.interceptors.request.use(
 );
 
 // RESPONSE INTERCEPTOR
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
+    const requestUrl = error.config?.url || "";
 
-    switch (status) {
-      case 401:
-        localStorage.removeItem("kreedum_token");
-        localStorage.removeItem("kreedum_user");
+    // A failed login should be handled by LoginForm.
+    // Do not clear credentials or reload the page.
+    const isLoginRequest = /\/auth\/login(?:\?|$)/.test(requestUrl);
+
+    if (status === 401 && isLoginRequest) {
+      return Promise.reject(error);
+    }
+
+    if (status === 401) {
+      const hasSavedSession =
+        Boolean(localStorage.getItem("kreedum_token")) ||
+        Boolean(localStorage.getItem("kreedum_user"));
+
+      localStorage.removeItem("kreedum_token");
+      localStorage.removeItem("kreedum_user");
+
+      if (hasSavedSession && window.location.pathname !== "/login") {
         window.location.href = "/login";
-        break;
+      }
+    }
 
-      case 403:
-        console.error("Access Forbidden");
-        break;
-
-      case 404:
-        console.error("API Not Found");
-        break;
-
-      case 500:
-        console.error("Internal Server Error");
-        break;
-
-      default:
-        break;
+    if (status === 403) {
+      console.error("Access Forbidden");
+    } else if (status === 404) {
+      console.error("API Not Found");
+    } else if (status === 500) {
+      console.error("Internal Server Error");
     }
 
     return Promise.reject(error);
   }
 );
+
 
 export default api;
