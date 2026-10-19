@@ -89,31 +89,7 @@ export default function AboutUsPage() {
         </div>
 
         <div className="relative">
-          <div className="absolute -inset-3 rounded-3xl bg-[#EAF0FF]" />
-
-          <div className="relative flex min-h-[320px] flex-col justify-between overflow-hidden rounded-3xl bg-[#0E1A3D] p-8 sm:min-h-[400px] sm:p-10">
-            <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full border-[35px] border-white/5" />
-            <div className="absolute -bottom-20 -left-12 h-56 w-56 rounded-full bg-[#2C62E0]/30 blur-2xl" />
-
-            <div className="relative">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-blue-300">
-                KREEDUM SPORTS
-              </p>
-              <h3 className="mt-6 max-w-sm text-3xl font-bold leading-tight text-white sm:text-4xl">
-                Equip your ambition.
-              </h3>
-            </div>
-
-            <div className="relative mt-10 border-l-2 border-blue-400 pl-4">
-              <p className="text-lg font-medium text-white">
-                Sport. Fitness. Performance.
-              </p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                Products for training, movement, and the pursuit of better
-                performance.
-              </p>
-            </div>
-          </div>
+       
         </div>
       </section>
 
@@ -176,8 +152,10 @@ export default function AboutUsPage() {
       </section>
 
 {/* Leadership */}
-<section className="bg-[#F6F8FC] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+{/* Leadership */}
+<section className="bg-[#F6F8FC] px-4 py-10 sm:px-6 lg:px-8 lg:py-20">
   <div className="mx-auto max-w-7xl">
+    {/* Section Heading */}
     <div className="mx-auto max-w-2xl text-center">
       <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#2C62E0]">
         Our Leadership
@@ -193,15 +171,58 @@ export default function AboutUsPage() {
       </p>
     </div>
 
-    <div className="mx-auto mt-10 grid max-w-5xl gap-8 md:grid-cols-2">
+    {/* Leadership Cards */}
+    <div className="mx-auto mt-8 grid max-w-5xl gap-5 md:mt-10 md:grid-cols-2 md:gap-8">
       {leaders.map((leader) => (
         <article
           key={leader.name}
-          className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+          className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg md:rounded-3xl"
         >
-          <div className="grid sm:grid-cols-[200px_1fr]">
+          {/* Mobile Layout */}
+          <div className="p-5 sm:hidden">
+            {/* Quote */}
+            <div className="border-l-2 border-[#2C62E0] pl-4">
+              <span
+                aria-hidden="true"
+                className="block text-3xl font-bold leading-none text-[#2C62E0]"
+              >
+                “
+              </span>
+
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {leader.quote}
+              </p>
+            </div>
+
+            {/* Compact Profile */}
+            <div className="mt-5 flex items-center gap-3">
+              {/* Portrait */}
+              <div className="h-[76px] w-[76px] shrink-0 overflow-hidden rounded-full border-2 border-[#2C62E0] bg-[#EAF0FF]">
+                <img
+                  src={leader.image}
+                  alt={`${leader.name}, ${leader.role} at Kreedum`}
+                  className="h-full w-full object-cover object-top"
+                  loading="lazy"
+                />
+              </div>
+
+              {/* Name and Role */}
+              <div className="min-w-0">
+                <h3 className="text-lg font-bold leading-snug text-[#0E1A3D]">
+                  {leader.name}
+                </h3>
+
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-[#2C62E0]">
+                  {leader.role}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Layout - Existing Design */}
+          <div className="hidden sm:grid sm:grid-cols-[200px_1fr]">
             {/* Portrait */}
-            <div className="relative min-h-[260px] overflow-hidden bg-[#EAF0FF] sm:min-h-full">
+            <div className="relative min-h-[260px] overflow-hidden bg-[#EAF0FF]">
               <img
                 src={leader.image}
                 alt={`${leader.name}, ${leader.role} at Kreedum`}
