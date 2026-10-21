@@ -4,7 +4,7 @@ import Loader from "@/components/common/Loader";
 
 export default function ProtectedRoute() {
   const { loading, isAuthenticated } = useAuth();
-  const location = useLocation();
+  // const location = useLocation();
 
   if (loading) {
     return (
