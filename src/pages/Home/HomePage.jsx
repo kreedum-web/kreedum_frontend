@@ -95,43 +95,8 @@ function TestimonialsSection() {
 const trackRef = useRef(null);
   const animationRef = useRef(null);
   const lastTimeRef = useRef(null);
-//   const touchStartX = useRef(null);
-// const touchStartY = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
 
-
-
-//   const handleTouchStart = (event) => {
-//   touchStartX.current = event.touches[0].clientX;
-//   touchStartY.current = event.touches[0].clientY;
-// };
-
-// const handleTouchEnd = (event) => {
-//   if (
-//     touchStartX.current === null ||
-//     touchStartY.current === null
-//   ) {
-//     return;
-//   }
-
-//   const deltaX =
-//     event.changedTouches[0].clientX - touchStartX.current;
-
-//   const deltaY =
-//     event.changedTouches[0].clientY - touchStartY.current;
-
-//   // Ignore vertical scrolling and small movements.
-//   if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
-//     if (deltaX < 0) {
-//       goNext();
-//     } else {
-//       goPrevious();
-//     }
-//   }
-
-//   touchStartX.current = null;
-//   touchStartY.current = null;
-// };
 
   useEffect(() => {
     const track = trackRef.current;

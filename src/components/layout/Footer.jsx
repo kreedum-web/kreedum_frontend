@@ -15,7 +15,7 @@ const COMPANY_LINKS = [
   { label: "Contact Us", to: "/contact" },
   { label: "Privacy Policy", to: "/privacy-policy" },
   { label: "Terms & Conditions", to: "/terms-and-conditions" },
-  { label: "Refund Polic & Shipping Policy", to: "/refund-policy" },
+  { label: "Refund Policy & Shipping Policy", to: "/refund-policy" },
 ];
 
 const SOCIALS = [
@@ -55,7 +55,7 @@ export default function Footer() {
         
         </div>
 
-        <div>
+        {/* <div>
           <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-[#8FADFF]">
             Shop
           </h2>
@@ -65,7 +65,7 @@ export default function Footer() {
             <li><Link className="hover:text-white" to="/wishlist">Wishlist</Link></li>
             <li><Link className="hover:text-white" to="/cart">Cart</Link></li>
           </ul>
-        </div>
+        </div> */}
 
         <div>
           <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-[#8FADFF]">
