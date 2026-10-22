@@ -3,9 +3,6 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-  RotateCcw,
-  ShieldCheck,
-  Truck,
 } from "lucide-react";
 import { useEffect, useRef,useState } from "react";
 import { Link } from "react-router-dom";
@@ -20,6 +17,7 @@ import { normalizeHomepage } from "@/adapters/homepage.adapter";
 import { COLORS } from "@/config/theme";
 
 import ProductCard from "@/components/product/ProductCard";
+import homepageTestimonials from "@/data/homepageTestimonials";
 
 
 const HERO_FALLBACK_IMAGES = [
@@ -28,68 +26,7 @@ const HERO_FALLBACK_IMAGES = [
   "/images/home-hero/sports-courts.jpg",
 ];
 
-const DEMO_TESTIMONIALS = [
-  {
-    name: "Aarav Sharma",
-    rating: 5,
-    review:
-      "Good range of sports products and a smooth shopping experience.",
-  },
-  {
-    name: "Priya Verma",
-    rating: 5,
-    review:
-      "Found the fitness essentials I needed. The product selection is useful.",
-  },
-  {
-    name: "Rahul Mehta",
-    rating: 4,
-    review:
-      "Easy to browse and compare equipment for my workouts.",
-  },
-  {
-    name: "Ananya Singh",
-    rating: 5,
-    review:
-      "The website is simple to use and the product details are clear.",
-  },
-  {
-    name: "Karan Gupta",
-    rating: 5,
-    review:
-      "A helpful place to explore sports and gym equipment.",
-  },
-  {
-    name: "Neha Agarwal",
-    rating: 4,
-    review:
-      "Nice variety across fitness and sports categories.",
-  },
-  {
-    name: "Aditya Jain",
-    rating: 5,
-    review:
-      "Checkout was straightforward and the layout is easy to navigate.",
-  },
-  {
-    name: "Ishita Rao",
-    rating: 5,
-    review:
-      "Good options for both sports practice and everyday fitness.",
-  },
-  {
-    name: "Vikram Patel",
-    rating: 4,
-    review:
-      "Useful product range and a clean shopping experience.",
-  },
-  {
-    name: "Meera Kapoor",
-    rating: 5,
-    review:
-      "Easy to discover equipment for different fitness goals.",
-  },
-];
+
   
 function TestimonialsSection() {
 const trackRef = useRef(null);
@@ -102,7 +39,7 @@ const trackRef = useRef(null);
     const track = trackRef.current;
     if (!track) return;
 
-    const speed = 25; // pixels per second
+    const speed = 25; // pixels per secondF
 
     const animate = (time) => {
       if (lastTimeRef.current !== null && !isPaused) {
@@ -126,7 +63,7 @@ const trackRef = useRef(null);
   }, [isPaused]);
 
   return (
-    <section className="relative overflow-hidden bg-[#F6F8FC] py-12 md:py-20">
+    <section className="relative overflow-hidden bg-[#F6F8FC] py-8 md:py-14">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-8 text-center md:mb-12">
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#2C62E0]">
@@ -148,7 +85,7 @@ const trackRef = useRef(null);
           onWheel={() => setIsPaused(true)}
         >
           {/* Duplicate cards for seamless looping */}
-          {[...DEMO_TESTIMONIALS, ...DEMO_TESTIMONIALS].map(
+          {[...homepageTestimonials, ...homepageTestimonials].map(
             (testimonial, index) => (
               <article
                 key={`${testimonial.name}-${index}`}
@@ -360,7 +297,7 @@ const handleHeroTouchEnd = (event) => {
       ====================================================== */}
       {currentBanner && (
 <section
-  className="relative min-h-[700px] md:min-h-[680px] overflow-hidden bg-[#0E1A3D] touch-pan-y"
+  className="relative min-h-[440px] sm:min-h-[520px] md:min-h-[680px] overflow-hidden bg-[#0E1A3D] touch-pan-y"
   onTouchStart={handleHeroTouchStart}
   onTouchEnd={handleHeroTouchEnd}
 >      {currentBanner.image && (
@@ -384,7 +321,8 @@ const handleHeroTouchEnd = (event) => {
 
           <div className="absolute inset-0 bg-gradient-to-r from-[#0E1A3D]/95 via-[#0E1A3D]/70 to-[#0E1A3D]/20" />
 
-<div className="relative max-w-7xl mx-auto px-6 pt-56 md:pt-44 pb-32">            <div className="max-w-3xl">
+<div className="relative mx-auto max-w-7xl px-5 pt-28 pb-20 sm:px-6 sm:pt-36 sm:pb-24 md:pt-44 md:pb-32">
+     <div className="max-w-3xl">
               <Badge type="new">
                 KREEDUM SPORTS
               </Badge>
@@ -583,10 +521,10 @@ className="hidden md:flex absolute right-5 md:right-8 bottom-20 md:bottom-auto m
       {/* =====================================================
           BRANDS
       ====================================================== */}
-      {popularBrands.length > 0 && (
+      {/* {popularBrands.length > 0 && (
         <section className="bg-white border-y border-gray-100">
-          <div className="max-w-6xl mx-auto px-6 py-16">
-            <SectionTitle
+<div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-12">   
+           <SectionTitle
               title="Popular Brands"
               subtitle="Explore products from trusted sports brands."
             />
@@ -615,13 +553,13 @@ className="hidden md:flex absolute right-5 md:right-8 bottom-20 md:bottom-auto m
             </div>
           </div>
         </section>
-      )}
+      )} */}
 
       {/* =====================================================
           STATS
       ====================================================== */}
       {stats && (
-        <section className="max-w-6xl mx-auto px-6 py-16">
+       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-12">
           <div
             className="rounded-3xl p-8 md:p-12 grid grid-cols-1 sm:grid-cols-3 gap-8"
             style={{
@@ -659,36 +597,82 @@ function ProductSection({
   products,
   background = false,
 }) {
+  const scrollRef = useRef(null);
+
   if (!products?.length) return null;
+
+  const scrollProducts = (direction) => {
+    const track = scrollRef.current;
+    if (!track) return;
+
+    const scrollAmount = track.clientWidth * 0.8;
+
+    track.scrollBy({
+      left: direction * scrollAmount,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <section className={background ? "bg-white" : ""}>
-      <div className="max-w-6xl mx-auto px-6 py-16">
-        <div className="flex items-end justify-between gap-4">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10">
+
+        {/* Section heading */}
+        <div className="mb-4 flex items-end justify-between gap-2 md:mb-8">
           <SectionTitle
             title={title}
             subtitle={subtitle}
           />
 
-          <Link
-            to="/products"
-            className="hidden sm:flex items-center gap-1 text-sm font-semibold mb-6"
-            style={{ color: COLORS.blue }}
-          >
-            View all
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex shrink-0 items-center gap-3">
+
+            {/* View all */}
+            <Link
+              to="/products"
+className="flex shrink-0 items-center gap-1 text-xs font-semibold sm:text-sm"        
+      style={{ color: COLORS.blue }}
+            >
+              View all
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+
+            {/* Desktop carousel controls */}
+            {products.length > 1 && (
+              <div className="hidden items-center gap-2 md:flex">
+                <button
+                  type="button"
+                  onClick={() => scrollProducts(-1)}
+                  aria-label={`Previous ${title} products`}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white transition hover:border-[#2C62E0] hover:text-[#2C62E0]"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => scrollProducts(1)}
+                  aria-label={`Next ${title} products`}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white transition hover:border-[#2C62E0] hover:text-[#2C62E0]"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        {/* Horizontal product track */}
+        <div
+          ref={scrollRef}
+          className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4"
+        >
           {products.slice(0, 8).map((product) => (
-            <ProductCard
-              key={
-                product.id ||
-                product.slug
-              }
-              product={product}
-            />
+            <div
+              key={product.id || product.slug}
+              className="w-[68vw] max-w-[250px] shrink-0 snap-start sm:w-[240px] md:w-[250px]"
+            >
+              <ProductCard product={product} />
+            </div>
           ))}
         </div>
       </div>
@@ -696,36 +680,6 @@ function ProductSection({
   );
 }
 
-/* =========================================================
-   TRUST ITEM
-========================================================= */
-
-function TrustItem({
-  icon,
-  title,
-  description,
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <div style={{ color: COLORS.blue }}>
-        {icon}
-      </div>
-
-      <div>
-        <p
-          className="font-semibold text-sm"
-          style={{ color: COLORS.navy }}
-        >
-          {title}
-        </p>
-
-        <p className="text-xs text-gray-500">
-          {description}
-        </p>
-      </div>
-    </div>
-  );
-}
 
 /* =========================================================
    STAT
