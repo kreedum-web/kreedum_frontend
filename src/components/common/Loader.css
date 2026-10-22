@@ -1,0 +1,113 @@
+
+.kreedum-loader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Basketball */
+.kreedum-ball {
+  position: absolute;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 25%,
+    #6b91ff,
+    #2c62e0 55%,
+    #1f49b8
+  );
+  border: 2px solid #0e1a3d;
+  box-shadow: inset -5px -6px 10px rgba(14, 26, 61, 0.25);
+  animation: kreedum-bounce 1s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Rotating basketball seams */
+.kreedum-ball-seams {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  animation: kreedum-spin 1.8s linear infinite;
+}
+
+.kreedum-seam {
+  position: absolute;
+  inset: -2px 14px;
+  border: 2px solid #0e1a3d;
+  border-radius: 50%;
+}
+
+.kreedum-seam-one {
+  transform: rotate(45deg);
+}
+
+.kreedum-seam-two {
+  transform: rotate(-45deg);
+}
+
+/* Ground shadow */
+.kreedum-ball-shadow {
+  position: absolute;
+  bottom: 42px;
+  width: 48px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(14, 26, 61, 0.2);
+  filter: blur(3px);
+  animation: kreedum-shadow 1s ease-in-out infinite;
+}
+
+/* Bounce and squash */
+@keyframes kreedum-bounce {
+  0%,
+  100% {
+    transform: translateY(-35px) scale(1);
+  }
+
+  45% {
+    transform: translateY(35px) scale(1);
+  }
+
+  50% {
+    transform: translateY(38px) scale(1.12, 0.88);
+  }
+
+  55% {
+    transform: translateY(35px) scale(0.96, 1.04);
+  }
+}
+
+@keyframes kreedum-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes kreedum-shadow {
+  0%,
+  100% {
+    transform: scale(0.55);
+    opacity: 0.45;
+  }
+
+  45%,
+  55% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .kreedum-ball,
+  .kreedum-ball-seams,
+  .kreedum-ball-shadow {
+    animation-duration: 3s;
+  }
+}
