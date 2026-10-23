@@ -204,7 +204,7 @@ export default function ProductCard({ product, variant = "default" }) {
       {slug ? (
         <Link to={`/products/${slug}`} className="block">
           <h3
-            className="line-clamp-2 text-sm font-semibold leading-5 transition-colors hover:text-[#2C62E0]"
+            className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 transition-colors hover:text-[#2C62E0]"
             style={{ color: COLORS.navy }}
           >
             {product.name}
@@ -212,7 +212,7 @@ export default function ProductCard({ product, variant = "default" }) {
         </Link>
       ) : (
         <h3
-          className="line-clamp-2 text-sm font-semibold leading-5"
+          className="line-clamp-2 min-h-10 text-sm font-semibold leading-5"
           style={{ color: COLORS.navy }}
         >
           {product.name}
@@ -230,7 +230,7 @@ export default function ProductCard({ product, variant = "default" }) {
       </div>
 
       {/* Price + Add to Cart */}
-<div className="mt-2 flex items-center justify-between gap-2">
+<div className="mt-auto flex min-h-11 items-center justify-between gap-2 pt-2">
   <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
     <span
       className="text-base font-extrabold leading-6"
