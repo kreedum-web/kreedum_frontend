@@ -2,112 +2,145 @@
 .kreedum-loader {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 180px;
+  gap: 14px;
   width: 100%;
+  min-height: 180px;
   overflow: hidden;
+  color: #0e1a3d;
 }
 
-/* Basketball */
-.kreedum-ball {
+.kreedum-loader-mark {
+  position: relative;
+  display: grid;
+  width: 92px;
+  height: 92px;
+  place-items: center;
+  isolation: isolate;
+}
+
+/* Rotating blue orbit */
+.kreedum-loader-ring {
   position: absolute;
+  inset: 2px;
+  border: 2px solid rgba(44, 98, 224, 0.12);
+  border-top-color: #2c62e0;
+  border-right-color: #2c62e0;
+  border-radius: 50%;
+  animation: kreedum-orbit 1.35s linear infinite;
+}
+
+/* Soft blue glow */
+.kreedum-loader-mark::before {
+  position: absolute;
+  inset: 15px;
+  z-index: -1;
+  border-radius: 50%;
+  background: rgba(44, 98, 224, 0.1);
+  content: "";
+  filter: blur(10px);
+  animation: kreedum-glow 1.8s ease-in-out infinite;
+}
+
+/* Actual Kreedum logo */
+.kreedum-loader-logo {
+  display: block;
   width: 58px;
   height: 58px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 35% 25%,
-    #6b91ff,
-    #2c62e0 55%,
-    #1f49b8
-  );
-  border: 2px solid #0e1a3d;
-  box-shadow: inset -5px -6px 10px rgba(14, 26, 61, 0.25);
-  animation: kreedum-bounce 1s ease-in-out infinite;
-  z-index: 1;
+  object-fit: contain;
+  animation: kreedum-logo-motion 1.8s ease-in-out infinite;
+  transform-origin: center;
 }
 
-/* Rotating basketball seams */
-.kreedum-ball-seams {
+/* Small animated brand accent */
+.kreedum-loader-spark {
   position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  overflow: hidden;
-  animation: kreedum-spin 1.8s linear infinite;
-}
-
-.kreedum-seam {
-  position: absolute;
-  inset: -2px 14px;
-  border: 2px solid #0e1a3d;
-  border-radius: 50%;
-}
-
-.kreedum-seam-one {
-  transform: rotate(45deg);
-}
-
-.kreedum-seam-two {
-  transform: rotate(-45deg);
-}
-
-/* Ground shadow */
-.kreedum-ball-shadow {
-  position: absolute;
-  bottom: 42px;
-  width: 48px;
+  top: 9px;
+  right: 8px;
+  width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: rgba(14, 26, 61, 0.2);
-  filter: blur(3px);
-  animation: kreedum-shadow 1s ease-in-out infinite;
+  background: #2c62e0;
+  box-shadow: 0 0 12px rgba(44, 98, 224, 0.45);
+  animation: kreedum-spark 1.35s ease-in-out infinite;
 }
 
-/* Bounce and squash */
-@keyframes kreedum-bounce {
-  0%,
-  100% {
-    transform: translateY(-35px) scale(1);
-  }
-
-  45% {
-    transform: translateY(35px) scale(1);
-  }
-
-  50% {
-    transform: translateY(38px) scale(1.12, 0.88);
-  }
-
-  55% {
-    transform: translateY(35px) scale(0.96, 1.04);
-  }
+.kreedum-loader-label {
+  margin: 0;
+  color: #64708a;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  animation: kreedum-label-pulse 1.8s ease-in-out infinite;
 }
 
-@keyframes kreedum-spin {
+@keyframes kreedum-orbit {
   to {
     transform: rotate(360deg);
   }
 }
 
-@keyframes kreedum-shadow {
+@keyframes kreedum-logo-motion {
   0%,
   100% {
-    transform: scale(0.55);
-    opacity: 0.45;
+    transform: translateY(0) rotate(0deg) scale(1);
   }
 
-  45%,
-  55% {
-    transform: scale(1);
-    opacity: 0.8;
+  35% {
+    transform: translateY(-4px) rotate(-5deg) scale(1.04);
+  }
+
+  65% {
+    transform: translateY(1px) rotate(3deg) scale(0.98);
   }
 }
 
-/* Accessibility */
+@keyframes kreedum-glow {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes kreedum-spark {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.7);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes kreedum-label-pulse {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Respect accessibility preferences */
 @media (prefers-reduced-motion: reduce) {
-  .kreedum-ball,
-  .kreedum-ball-seams,
-  .kreedum-ball-shadow {
-    animation-duration: 3s;
+  .kreedum-loader-ring,
+  .kreedum-loader-logo,
+  .kreedum-loader-mark::before,
+  .kreedum-loader-spark,
+  .kreedum-loader-label {
+    animation: none;
   }
 }
