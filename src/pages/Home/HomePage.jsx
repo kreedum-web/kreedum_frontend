@@ -392,7 +392,7 @@ const handleHeroTouchEnd = (event) => {
 
           <div className="absolute inset-0 bg-gradient-to-r from-[#0E1A3D]/95 via-[#0E1A3D]/70 to-[#0E1A3D]/20" />
 
-<div className="relative mx-auto max-w-7xl px-5 pt-36 pb-20 sm:px-6 sm:pt-36 sm:pb-24 md:pt-44 md:pb-32">
+<div className="relative mx-auto max-w-7xl px-5 pt-[160px] pb-20 sm:px-6 sm:pt-36 sm:pb-24 md:pt-44 md:pb-32">
      <div className="max-w-3xl">
 
               <h1
