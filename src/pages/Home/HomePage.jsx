@@ -1,21 +1,12 @@
 import { useQuery, } from "@tanstack/react-query";
-import {
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight} from "lucide-react";
 import { useEffect, useRef,useState } from "react";
 import { Link } from "react-router-dom";
 
 import { homepageService } from "@/api";
-import {
-  Badge,
-  Loader,
-  SectionTitle,
-} from "@/components/common";
+import {Loader,SectionTitle} from "@/components/common";
 import { normalizeHomepage } from "@/adapters/homepage.adapter";
 import { COLORS } from "@/config/theme";
-
 import ProductCard from "@/components/product/ProductCard";
 import homepageTestimonials from "@/data/homepageTestimonials";
 import homepageClients from "@/data/homepageClients";
@@ -27,54 +18,48 @@ const HERO_FALLBACK_IMAGES = [
   "/images/home-hero/sports-courts.jpg",
 ];
 
-
-  
 function TestimonialsSection() {
 const trackRef = useRef(null);
-  const animationRef = useRef(null);
   const lastTimeRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
 
 
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
+useEffect(() => {
+  const track = trackRef.current;
+  if (!track) return;
 
-    const speed = 25; // pixels per secondF
+  const speed = 25;
+  let frameId;
+  let lastTime = null;
 
-    const animate = (time) => {
-      if (lastTimeRef.current !== null && !isPaused) {
-        const delta = time - lastTimeRef.current;
+  const animate = (time) => {
+    if (lastTime !== null && !isPaused) {
+      const delta = time - lastTime;
+      track.scrollLeft += (speed * delta) / 1000;
 
-        track.scrollLeft += (speed * delta) / 1000;
-
-        // Loop smoothly back to the start
-        if (track.scrollLeft >= track.scrollWidth / 2) {
-          track.scrollLeft = 0;
-        }
+      if (track.scrollLeft >= track.scrollWidth / 2) {
+        track.scrollLeft -= track.scrollWidth / 2;
       }
+    }
 
-      lastTimeRef.current = time;
-      animationRef.current = requestAnimationFrame(animate);
-    };
+    lastTime = time;
+    frameId = requestAnimationFrame(animate);
+  };
 
-    animationRef.current = requestAnimationFrame(animate);
+  frameId = requestAnimationFrame(animate);
 
-    return () => cancelAnimationFrame(animationRef.current);
-  }, [isPaused]);
+  return () => cancelAnimationFrame(frameId);
+}, [isPaused]);
 
   return (
     <section className="relative overflow-hidden bg-[#F6F8FC] py-10 md:py-14">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-8 text-center md:mb-12">
+        
           
-
-          
-<div className="mb-7 text-center md:mb-9">
+<div className="mb-5 text-center md:mb-9">
   <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#2C62E0]">
-    What Our Customers Say
+    Customer Stories
   </p>
-
   <h2 className="text-2xl font-bold text-[#0E1A3D] sm:text-3xl">
     Trusted by Customers
   </h2>
@@ -84,11 +69,11 @@ const trackRef = useRef(null);
   </p>
 </div>
 
-        </div>
+        
 
         <div
           ref={trackRef}
-          className="testimonials-track flex gap-4 overflow-x-auto pb-4"
+          className="testimonials-track flex gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onTouchStart={() => setIsPaused(true)}
@@ -299,28 +284,17 @@ const touchStartY = useRef(null);
     );
   }
 
-  /*
-   * Backend response:
-   *
-   * {
-   *   success: true,
-   *   message: "...",
-   *   data: { ... }
-   * }
-   */
   const homepage = normalizeHomepage(
     response?.data?.data
   );
 
   const {
     heroBanners,
-    categories,
     featuredProducts,
     bestSellers,
     newArrivals,
     trendingProducts,
     deals,
-    popularBrands,
     stats,
   } = homepage;
 
@@ -396,35 +370,30 @@ const handleHeroTouchEnd = (event) => {
       ====================================================== */}
       {currentBanner && (
 <section
-  className="relative min-h-[440px] sm:min-h-[520px] md:min-h-[680px] overflow-hidden bg-[#0E1A3D] touch-pan-y"
+  className="relative min-h-[400px] sm:min-h-[520px] md:min-h-[680px] overflow-hidden bg-[#0E1A3D] touch-pan-y"
   onTouchStart={handleHeroTouchStart}
   onTouchEnd={handleHeroTouchEnd}
 >      {currentBanner.image && (
-            <img
-                src={
-    !heroImageFailed && currentBanner?.image
+           <img
+  src={
+    !heroImageFailed && currentBanner.image
       ? resolveImageUrl(currentBanner.image)
       : HERO_FALLBACK_IMAGES[
           activeBanner % HERO_FALLBACK_IMAGES.length
         ]
   }
-              alt={currentBanner?.title || "Kreedum Sports fitness equipment"}
+  alt={currentBanner.title || "Kreedum Sports fitness equipment"}
   className="absolute inset-0 h-full w-full object-cover"
   onError={() => {
-    if (!heroImageFailed) {
-      setHeroImageFailed(true);
-    }
+    if (!heroImageFailed) setHeroImageFailed(true);
   }}
-            />
+/>
           )}
 
           <div className="absolute inset-0 bg-gradient-to-r from-[#0E1A3D]/95 via-[#0E1A3D]/70 to-[#0E1A3D]/20" />
 
 <div className="relative mx-auto max-w-7xl px-5 pt-36 pb-20 sm:px-6 sm:pt-36 sm:pb-24 md:pt-44 md:pb-32">
      <div className="max-w-3xl">
-              {/* <Badge type="new">
-                KREEDUM SPORTS
-              </Badge> */}
 
               <h1
                 className="mt-6 text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.05]"
@@ -510,65 +479,6 @@ className="hidden md:flex absolute right-5 md:right-8 bottom-20 md:bottom-auto m
 <TestimonialsSection />
 <ClientsSection />
 
- 
-
-      {/* =====================================================
-          CATEGORIES
-      ====================================================== */}
-      {/* {categories.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-16">
-          <SectionTitle
-            title="Shop by Category"
-            subtitle="Find the equipment and sports products you need."
-          />
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {categories.map((category) => (
-              <Link
-                key={category.id || category.slug}
-                to={`/categories/${category.slug}`}
-                className="group bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-              >
-                <div className="aspect-square bg-[#EEF1F8] overflow-hidden">
-                  {category.image ? (
-                    <img
-                      src={resolveImageUrl(
-                        category.image
-                      )}
-                      alt={category.name}
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span
-                        className="text-5xl font-bold"
-                        style={{ color: COLORS.blue }}
-                      >
-                        {category.name?.charAt(0)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4">
-                  <h3
-                    className="font-semibold"
-                    style={{ color: COLORS.navy }}
-                  >
-                    {category.name}
-                  </h3>
-
-                  <p className="text-sm text-gray-500 mt-1">
-                    {category.productCount} products
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )} */}
-
       {/* =====================================================
           FEATURED PRODUCTS
       ====================================================== */}
@@ -618,42 +528,6 @@ className="hidden md:flex absolute right-5 md:right-8 bottom-20 md:bottom-auto m
         />
       )}
 
-      {/* =====================================================
-          BRANDS
-      ====================================================== */}
-      {/* {popularBrands.length > 0 && (
-        <section className="bg-white border-y border-gray-100">
-<div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-12">   
-           <SectionTitle
-              title="Popular Brands"
-              subtitle="Explore products from trusted sports brands."
-            />
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-              {popularBrands.map((brand) => (
-                <Link
-                  key={brand.id || brand.slug}
-                  to={`/brands/${brand.slug}`}
-                  className="min-h-[96px] rounded-xl border border-gray-100 bg-white flex items-center justify-center p-4 text-center transition-all hover:-translate-y-1 hover:shadow-md"
-                >
-                  {brand.logo ? (
-                    <img
-                      src={resolveImageUrl(brand.logo)}
-                      alt={brand.name}
-                      loading="lazy"
-                      className="max-h-12 max-w-full object-contain"
-                    />
-                  ) : (
-                    <span className="text-sm font-semibold">
-                      {brand.name}
-                    </span>
-                  )}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )} */}
 
       {/* =====================================================
           STATS
