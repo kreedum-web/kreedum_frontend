@@ -166,7 +166,8 @@ useEffect(() => {
       {/* Mobile header: exactly one controls row and one persistent search */}
       <div className="md:hidden">
         <div
-className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opacity] duration-200 ${            hideMobileTopRow && !open
+className={`relative z-[80] overflow-hidden bg-white transition-[max-height,opacity] duration-200 ${      
+        hideMobileTopRow 
               ? "max-h-0 opacity-0"
               : "max-h-20 opacity-100"
           }`}
@@ -260,9 +261,69 @@ onClick={() => {
         </div>
 
         {/* This row stays at the top when the controls row hides */}
-        <div className="bg-white px-4 py-2 shadow-sm">
-          <SearchBar />
-        </div>
+       
+{hideMobileTopRow ? (
+  /* Compact sticky row shown while scrolling */
+  <div className="relative z-[80] flex h-[58px] items-center gap-2 border-b border-gray-100 bg-white px-3 shadow-sm">
+    {/* Hamburger */}
+    <button
+      ref={mobileMenuButtonRef}
+      type="button"
+      onClick={() => {
+        setAccountOpen(false);
+        setOpen((current) => !current);
+      }}
+      aria-label={open ? "Close menu" : "Open menu"}
+      aria-expanded={open}
+      className="flex h-10 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
+    >
+      {open ? <X size={25} /> : <Menu size={25} />}
+    </button>
+
+    {/* Search */}
+    <div className="min-w-0 flex-1">
+      <SearchBar className="[&>form]:gap-2 [&>form]:px-3 [&>form]:py-2" />
+    </div>
+
+    {/* Wishlist */}
+    <Link
+      to="/wishlist"
+      aria-label={`Wishlist${wishlistCount > 0 ? `, ${wishlistCount} items` : ""}`}
+      className="flex h-10 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
+    >
+      <span className="relative inline-flex">
+        <Heart size={23} />
+        {wishlistCount > 0 && (
+          <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#2C62E0] px-1 text-[10px] font-bold text-white">
+            {wishlistCount > 99 ? "99+" : wishlistCount}
+          </span>
+        )}
+      </span>
+    </Link>
+
+    {/* Cart */}
+    <Link
+      to="/cart"
+      aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ""}`}
+      className="flex h-10 w-8 shrink-0 items-center justify-center text-[#0E1A3D]"
+    >
+      <span className="relative inline-flex">
+        <ShoppingCart size={23} />
+        {cartCount > 0 && (
+          <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#2C62E0] px-1 text-[10px] font-bold text-white">
+            {cartCount > 99 ? "99+" : cartCount}
+          </span>
+        )}
+      </span>
+    </Link>
+  </div>
+) : (
+  /* Normal search row at the top */
+  <div className="bg-white px-4 py-2 shadow-sm">
+    <SearchBar />
+  </div>
+)}
+
 
         {/* The same open state controls both the X and this menu */}
        
