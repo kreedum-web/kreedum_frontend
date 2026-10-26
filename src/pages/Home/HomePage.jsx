@@ -18,6 +18,7 @@ import { COLORS } from "@/config/theme";
 
 import ProductCard from "@/components/product/ProductCard";
 import homepageTestimonials from "@/data/homepageTestimonials";
+import homepageClients from "@/data/homepageClients";
 
 
 const HERO_FALLBACK_IMAGES = [
@@ -121,6 +122,94 @@ const trackRef = useRef(null);
               </article>
             )
           )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+
+function ClientsSection() {
+  const trackRef = useRef(null);
+  const animationRef = useRef(null);
+  const lastTimeRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    let frameId;
+    const speed = 32; // pixels per second
+
+    const animate = (time) => {
+      if (lastTimeRef.current !== null && !isPaused) {
+        const delta = time - lastTimeRef.current;
+        track.scrollLeft += (speed * delta) / 1000;
+
+        // The list is duplicated for a seamless loop.
+        if (track.scrollLeft >= track.scrollWidth / 2) {
+          track.scrollLeft -= track.scrollWidth / 2;
+        }
+      }
+
+      lastTimeRef.current = time;
+      frameId = requestAnimationFrame(animate);
+      animationRef.current = frameId;
+    };
+
+    frameId = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      lastTimeRef.current = null;
+    };
+  }, [isPaused]);
+
+  const clients = [...homepageClients, ...homepageClients];
+
+  return (
+    <section className="overflow-hidden border-y border-gray-100 bg-white py-10 md:py-14">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-7 text-center md:mb-9">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#2C62E0]">
+            Our Trusted Partners
+          </p>
+
+          <h2 className="text-2xl font-bold text-[#0E1A3D] sm:text-3xl">
+            Trusted By Our Clients
+          </h2>
+
+          <p className="mt-2 text-sm text-gray-500">
+            Supporting institutions and organizations with quality sports infrastructure.
+          </p>
+        </div>
+
+        <div
+          ref={trackRef}
+          className="clients-track flex items-center gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-6"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
+          onWheel={() => setIsPaused(true)}
+          aria-label="Our clients"
+        >
+          {clients.map((client, index) => (
+            <div
+              key={`${client.name}-${index}`}
+              className="flex h-24 w-36 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-[#F8FAFD] px-4 py-3 transition duration-300 hover:-translate-y-1 hover:border-[#DCE6FF] hover:bg-white hover:shadow-md sm:h-28 sm:w-44"
+            >
+              <img
+                src={client.image}
+                alt={index < homepageClients.length ? client.name : ""}
+                aria-hidden={index >= homepageClients.length}
+                loading="lazy"
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -409,6 +498,7 @@ className="hidden md:flex absolute right-5 md:right-8 bottom-20 md:bottom-auto m
 
 
 <TestimonialsSection />
+<ClientsSection />
 
  
 
