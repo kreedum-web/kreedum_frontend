@@ -643,7 +643,7 @@ className="flex shrink-0 items-center gap-1 text-xs font-semibold sm:text-sm"
           {products.slice(0, 8).map((product) => (
             <div
               key={product.id || product.slug}
-              className="w-[68vw] max-w-[250px] shrink-0 snap-start sm:w-[240px] md:w-[250px]"
+  className="w-[calc((100vw-44px)/2)] min-w-0 shrink-0 snap-start sm:w-[240px] md:w-[250px]"
             >
               <ProductCard product={product} />
             </div>
