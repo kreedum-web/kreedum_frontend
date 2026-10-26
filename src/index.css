@@ -2,6 +2,18 @@
 
 @import "tailwindcss";
 
+@media (hover: hover) and (pointer: fine) {
+  .product-image-zoom {
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-image-zoom {
+    transition: none !important;
+  }
+}
+
 
 .testimonials-track {
   scrollbar-width: none;
@@ -25,5 +37,6 @@ body {
   font-family: "Manrope", sans-serif;
   background: #F6F8FC;
 }
+
 
 

@@ -7,15 +7,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   ArrowLeft,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Minus,
   Plus,
   ShoppingCart,
   Heart,
   Share2
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { productService } from "@/api";
@@ -30,6 +28,61 @@ export default function ProductDetailPage() {
 
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+
+const [isImageZoomed, setIsImageZoomed] = useState(false);
+const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
+
+const touchStartRef = useRef(null);
+
+function handleImageMouseMove(event) {
+  // Hover zoom is for desktop and other pointer devices.
+  if (event.pointerType === "touch") return;
+
+  const rect = event.currentTarget.getBoundingClientRect();
+
+  const x = ((event.clientX - rect.left) / rect.width) * 100;
+  const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+  setZoomOrigin(`${x}% ${y}%`);
+  setIsImageZoomed(true);
+}
+
+function handleImageMouseLeave() {
+  setIsImageZoomed(false);
+  setZoomOrigin("50% 50%");
+}
+
+function handleGalleryTouchStart(event) {
+  const touch = event.touches[0];
+
+  touchStartRef.current = {
+    x: touch.clientX,
+    y: touch.clientY,
+  };
+}
+
+function handleGalleryTouchEnd(event) {
+  if (!touchStartRef.current || images.length < 2) return;
+
+  const touch = event.changedTouches[0];
+  const deltaX = touch.clientX - touchStartRef.current.x;
+  const deltaY = touch.clientY - touchStartRef.current.y;
+
+  touchStartRef.current = null;
+
+  // Only change photos for a clear horizontal swipe.
+  // Normal vertical page scrolling remains unaffected.
+  if (Math.abs(deltaX) < 45 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) {
+    return;
+  }
+
+  setActiveImage((current) =>
+    deltaX < 0
+      ? (current + 1) % images.length
+      : (current - 1 + images.length) % images.length
+  );
+}
+
   const [addingToCart, setAddingToCart] = useState(false);
 const [cartSuccess, setCartSuccess] = useState(false);
 const [cartError, setCartError] = useState("");
@@ -285,93 +338,88 @@ function handleWishlist() {
       <section className="max-w-7xl mx-auto px-6 py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* IMAGE GALLERY */}
-          <div>
-            <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden">
-              <div className="aspect-square flex items-center justify-center p-8 md:p-12 relative">
-                {images.length > 0 ? (
-                  <img
-                    src={images[activeImage]}
-                    alt={product.name}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <div
-                    className="text-7xl font-bold"
-                    style={{ color: COLORS.blue }}
-                  >
-                    K
-                  </div>
-                )}
+          
+{/* IMAGE GALLERY */}
+<div>
+  <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white">
+    <div
+      className="group relative aspect-square overflow-hidden p-6 md:p-10"
+      onMouseMove={handleImageMouseMove}
+      onMouseLeave={handleImageMouseLeave}
+      onTouchStart={handleGalleryTouchStart}
+      onTouchEnd={handleGalleryTouchEnd}
+    >
+      {images.length > 0 ? (
+        <img
+  src={images[activeImage]}
+  alt={product.name}
+  draggable={false}
+  onClick={() => setIsImageZoomed((prev) => !prev)}
+  className={`product-image-zoom h-full w-full select-none object-contain ${
+    isImageZoomed
+      ? "scale-150 cursor-zoom-out"
+      : "scale-100 cursor-zoom-in"
+  } transition-transform duration-200 ease-out`}
+/>
+      ) : (
+        <div
+          className="flex h-full items-center justify-center text-7xl font-bold"
+          style={{ color: COLORS.blue }}
+        >
+          K
+        </div>
+      )}
 
-                {images.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveImage((current) =>
-                          current === 0
-                            ? images.length - 1
-                            : current - 1
-                        )
-                      }
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center hover:bg-[#EAF0FF] transition-colors"
-                      aria-label="Previous image"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
+      {/* Mobile swipe hint */}
+      {images.length > 1 && (
+        <div className="pointer-events-none absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 md:hidden">
+          {images.map((image, index) => (
+            <span
+              key={`${image}-${index}`}
+              className={`h-1.5 rounded-full transition-all ${
+                activeImage === index
+                  ? "w-5 bg-[#2C62E0]"
+                  : "w-1.5 bg-gray-300"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveImage((current) =>
-                          current === images.length - 1
-                            ? 0
-                            : current + 1
-                        )
-                      }
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center hover:bg-[#EAF0FF] transition-colors"
-                      aria-label="Next image"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+  {/* Clickable thumbnails */}
+  {images.length > 1 && (
+    <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+      {images.map((image, index) => (
+        <button
+          key={`${image}-${index}`}
+          type="button"
+          onClick={() => {
+            setActiveImage(index);
+            setIsImageZoomed(false);
+          }}
+          aria-label={`View product image ${index + 1}`}
+          aria-pressed={activeImage === index}
+          className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border bg-white transition-all ${
+            activeImage === index
+              ? "border-[#2C62E0] ring-2 ring-[#2C62E0]/20"
+              : "border-gray-200"
+          }`}
+        >
+          <img
+            src={image}
+            alt={`${product.name} image ${index + 1}`}
+            loading="lazy"
+            draggable={false}
+            className="h-full w-full object-contain p-2"
+          />
+        </button>
+      ))}
+    </div>
+  )}
+</div>
 
-            {images.length > 1 && (
-              <div className="flex gap-3 mt-4 overflow-x-auto">
-                {images.map((image, index) => (
-                  <button
-                    key={`${image}-${index}`}
-                    type="button"
-                    onClick={() => setActiveImage(index)}
-                    className={`
-                      w-20
-                      h-20
-                      flex-shrink-0
-                      rounded-xl
-                      overflow-hidden
-                      bg-white
-                      border
-                      transition-all
-                      ${
-                        activeImage === index
-                          ? "border-[#2C62E0] ring-2 ring-[#2C62E0]/20"
-                          : "border-gray-200"
-                      }
-                    `}
-                  >
-                    <img
-                      src={image}
-                      alt={`${product.name} ${index + 1}`}
-                      className="w-full h-full object-contain p-2"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* PRODUCT INFO */}
           <div className="flex flex-col">
