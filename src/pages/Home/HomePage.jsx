@@ -64,16 +64,26 @@ const trackRef = useRef(null);
   }, [isPaused]);
 
   return (
-    <section className="relative overflow-hidden bg-[#F6F8FC] py-8 md:py-14">
+    <section className="relative overflow-hidden bg-[#F6F8FC] py-10 md:py-14">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-8 text-center md:mb-12">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#2C62E0]">
-            Customer Stories
-          </p>
+          
 
-          <h2 className="text-2xl font-bold text-[#0E1A3D] sm:text-3xl md:text-4xl">
-            What Our Customers Say
-          </h2>
+          
+<div className="mb-7 text-center md:mb-9">
+  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#2C62E0]">
+    What Our Customers Say
+  </p>
+
+  <h2 className="text-2xl font-bold text-[#0E1A3D] sm:text-3xl">
+    Trusted by Customers
+  </h2>
+
+  <p className="mt-2 text-sm text-gray-500">
+    Real experiences from people who choose Kreedum for sports and fitness.
+  </p>
+</div>
+
         </div>
 
         <div
