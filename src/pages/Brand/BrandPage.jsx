@@ -117,12 +117,42 @@ export default function BrandPage() {
       ====================================================== */}
 
       {departments.length > 0 && (
-        <section className="mx-auto max-w-6xl px-6 pt-7">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: COLORS.blue }}>
+        <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6 md:pt-7">
+          <p className="mb-2 text-[11px] font-medium uppercase tracking-widest" style={{ color: COLORS.blue }}>
             Shop {brand.name} by Category
           </p>
 
-          <div className="flex flex-wrap gap-2">
+          {/* Mobile: compact dropdowns */}
+          <div className="grid grid-cols-1 gap-2 md:hidden">
+            <SortDropdown
+              fullWidth
+              align="left"
+              label="Departments"
+              value={department}
+              options={[
+                { label: `All ${brand.name} (${brand.stats?.totalProducts ?? 0})`, value: "" },
+                ...departments.map((d) => ({ label: `${d.name} (${d.productCount})`, value: d.slug })),
+              ]}
+              onChange={(value) => update({ department: value, category: "" })}
+            />
+
+            {selectedDepartment && selectedDepartment.children.length > 1 && (
+              <SortDropdown
+                fullWidth
+                align="left"
+                label="Categories"
+                value={category}
+                options={[
+                  { label: `All ${selectedDepartment.name}`, value: "" },
+                  ...selectedDepartment.children.map((c) => ({ label: `${c.name} (${c.productCount})`, value: c.slug })),
+                ]}
+                onChange={(value) => update({ category: value })}
+              />
+            )}
+          </div>
+
+          {/* Desktop: buttons */}
+          <div className="hidden flex-wrap gap-2 md:flex">
             <Chip active={!department} onClick={() => update({ department: "", category: "" })}>
               All
               <Count>{brand.stats?.totalProducts}</Count>
@@ -141,7 +171,7 @@ export default function BrandPage() {
           </div>
 
           {selectedDepartment && selectedDepartment.children.length > 1 && (
-            <div className="mt-3 flex flex-wrap gap-2 border-t border-gray-200 pt-3">
+            <div className="mt-3 hidden flex-wrap gap-2 border-t border-gray-200 pt-3 md:flex">
               <Chip small active={!category} onClick={() => update({ category: "" })}>
                 All {selectedDepartment.name}
               </Chip>
@@ -165,17 +195,17 @@ export default function BrandPage() {
           TOOLBAR
       ====================================================== */}
 
-      <section className="mx-auto max-w-6xl px-6 pt-7">
+      <section className="mx-auto max-w-6xl px-4 pt-3 sm:px-6 md:pt-6">
         <div className="flex items-center justify-between gap-4">
-          <span className="text-sm text-gray-500">
+          <span className="text-[13px] text-gray-500">
             {pagination.totalPages > 0 && (
               <>
                 Page{" "}
-                <span className="font-semibold" style={{ color: COLORS.navy }}>
+                <span className="font-medium" style={{ color: COLORS.navy }}>
                   {pagination.page}
                 </span>{" "}
                 of{" "}
-                <span className="font-semibold" style={{ color: COLORS.navy }}>
+                <span className="font-medium" style={{ color: COLORS.navy }}>
                   {pagination.totalPages}
                 </span>
               </>
@@ -183,7 +213,7 @@ export default function BrandPage() {
           </span>
 
           <div className="flex items-center gap-2">
-            <span className="whitespace-nowrap text-sm text-gray-500">Sort By</span>
+            <span className="hidden whitespace-nowrap text-[13px] text-gray-500 md:inline">Sort By</span>
             <SortDropdown value={sort} options={SORT_OPTIONS} onChange={(value) => update({ sort: value })} />
           </div>
         </div>
@@ -193,7 +223,7 @@ export default function BrandPage() {
           PRODUCTS
       ====================================================== */}
 
-      <section className="mx-auto max-w-6xl px-6 py-7 pb-10">
+      <section className="mx-auto max-w-6xl px-4 py-5 pb-10 sm:px-6 md:py-7">
         {productsQuery.isLoading ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -240,8 +270,8 @@ function Chip({ active, small = false, onClick, children }) {
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-2xl border font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm ${
-        small ? "px-3 py-2 text-[13px]" : "px-4 py-2.5 text-sm"
+      className={`rounded-xl border font-medium transition-colors hover:border-[#2C62E0] ${
+        small ? "px-2.5 py-1 text-[12px]" : "px-3 py-1.5 text-[13px]"
       }`}
       style={{
         color: active ? COLORS.white : COLORS.navy,
@@ -255,5 +285,5 @@ function Chip({ active, small = false, onClick, children }) {
 }
 
 function Count({ children }) {
-  return <span className="ml-1.5 text-xs font-medium opacity-60">{children}</span>;
+  return <span className="ml-1 text-[11px] opacity-60">{children}</span>;
 }

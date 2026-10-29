@@ -138,7 +138,7 @@ function RailItem({ label, image, icon, active, onSelect }) {
 
       <span
         className="mt-1.5 text-center text-[12px] leading-tight"
-        style={{ color: active ? COLORS.blue : COLORS.slate, fontWeight: active ? 700 : 500 }}
+        style={{ color: active ? COLORS.blue : COLORS.slate, fontWeight: active ? 600 : 500 }}
       >
         {label}
       </span>

@@ -17,14 +17,13 @@ export default function InnerPageHeader({
         <div className="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-[#1F49B8] opacity-30 blur-3xl" />
       </div>
 
-      {/* <div className="relative max-w-6xl mx-auto px-6 pt-24 pb-9"> */}
-        
-<div className="relative max-w-6xl mx-auto px-6 pt-48 pb-9 md:pt-28 md:pb-10">
+      {/* Top padding clears the fixed navbar (158px mobile, 114px desktop). */}
+      <div className="relative mx-auto max-w-6xl px-4 pb-4 pt-[170px] sm:px-6 md:pb-6 md:pt-[124px]">
         {/* Breadcrumb */}
         {breadcrumbs.length > 0 && (
           <nav
             aria-label="Breadcrumb"
-            className="mb-3 flex flex-wrap items-center gap-2 text-xs text-blue-100"
+            className="mb-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-blue-100 md:text-xs"
           >
             {breadcrumbs.map((item, index) => (
               <span
@@ -52,18 +51,18 @@ export default function InnerPageHeader({
           </nav>
         )}
 
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between md:gap-4">
 
           {/* Heading */}
           <div className="min-w-0">
 
 
-            <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white leading-tight">
+            <h1 className="text-xl font-bold leading-tight tracking-tight text-white md:text-3xl">
               {title}
             </h1>
 
             {description && (
-              <p className="mt-2 max-w-2xl text-blue-100 text-sm md:text-base">
+              <p className="mt-0.5 max-w-2xl text-xs text-blue-100 md:text-sm">
                 {description}
               </p>
             )}
@@ -72,7 +71,7 @@ export default function InnerPageHeader({
 
           {/* Optional right-side content */}
           {rightContent && (
-            <div className="shrink-0 text-sm text-blue-100">
+            <div className="shrink-0 text-xs text-blue-100 md:text-sm">
               {rightContent}
             </div>
           )}

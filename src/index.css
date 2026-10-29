@@ -1,6 +1,31 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+/* Variable weight range, so in-between weights (550, 650) render exactly. */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&display=swap");
 
 @import "tailwindcss";
+
+/*
+ * Site-wide type scale: one step smaller and lighter than Tailwind's defaults.
+ * Every text-* and font-* class on the site follows these values, so the whole
+ * site can be tuned here. Line heights stay proportional.
+ */
+@theme {
+  --text-xs: 0.71875rem;   /* 11.5px  (default 12px) */
+  --text-sm: 0.8125rem;    /* 13px    (default 14px) */
+  --text-base: 0.9375rem;  /* 15px    (default 16px) */
+  --text-lg: 1.0625rem;    /* 17px    (default 18px) */
+  --text-xl: 1.1875rem;    /* 19px    (default 20px) */
+  --text-2xl: 1.375rem;    /* 22px    (default 24px) */
+  --text-3xl: 1.625rem;    /* 26px    (default 30px) */
+  --text-4xl: 2rem;        /* 32px    (default 36px) */
+  --text-5xl: 2.5rem;      /* 40px    (default 48px) */
+  --text-6xl: 3.25rem;     /* 52px    (default 60px) */
+  --text-7xl: 4rem;        /* 64px    (default 72px) */
+
+  --font-weight-semibold: 550;  /* default 600 */
+  --font-weight-bold: 600;      /* default 700 */
+  --font-weight-extrabold: 700; /* default 800 */
+  --font-weight-black: 750;     /* default 900 */
+}
 
 @media (hover: hover) and (pointer: fine) {
   .product-image-zoom {

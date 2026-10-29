@@ -3,10 +3,19 @@ import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { COLORS } from "@/config/theme";
 
+/**
+ * Compact dropdown used for sorting and filters.
+ *   align="left"  opens the list from the left edge (for full-width filters)
+ *   fullWidth     button stretches to its container at every screen size
+ *   label         accessible name of the list
+ */
 export default function SortDropdown({
   value,
   options,
   onChange,
+  align = "right",
+  fullWidth = false,
+  label = "Sort options",
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -41,11 +50,11 @@ export default function SortDropdown({
         onClick={() => setIsOpen((current) => !current)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className="flex w-full min-w-0 items-center justify-between gap-3
-          rounded-xl border border-[#E5E9F2] bg-white px-3 py-2.5
-          text-sm font-medium shadow-sm transition-colors
+        className={`flex w-full min-w-0 items-center justify-between gap-3
+          rounded-xl border border-[#E5E9F2] bg-white px-3 py-2
+          text-[13px] font-normal shadow-sm transition-colors
           hover:border-[#2C62E0] focus:outline-none
-          focus:ring-2 focus:ring-[#2C62E0]/20 sm:w-auto sm:min-w-[180px]"
+          focus:ring-2 focus:ring-[#2C62E0]/20 ${fullWidth ? "" : "sm:w-auto sm:min-w-[180px]"}`}
         style={{ color: COLORS.navy }}
       >
         <span className="truncate">{selectedOption?.label}</span>
@@ -60,11 +69,14 @@ export default function SortDropdown({
       {isOpen && (
         <div
           role="listbox"
-          aria-label="Sort options"
-          className="absolute right-0 top-full z-50 mt-2
-            w-[230px] max-w-[calc(100vw-32px)]
+          aria-label={label}
+          className={`absolute top-full z-50 mt-2
+            max-h-[60vh] overflow-y-auto
+            max-w-[calc(100vw-32px)]
             rounded-2xl border border-[#E5E9F2]
-            bg-white p-2 shadow-xl"
+            bg-white p-2 shadow-xl ${
+              align === "left" ? "left-0 w-full min-w-[220px]" : "right-0 w-[230px]"
+            }`}
         >
           {options.map((option) => {
             const selected = value === option.value;
@@ -80,10 +92,10 @@ export default function SortDropdown({
                   setIsOpen(false);
                 }}
                 className={`flex w-full items-center justify-between gap-3
-                  rounded-xl px-3 py-2.5 text-left text-sm
+                  rounded-xl px-3 py-2 text-left text-[13px]
                   transition-colors ${
                     selected
-                      ? "bg-[#EAF0FF] font-semibold text-[#2C62E0]"
+                      ? "bg-[#EAF0FF] font-medium text-[#2C62E0]"
                       : "text-[#0E1A3D] hover:bg-[#F6F8FC]"
                   }`}
               >

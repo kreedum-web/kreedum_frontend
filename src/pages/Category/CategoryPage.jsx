@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { productService } from "@/api";
 import { normalizeProducts } from "@/adapters/product.adapter";
@@ -21,6 +21,7 @@ const LIMIT = 20;
 export default function CategoryPage() {
   const { slug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { bySlug, isLoading: treeLoading, isError: treeError } = useCategoryTree();
 
   const category = bySlug.get(slug);
@@ -101,6 +102,16 @@ export default function CategoryPage() {
   const subNav = category.children.length ? category.children : parent?.children || [];
   const showingSiblings = !category.children.length && subNav.length > 1;
 
+  const categoryOptions = showingSiblings
+    ? [
+        { label: `All ${parent.name} (${parent.productCount})`, value: parent.slug },
+        ...subNav.map((item) => ({ label: `${item.name} (${item.productCount})`, value: item.slug })),
+      ]
+    : [
+        { label: `All ${category.name} (${category.productCount})`, value: category.slug },
+        ...subNav.map((item) => ({ label: `${item.name} (${item.productCount})`, value: item.slug })),
+      ];
+
   const breadcrumbs = [
     { label: "Home", to: "/" },
     { label: "Categories", to: "/categories" },
@@ -129,16 +140,29 @@ export default function CategoryPage() {
       ====================================================== */}
 
       {(category.children.length > 0 || showingSiblings) && (
-        <section className="mx-auto max-w-6xl px-6 pt-7">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: COLORS.blue }}>
+        <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6 md:pt-7">
+          <p className="mb-2 text-[11px] font-medium uppercase tracking-widest" style={{ color: COLORS.blue }}>
             {showingSiblings ? `More in ${parent.name}` : "Shop by Category"}
           </p>
 
-          <div className="flex flex-wrap gap-2">
+          {/* Mobile: one compact dropdown */}
+          <div className="md:hidden">
+            <SortDropdown
+              fullWidth
+              align="left"
+              label="Categories"
+              value={category.slug}
+              options={categoryOptions}
+              onChange={(slugValue) => slugValue !== category.slug && navigate(categoryUrl(slugValue))}
+            />
+          </div>
+
+          {/* Desktop: buttons */}
+          <div className="hidden flex-wrap gap-2 md:flex">
             {showingSiblings && (
               <Link
                 to={categoryUrl(parent.slug)}
-                className="rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-[13px] font-medium transition-colors hover:border-[#2C62E0] hover:text-[#2C62E0]"
                 style={{ color: COLORS.navy }}
               >
                 All {parent.name}
@@ -153,7 +177,7 @@ export default function CategoryPage() {
                   key={item.slug}
                   to={categoryUrl(item.slug)}
                   aria-current={current ? "page" : undefined}
-                  className="rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm"
+                  className="rounded-xl border px-3 py-1.5 text-[13px] font-medium transition-colors hover:border-[#2C62E0]"
                   style={{
                     color: current ? COLORS.white : COLORS.navy,
                     backgroundColor: current ? COLORS.blue : COLORS.white,
@@ -161,7 +185,7 @@ export default function CategoryPage() {
                   }}
                 >
                   {item.name}
-                  <span className="ml-1.5 text-xs font-medium opacity-60">{item.productCount}</span>
+                  <span className="ml-1 text-[11px] opacity-60">{item.productCount}</span>
                 </Link>
               );
             })}
@@ -173,41 +197,40 @@ export default function CategoryPage() {
           TOOLBAR
       ====================================================== */}
 
-      <section className="mx-auto max-w-6xl px-6 pt-7">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <label className="flex items-center gap-2">
-            <span className="whitespace-nowrap text-sm text-gray-500">Brand</span>
-            <select
-              value={brand}
-              onChange={(event) => setParam("brand", event.target.value)}
-              className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-[#2C62E0]"
-              style={{ color: COLORS.navy }}
-            >
-              {brandOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+      <section className="mx-auto max-w-6xl px-4 pt-3 sm:px-6 md:pt-6">
+        <div className="grid grid-cols-2 gap-2 md:flex md:items-center md:justify-between md:gap-4">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="hidden whitespace-nowrap text-[13px] text-gray-500 md:inline">Brand</span>
+            <div className="min-w-0 flex-1 md:flex-none">
+              <SortDropdown
+                align="left"
+                label="Brands"
+                value={brand}
+                options={brandOptions}
+                onChange={(value) => setParam("brand", value)}
+              />
+            </div>
+          </div>
 
-          <div className="flex w-full items-center justify-between gap-4 sm:w-auto">
+          <div className="flex min-w-0 items-center justify-end gap-4">
             {pagination.totalPages > 0 && (
-              <span className="text-sm text-gray-500">
+              <span className="hidden text-[13px] text-gray-500 md:inline">
                 Page{" "}
-                <span className="font-semibold" style={{ color: COLORS.navy }}>
+                <span className="font-medium" style={{ color: COLORS.navy }}>
                   {pagination.page}
                 </span>{" "}
                 of{" "}
-                <span className="font-semibold" style={{ color: COLORS.navy }}>
+                <span className="font-medium" style={{ color: COLORS.navy }}>
                   {pagination.totalPages}
                 </span>
               </span>
             )}
 
-            <div className="flex items-center gap-2">
-              <span className="whitespace-nowrap text-sm text-gray-500">Sort By</span>
-              <SortDropdown value={sort} options={SORT_OPTIONS} onChange={(value) => setParam("sort", value)} />
+            <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none">
+              <span className="hidden whitespace-nowrap text-[13px] text-gray-500 md:inline">Sort By</span>
+              <div className="min-w-0 flex-1 md:flex-none">
+                <SortDropdown value={sort} options={SORT_OPTIONS} onChange={(value) => setParam("sort", value)} />
+              </div>
             </div>
           </div>
         </div>
@@ -217,7 +240,7 @@ export default function CategoryPage() {
           PRODUCTS
       ====================================================== */}
 
-      <section className="mx-auto max-w-6xl px-6 py-7 pb-10">
+      <section className="mx-auto max-w-6xl px-4 py-5 pb-10 sm:px-6 md:py-7">
         {productsQuery.isLoading ? (
           <ProductGridSkeleton />
         ) : productsQuery.isError ? (
