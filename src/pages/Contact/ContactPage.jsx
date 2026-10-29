@@ -1,3 +1,4 @@
+import { useState } from "react";
 
 import { Link } from "react-router-dom";
 import {
@@ -8,6 +9,7 @@ import {
   Phone,
 } from "lucide-react";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
+import Dropdown from "@/components/common/Dropdown";
 
 const stores = [
   {
@@ -78,7 +80,18 @@ function StoreCard({ store }) {
   );
 }
 
+const ENQUIRY_TYPES = [
+  "Sports equipment",
+  "Fitness and gym equipment",
+  "Institutional or bulk order",
+  "Sports infrastructure",
+  "Order support",
+  "General enquiry",
+];
+
 export default function ContactPage() {
+  const [enquiryType, setEnquiryType] = useState(ENQUIRY_TYPES[0]);
+
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -259,18 +272,15 @@ export default function ContactPage() {
                 <label htmlFor="contact-category" className="mb-2 block text-sm font-semibold text-[#0E1A3D]">
                   Enquiry type
                 </label>
-                <select
+                <Dropdown
                   id="contact-category"
                   name="category"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#2C62E0] focus:ring-4 focus:ring-blue-100"
-                >
-                  <option>Sports equipment</option>
-                  <option>Fitness and gym equipment</option>
-                  <option>Institutional or bulk order</option>
-                  <option>Sports infrastructure</option>
-                  <option>Order support</option>
-                  <option>General enquiry</option>
-                </select>
+                  variant="field"
+                  label="Enquiry type"
+                  value={enquiryType}
+                  options={ENQUIRY_TYPES.map((type) => ({ label: type, value: type }))}
+                  onChange={setEnquiryType}
+                />
               </div>
 
               <div>

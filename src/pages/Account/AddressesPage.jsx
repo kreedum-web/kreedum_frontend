@@ -24,7 +24,9 @@ import {
 import { addressService } from "@/api";
 import { COLORS } from "@/config/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { ADDRESS_TYPE_OPTIONS } from "@/constants/addressTypes";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
+import Dropdown from "@/components/common/Dropdown";
 
 const INITIAL_ADDRESS = {
   label: "Home",
@@ -485,17 +487,14 @@ export default function AddressesPage() {
 
               <div className="grid gap-x-5 gap-y-4 sm:grid-cols-2">
                 <Field label="Address type" required>
-                  <select
-                    name="label"
+                  <Dropdown
+                    variant="field"
+                    className="mt-1"
+                    label="Address type"
                     value={addressForm.label}
-                    onChange={updateField}
-                    className={inputClass}
-                  >
-                    <option value="Home">Home</option>
-                    <option value="Office">Office</option>
-                    <option value="Hostel">Hostel</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    options={ADDRESS_TYPE_OPTIONS}
+                    onChange={(value) => updateField({ target: { name: "label", value } })}
+                  />
                 </Field>
 
                 <Field label="Full name" required>

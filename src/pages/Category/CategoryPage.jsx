@@ -9,7 +9,7 @@ import { CATEGORY_FIELD_BY_LEVEL, categoryUrl, useCategoryTree } from "@/hooks/u
 import { useBrands } from "@/hooks/useBrands";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import ProductCard from "@/components/product/ProductCard";
-import SortDropdown from "@/components/common/SortDropdown";
+import Dropdown from "@/components/common/Dropdown";
 import Pagination from "@/components/common/Pagination";
 
 const LIMIT = 20;
@@ -147,7 +147,7 @@ export default function CategoryPage() {
 
           {/* Mobile: one compact dropdown */}
           <div className="md:hidden">
-            <SortDropdown
+            <Dropdown
               fullWidth
               align="left"
               label="Categories"
@@ -202,7 +202,7 @@ export default function CategoryPage() {
           <div className="flex min-w-0 items-center gap-2">
             <span className="hidden whitespace-nowrap text-[13px] text-gray-500 md:inline">Brand</span>
             <div className="min-w-0 flex-1 md:flex-none">
-              <SortDropdown
+              <Dropdown
                 align="left"
                 label="Brands"
                 value={brand}
@@ -229,7 +229,7 @@ export default function CategoryPage() {
             <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none">
               <span className="hidden whitespace-nowrap text-[13px] text-gray-500 md:inline">Sort By</span>
               <div className="min-w-0 flex-1 md:flex-none">
-                <SortDropdown value={sort} options={SORT_OPTIONS} onChange={(value) => setParam("sort", value)} />
+                <Dropdown value={sort} options={SORT_OPTIONS} onChange={(value) => setParam("sort", value)} />
               </div>
             </div>
           </div>

@@ -1,24 +1,37 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { COLORS } from "@/config/theme";
 
 /**
- * Compact dropdown used for sorting and filters.
- *   align="left"  opens the list from the left edge (for full-width filters)
- *   fullWidth     button stretches to its container at every screen size
- *   label         accessible name of the list
+ * The site's one dropdown — used for sorting, filters and form fields.
+ *
+ *   options     [{ label, value }]
+ *   variant     "compact" (sort / filter bars) | "field" (forms: same height
+ *               and border as the text inputs next to it)
+ *   align       "right" | "left" — which edge the list opens from
+ *               ("field" always opens full width from the left)
+ *   fullWidth   compact button stretches to its container at every size
+ *   name        also renders a hidden input, so the value is sent with a
+ *               plain <form> / FormData just like a <select>
+ *   id          put on the button, so a <label htmlFor> points at it
+ *   label       accessible name of the list
+ *   className   extra classes for the wrapper (e.g. spacing)
  */
-export default function SortDropdown({
+export default function Dropdown({
   value,
   options,
   onChange,
+  variant = "compact",
   align = "right",
   fullWidth = false,
-  label = "Sort options",
+  name,
+  id,
+  label = "Options",
+  className = "",
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const isField = variant === "field";
 
   useEffect(() => {
     function handlePointerDown(event) {
@@ -43,18 +56,28 @@ export default function SortDropdown({
   const selectedOption =
     options.find((option) => option.value === value) || options[0];
 
+  const buttonSize = isField
+    ? "min-h-[46px] border-[#DDE4F2] px-3 py-3 text-sm focus:border-[#2C62E0] focus:ring-[#2C62E0]/10"
+    : `border-[#E5E9F2] px-3 py-2 text-[13px] shadow-sm focus:ring-[#2C62E0]/20 ${
+        fullWidth ? "" : "sm:w-auto sm:min-w-[180px]"
+      }`;
+
+  const listPosition =
+    isField || align === "left" ? "left-0 w-full min-w-[220px]" : "right-0 w-[230px]";
+
   return (
-    <div ref={menuRef} className="relative">
+    <div ref={menuRef} className={`relative ${isField ? "w-full" : ""} ${className}`}>
+      {name && <input type="hidden" name={name} value={selectedOption?.value ?? ""} />}
+
       <button
+        id={id}
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         className={`flex w-full min-w-0 items-center justify-between gap-3
-          rounded-xl border border-[#E5E9F2] bg-white px-3 py-2
-          text-[13px] font-normal shadow-sm transition-colors
-          hover:border-[#2C62E0] focus:outline-none
-          focus:ring-2 focus:ring-[#2C62E0]/20 ${fullWidth ? "" : "sm:w-auto sm:min-w-[180px]"}`}
+          rounded-xl border bg-white font-normal transition-colors
+          hover:border-[#2C62E0] focus:outline-none focus:ring-2 ${buttonSize}`}
         style={{ color: COLORS.navy }}
       >
         <span className="truncate">{selectedOption?.label}</span>
@@ -74,12 +97,10 @@ export default function SortDropdown({
             max-h-[60vh] overflow-y-auto
             max-w-[calc(100vw-32px)]
             rounded-2xl border border-[#E5E9F2]
-            bg-white p-2 shadow-xl ${
-              align === "left" ? "left-0 w-full min-w-[220px]" : "right-0 w-[230px]"
-            }`}
+            bg-white p-2 shadow-xl ${listPosition}`}
         >
           {options.map((option) => {
-            const selected = value === option.value;
+            const selected = selectedOption?.value === option.value;
 
             return (
               <button
@@ -92,7 +113,7 @@ export default function SortDropdown({
                   setIsOpen(false);
                 }}
                 className={`flex w-full items-center justify-between gap-3
-                  rounded-xl px-3 py-2 text-left text-[13px]
+                  rounded-xl px-3 py-2 text-left text-[13px] font-normal
                   transition-colors ${
                     selected
                       ? "bg-[#EAF0FF] font-medium text-[#2C62E0]"
@@ -100,9 +121,7 @@ export default function SortDropdown({
                   }`}
               >
                 <span>{option.label}</span>
-                {selected && (
-                  <Check size={16} className="shrink-0" />
-                )}
+                {selected && <Check size={16} className="shrink-0" />}
               </button>
             );
           })}

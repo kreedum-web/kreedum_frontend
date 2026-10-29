@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useState, useRef} from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-   ArrowLeft,
+  ArrowLeft,
   ArrowRight,
-  Check,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   LoaderCircle,
   MapPin,
@@ -24,7 +22,9 @@ import {
 } from "@/api";
 import { COLORS } from "@/config/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { ADDRESS_TYPE_OPTIONS } from "@/constants/addressTypes";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
+import Dropdown from "@/components/common/Dropdown";
 
 const INITIAL_ADDRESS = {
   label: "Home",
@@ -600,7 +600,11 @@ export default function CheckoutPage() {
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     
 <Field label="Address type" required>
-  <AddressTypeDropdown
+  <Dropdown
+    variant="field"
+    className="mt-1"
+    label="Address type"
+    options={ADDRESS_TYPE_OPTIONS}
     value={addressForm.label}
     onChange={(value) => {
       setAddressForm((current) => ({
@@ -943,109 +947,6 @@ export default function CheckoutPage() {
     </main>
   );
 }
-
-
-function AddressTypeDropdown({ value, onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef(null);
-
-  const options = [
-    { value: "Home", label: "Home" },
-    { value: "Office", label: "Office" },
-    { value: "Hostel", label: "Hostel" },
-    { value: "Other", label: "Other" },
-  ];
-
-  useEffect(() => {
-    function handlePointerDown(event) {
-      if (!menuRef.current?.contains(event.target)) {
-        setIsOpen(false);
-      }
-    }
-
-    function handleKeyDown(event) {
-      if (event.key === "Escape") setIsOpen(false);
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
-  const selectedOption =
-    options.find((option) => option.value === value) || options[0];
-
-  return (
-    <div ref={menuRef} className="relative w-full">
-      <button
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((current) => !current)}
-        className="flex min-h-[50px] w-full items-center justify-between
-          gap-3 rounded-xl border border-[#DDE4F2] bg-white px-4 py-3
-          text-sm font-semibold transition-colors
-          hover:border-[#2C62E0] focus:outline-none
-          focus:ring-2 focus:ring-[#2C62E0]/10"
-        style={{
-          fontFamily: '"Manrope", sans-serif',
-          color: COLORS.navy,
-        }}
-      >
-        <span>{selectedOption.label}</span>
-        <ChevronDown
-          size={18}
-          className={`shrink-0 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {isOpen && (
-        <div
-          role="listbox"
-          aria-label="Address type"
-          className="absolute left-0 top-full z-50 mt-2 w-full
-            rounded-2xl border border-[#E5E9F2] bg-white p-2 shadow-xl"
-        >
-          {options.map((option) => {
-            const selected = value === option.value;
-
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={selected}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                className={`flex w-full items-center justify-between
-                  gap-3 rounded-xl px-4 py-3 text-left text-sm
-                  transition-colors ${
-                    selected
-                      ? "bg-[#EAF0FF] font-semibold text-[#2C62E0]"
-                      : "text-[#0E1A3D] hover:bg-[#F6F8FC]"
-                  }`}
-              >
-                <span>{option.label}</span>
-                {selected && (
-                  <Check size={16} className="shrink-0" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
 
 
 const inputClass =

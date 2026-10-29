@@ -14,7 +14,7 @@ import { normalizeProducts } from "@/adapters/product.adapter";
 import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
-import SortDropdown from "@/components/common/SortDropdown";
+import Dropdown from "@/components/common/Dropdown";
 import Pagination from "@/components/common/Pagination";
 
 const LIMIT = 20;
@@ -176,7 +176,7 @@ const sort = SORT_OPTIONS.some(
         Sort By
       </span>
 
-      <SortDropdown
+      <Dropdown
         value={sort}
         options={SORT_OPTIONS}
         onChange={(value) => {

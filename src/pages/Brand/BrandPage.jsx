@@ -7,7 +7,7 @@ import { COLORS } from "@/config/theme";
 import { SORT_OPTIONS } from "@/constants/productFilters";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import ProductCard from "@/components/product/ProductCard";
-import SortDropdown from "@/components/common/SortDropdown";
+import Dropdown from "@/components/common/Dropdown";
 import Pagination from "@/components/common/Pagination";
 
 const LIMIT = 20;
@@ -124,7 +124,7 @@ export default function BrandPage() {
 
           {/* Mobile: compact dropdowns */}
           <div className="grid grid-cols-1 gap-2 md:hidden">
-            <SortDropdown
+            <Dropdown
               fullWidth
               align="left"
               label="Departments"
@@ -137,7 +137,7 @@ export default function BrandPage() {
             />
 
             {selectedDepartment && selectedDepartment.children.length > 1 && (
-              <SortDropdown
+              <Dropdown
                 fullWidth
                 align="left"
                 label="Categories"
@@ -214,7 +214,7 @@ export default function BrandPage() {
 
           <div className="flex items-center gap-2">
             <span className="hidden whitespace-nowrap text-[13px] text-gray-500 md:inline">Sort By</span>
-            <SortDropdown value={sort} options={SORT_OPTIONS} onChange={(value) => update({ sort: value })} />
+            <Dropdown value={sort} options={SORT_OPTIONS} onChange={(value) => update({ sort: value })} />
           </div>
         </div>
       </section>
