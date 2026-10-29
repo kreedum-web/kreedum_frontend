@@ -343,7 +343,7 @@ export default function CheckoutPage() {
         description="Your order has been placed successfully. Keep your order details for reference."
         breadcrumbs={[
           { label: "Home", to: "/" },
-          { label: "Shop", to: "/products" },
+          { label: "Categories", to: "/categories" },
           { label: "Order confirmed" },
         ]}
       />    
@@ -400,7 +400,7 @@ export default function CheckoutPage() {
           </div>
 
           <Link
-            to="/products"
+            to="/categories"
             className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold text-white"
             style={{ backgroundColor: COLORS.blue }}
           >
@@ -434,7 +434,7 @@ export default function CheckoutPage() {
         message="Add some products before continuing to checkout."
         action={
           <Link
-            to="/products"
+            to="/categories"
             className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white"
             style={{ backgroundColor: COLORS.blue }}
           >

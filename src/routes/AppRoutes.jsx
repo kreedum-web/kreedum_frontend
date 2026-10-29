@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 
 import HomePage from "@/pages/Home/HomePage";
-import ProductsPage from "@/pages/Products/ProductsPage";
+import ProductsRedirect from "./ProductsRedirect";
 import LoginPage from "@/pages/Login";
 import RegisterPage from "@/pages/Register";
 import AuthContextTest from "@/pages/Test/AuthContextTest";
@@ -27,6 +27,8 @@ import AboutUsPage from "@/pages/Company/AboutUsPage";
 import OrderDetailsPage from "@/pages/Account/OrderDetailsPage";
 import CategoriesPage from "@/pages/Category/CategoriesPage";
 import CategoryPage from "@/pages/Category/CategoryPage";
+import BrandsPage from "@/pages/Brand/BrandsPage";
+import BrandPage from "@/pages/Brand/BrandPage";
 
 
 export default function AppRoutes() {
@@ -37,10 +39,12 @@ export default function AppRoutes() {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/products" element={<ProductsRedirect />} />
         <Route path="/products/:slug" element={<ProductDetailPage />}/>
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/categories/:slug" element={<CategoryPage />} />
+        <Route path="/brands" element={<BrandsPage />} />
+        <Route path="/brands/:slug" element={<BrandPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/search" element={<SearchResultsPage />} />

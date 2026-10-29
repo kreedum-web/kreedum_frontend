@@ -15,6 +15,7 @@ export const CATEGORY_FIELD_BY_LEVEL = {
 };
 
 export const categoryUrl = (slug) => `/categories/${slug}`;
+export const brandUrl = (slug) => `/brands/${slug}`;
 
 /**
  * Turn the API tree into what the website needs:
@@ -36,6 +37,7 @@ function buildCategoryIndex(categories = []) {
           slug: node.slug,
           level: node.level || level,
           productCount: node.productCount ?? 0,
+          image: node.image || "",
           parentSlug: ancestors.at(-1)?.slug || null,
           path,
         };

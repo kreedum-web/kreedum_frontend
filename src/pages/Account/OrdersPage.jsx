@@ -255,7 +255,7 @@ export default function OrdersPage() {
             </p>
 
             <Link
-              to="/products"
+              to="/categories"
               className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#2C62E0] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1F49B8]"
             >
               <ShoppingBag size={17} />

@@ -80,7 +80,7 @@ export default function AboutUsPage() {
           </p>
 
           <Link
-            to="/products"
+            to="/categories"
             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-[#2C62E0] px-6 py-3 font-semibold text-white transition hover:bg-[#1F49B8]"
           >
             Explore Our Products
@@ -283,7 +283,7 @@ export default function AboutUsPage() {
           </div>
 
           <Link
-            to="/products"
+            to="/categories"
             className="shrink-0 rounded-xl bg-white px-6 py-3 font-semibold text-[#0E1A3D] transition hover:bg-blue-50"
           >
             Shop Now →

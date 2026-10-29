@@ -105,7 +105,7 @@ export default function CartPage() {
         description="Review your gear, adjust quantities and get ready to move."
         breadcrumbs={[
           { label: "Home", to: "/" },
-          { label: "Shop", to: "/products" },
+          { label: "Categories", to: "/categories" },
           { label: "Cart" },
         ]}
         rightContent={
@@ -124,7 +124,7 @@ export default function CartPage() {
               {cartQuery.isLoading ? "Loading your cart…" : cart.totalItems > 0 ? "Ready for your next session?" : "Your cart"}
             </h2>
           </div>
-          <Link to="/products" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#DDE4F2] bg-white px-4 py-2 text-sm font-bold transition hover:border-[#2C62E0] hover:text-[#2C62E0]" style={{ color: COLORS.navy }}>
+          <Link to="/categories" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#DDE4F2] bg-white px-4 py-2 text-sm font-bold transition hover:border-[#2C62E0] hover:text-[#2C62E0]" style={{ color: COLORS.navy }}>
             <ArrowLeft size={16} /> Continue shopping
           </Link>
         </div>
@@ -173,14 +173,14 @@ export default function CartPage() {
                     return (
                       <article key={productId || slug || product.name} className="p-4 sm:p-5 md:p-6">
                         <div className="flex gap-4 sm:gap-5">
-                          <Link to={slug ? `/products/${slug}` : "/products"} className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#EEF1F7] bg-[#F7F9FD] sm:h-32 sm:w-32" aria-label={`View ${product.name || "product"}`}>
+                          <Link to={slug ? `/products/${slug}` : "/categories"} className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#EEF1F7] bg-[#F7F9FD] sm:h-32 sm:w-32" aria-label={`View ${product.name || "product"}`}>
                             {image ? <img src={image} alt={product.name || "Kreedum product"} className="h-full w-full object-contain p-2" loading="lazy" /> : <ShoppingBag className="h-9 w-9 text-slate-300" />}
                           </Link>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 {product.brand && <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.15em]" style={{ color: COLORS.blue }}>{typeof product.brand === "string" ? product.brand : product.brand?.name}</p>}
-                                <Link to={slug ? `/products/${slug}` : "/products"} className="line-clamp-2 text-sm font-extrabold leading-5 transition hover:text-[#2C62E0] sm:text-base" style={{ color: COLORS.navy }}>{product.name || "Sports product"}</Link>
+                                <Link to={slug ? `/products/${slug}` : "/categories"} className="line-clamp-2 text-sm font-extrabold leading-5 transition hover:text-[#2C62E0] sm:text-base" style={{ color: COLORS.navy }}>{product.name || "Sports product"}</Link>
                                 {product.sku && <p className="mt-1 text-xs text-slate-400">SKU: {product.sku}</p>}
                               </div>
                               <p className="hidden shrink-0 text-base font-extrabold sm:block" style={{ color: COLORS.navy }}>{formatINR(Number(product.total) || price * quantity)}</p>
@@ -226,7 +226,7 @@ export default function CartPage() {
                   <div className="flex items-center justify-center gap-2 text-xs font-semibold text-slate-400"><LockKeyhole size={14} /> Secure checkout</div>
                 </div>
               </div>
-              <div className="mt-4 rounded-2xl border border-[#E5EAF4] bg-white/70 p-4"><p className="text-sm font-bold" style={{ color: COLORS.navy }}>Need help choosing?</p><p className="mt-1 text-xs leading-5 text-slate-500">Our team can help you find the right gear for your training setup.</p><Link to="/products" className="mt-3 inline-flex items-center gap-1 text-xs font-extrabold" style={{ color: COLORS.blue }}>Explore more gear <ArrowRight size={13} /></Link></div>
+              <div className="mt-4 rounded-2xl border border-[#E5EAF4] bg-white/70 p-4"><p className="text-sm font-bold" style={{ color: COLORS.navy }}>Need help choosing?</p><p className="mt-1 text-xs leading-5 text-slate-500">Our team can help you find the right gear for your training setup.</p><Link to="/categories" className="mt-3 inline-flex items-center gap-1 text-xs font-extrabold" style={{ color: COLORS.blue }}>Explore more gear <ArrowRight size={13} /></Link></div>
             </aside>
           </div>
         )}
@@ -242,7 +242,7 @@ function EmptyCart() {
       <p className="mt-6 text-xs font-extrabold uppercase tracking-[0.2em]" style={{ color: COLORS.blue }}>Room for more</p>
       <h2 className="mt-2 text-2xl font-extrabold tracking-tight" style={{ color: COLORS.navy }}>Your cart is waiting for some gear</h2>
       <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">Browse sports and fitness essentials, then add your favourites here to review everything in one place.</p>
-      <Link to="/products" className="mt-7 inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-extrabold text-white transition hover:opacity-90" style={{ backgroundColor: COLORS.blue }}><ShoppingBag size={17} /> Explore products <ArrowRight size={16} /></Link>
+      <Link to="/categories" className="mt-7 inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-extrabold text-white transition hover:opacity-90" style={{ backgroundColor: COLORS.blue }}><ShoppingBag size={17} /> Explore products <ArrowRight size={16} /></Link>
     </div>
   );
 }

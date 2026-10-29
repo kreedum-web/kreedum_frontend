@@ -271,7 +271,7 @@ function handleWishlist() {
     },
     categoriesBySlug
   );
-  const productCategoryLink = categoryTrail.at(-1)?.to || "/products";
+  const productCategoryLink = categoryTrail.at(-1)?.to || "/categories";
 
   function increaseQuantity() {
     setQuantity((current) => current + 1);
@@ -317,7 +317,7 @@ function handleWishlist() {
             </p>
 
             <Link
-              to="/products"
+              to="/categories"
               className="inline-flex items-center gap-2 mt-6 font-semibold"
               style={{ color: COLORS.blue }}
             >

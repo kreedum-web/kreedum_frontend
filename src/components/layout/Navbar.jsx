@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient} from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Heart, Menu, ShoppingCart, User, X , LogOut,  ChevronDown,  Package,MapPin,UserRoundPen,} from "lucide-react";
@@ -53,16 +53,17 @@ const accountMenuRef = useRef(null);
 const accountButtonRef = useRef(null);
   const [hideMobileTopRow, setHideMobileTopRow] = useState(false);
 
-  const mobileMenuRef = useRef(null);
   const mobileMenuButtonRef = useRef(null);
   const mobileMenuOriginRef = useRef(null);
 
+  // Desktop: Home | Categories (mega menu) | Brands
   const navLinks = [
     { label: "Home", to: "/" },
-    { label: "Shop", to: "/products" },
-    // { label: "Categories", to: "/categories" },
-    // { label: "Brands", to: "/brands" },
+    { label: "Brands", to: "/brands" },
   ];
+
+  const isNavActive = (to) =>
+    to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
   useEffect(() => {
     let previousScrollY = window.scrollY;
@@ -93,32 +94,6 @@ const accountButtonRef = useRef(null);
     setOpen(false);
     setAccountOpen(false);
   }, [location.pathname]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const handleOutsideInteraction = (event) => {
-      const menu = mobileMenuRef.current;
-      const button = mobileMenuButtonRef.current;
-
-      if (
-        menu &&
-        !menu.contains(event.target) &&
-        button &&
-        !button.contains(event.target)
-      ) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleOutsideInteraction);
-    document.addEventListener("touchstart", handleOutsideInteraction);
-
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideInteraction);
-      document.removeEventListener("touchstart", handleOutsideInteraction);
-    };
-  }, [open]);
 
 useEffect(() => {
   if (!accountOpen) return;
@@ -329,88 +304,8 @@ onClick={() => {
 
         {/* The same open state controls both the X and this menu */}
        
-{/* Mobile floating dropdown */}
-
-{/* Mobile floating dropdown backdrop */}
-<div
-  className={`fixed inset-0 z-[60] bg-[#0E1A3D]/20 backdrop-blur-[1px] transition-opacity duration-200 md:hidden ${
-    open ? "opacity-100" : "pointer-events-none opacity-0"
-  }`}
-  onClick={() => setOpen(false)}
-  aria-hidden="true"
-/>
-
-{/* Mobile floating dropdown menu */}
-<div
-  ref={mobileMenuRef}
-  className={`fixed right-20 top-[110px] z-[70]
-    w-[min(290px,calc(100vw-24px))]
-    max-h-[calc(100dvh-92px)] overflow-y-auto
-    rounded-2xl border border-[#E5E9F2]
-    bg-white p-2 shadow-xl md:hidden
-    origin-top-right transition-all duration-200 ease-out ${
-      open
-        ? "translate-y-0 scale-100 opacity-100"
-        : "pointer-events-none -translate-y-2 scale-95 opacity-0"
-    }`}
-  aria-hidden={!open}
->
-  <div className="px-1 py-1">
-    <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#8A93A6]">
-      Navigation
-    </p>
-
-    {navLinks.map((link) => {
-      const isActive = location.pathname === link.to;
-
-      return (
-        <Link
-          key={link.to}
-          to={link.to}
-          onClick={() => setOpen(false)}
-          className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold transition-colors hover:bg-[#EAF0FF]"
-          style={{ color: isActive ? COLORS.blue : COLORS.navy }}
-        >
-          <span>{link.label}</span>
-          <span className="text-[#8A93A6]">→</span>
-        </Link>
-      );
-    })}
-
-    <MobileCategoryMenu onNavigate={() => setOpen(false)} />
-
-    {/* <div className="my-2 border-t border-[#E5E9F2]" /> */}
-{/* 
-    <Link
-      to="/wishlist"
-      onClick={() => setOpen(false)}
-      className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-[#0E1A3D] hover:bg-[#EAF0FF]"
-    >
-      Wishlist
-      <Heart size={17} />
-    </Link> */}
-
-    {/* <Link
-      to={isAuthenticated ? "/account" : "/login"}
-      onClick={() => setOpen(false)}
-      className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-[#0E1A3D] hover:bg-[#EAF0FF]"
-    >
-      {isAuthenticated ? "My Account" : "Login"}
-      <User size={17} />
-    </Link> */}
-
-    {/* {isAuthenticated && (
-  <button
-    type="button"
-    onClick={handleLogout}
-    className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
-  >
-    <span>Logout</span>
-    <LogOut size={17} />
-  </button>
-)} */}
-  </div>
-</div>
+{/* Mobile: full-screen category menu (Decathlon style) */}
+<MobileCategoryMenu open={open} onClose={() => setOpen(false)} />
 
 
 {/* Mobile account dropdown */}
@@ -554,39 +449,43 @@ onClick={() => {
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex">
-            {navLinks.map((link) => {
-              const isActive = location.pathname === link.to;
+            {navLinks.map((link, index) => {
+              const isActive = isNavActive(link.to);
 
               return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="group relative py-2 text-sm font-medium transition-all duration-300 ease-out hover:-translate-y-0.5"
-                  style={{
-                    color: scrolled
-                      ? isActive
-                        ? COLORS.blue
-                        : COLORS.slate
-                      : isActive
-                      ? COLORS.white
-                      : "rgba(255,255,255,0.9)",
-                    fontFamily: '"Manrope", sans-serif',
-                  }}
-                >
-                  {link.label}
-                  <span
-                    className={`absolute bottom-0 left-0 h-[2px] rounded-full bg-[#2C62E0] transition-all duration-300 ease-out ${
-                      isActive ? "w-full" : "w-0 group-hover:w-full"
-                    }`}
-                  />
-                </Link>
+                <Fragment key={link.to}>
+                  {/* Categories mega menu sits between Home and Brands */}
+                  {index === 1 && (
+                    <CategoryMegaMenu
+                      linkColor={scrolled ? COLORS.slate : "rgba(255,255,255,0.9)"}
+                      activeColor={scrolled ? COLORS.blue : COLORS.white}
+                    />
+                  )}
+
+                  <Link
+                    to={link.to}
+                    className="group relative py-2 text-sm font-medium transition-all duration-300 ease-out hover:-translate-y-0.5"
+                    style={{
+                      color: scrolled
+                        ? isActive
+                          ? COLORS.blue
+                          : COLORS.slate
+                        : isActive
+                        ? COLORS.white
+                        : "rgba(255,255,255,0.9)",
+                      fontFamily: '"Manrope", sans-serif',
+                    }}
+                  >
+                    {link.label}
+                    <span
+                      className={`absolute bottom-0 left-0 h-[2px] rounded-full bg-[#2C62E0] transition-all duration-300 ease-out ${
+                        isActive ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
+                  </Link>
+                </Fragment>
               );
             })}
-
-            <CategoryMegaMenu
-              linkColor={scrolled ? COLORS.slate : "rgba(255,255,255,0.9)"}
-              activeColor={scrolled ? COLORS.blue : COLORS.white}
-            />
           </nav>
 
           <div className="mx-3 hidden min-w-0 max-w-md flex-1 md:flex">

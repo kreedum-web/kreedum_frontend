@@ -78,7 +78,7 @@ export default function WishlistPage() {
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
               Save products you like and come back to them whenever you are ready.
             </p>
-            <Link to="/products" className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90" style={{ backgroundColor: COLORS.blue }}>
+            <Link to="/categories" className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90" style={{ backgroundColor: COLORS.blue }}>
               <ShoppingBag size={17} /> Explore Products
             </Link>
           </div>
@@ -89,7 +89,7 @@ export default function WishlistPage() {
                 <h2 className="text-lg font-bold md:text-xl" style={{ color: COLORS.navy }}>Your Saved Products</h2>
                 <p className="mt-1 text-sm text-gray-500">Keep track of the products you love.</p>
               </div>
-              <Link to="/products" className="text-sm font-semibold" style={{ color: COLORS.blue }}>
+              <Link to="/categories" className="text-sm font-semibold" style={{ color: COLORS.blue }}>
                 Continue Shopping →
               </Link>
             </div>

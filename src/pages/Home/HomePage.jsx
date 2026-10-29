@@ -412,7 +412,7 @@ const handleHeroTouchEnd = (event) => {
                 <Link
                   to={
                     currentBanner.buttonLink ||
-                    "/products"
+                    "/categories"
                   }
                   className="inline-flex items-center gap-2 mt-8 px-6 py-3.5 rounded-full font-semibold transition-transform hover:scale-105"
                   style={{
@@ -602,7 +602,7 @@ function ProductSection({
 
             {/* View all */}
             <Link
-              to="/products"
+              to="/categories"
 className="flex shrink-0 items-center gap-1 text-xs font-semibold sm:text-sm"        
       style={{ color: COLORS.blue }}
             >

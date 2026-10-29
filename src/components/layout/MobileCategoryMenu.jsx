@@ -1,98 +1,270 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
+import { ChevronLeft, Home, Tags } from "lucide-react";
 
 import { COLORS } from "@/config/theme";
-import { categoryUrl, useCategoryTree } from "@/hooks/useCategories";
+import { brandUrl, categoryUrl, useCategoryTree } from "@/hooks/useCategories";
+import { useBrands } from "@/hooks/useBrands";
+
+const BRANDS = "__brands__";
 
 /**
- * "Shop by Category" section for the mobile menu dropdown.
- * Departments expand to show their categories; sub-categories are listed under each.
+ * Full-screen mobile menu, laid out like Decathlon's:
+ *   left  — a rail of departments (plus Brands) as image tiles
+ *   right — the selected department's categories as sections of image tiles
  */
-export default function MobileCategoryMenu({ onNavigate }) {
+export default function MobileCategoryMenu({ open, onClose }) {
   const { tree } = useCategoryTree();
-  const [expanded, setExpanded] = useState(null);
+  const { brands } = useBrands();
+  const [selected, setSelected] = useState(null);
 
-  if (!tree.length) return null;
+  const selectedSlug = selected || tree[0]?.slug;
+  const department = tree.find((d) => d.slug === selectedSlug);
+
+  // Lock page scroll while the menu covers the screen.
+  useEffect(() => {
+    if (!open) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
   return (
-    <div className="mt-1 border-t border-[#E5E9F2] pt-1">
-      <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#8A93A6]">
-        Shop by Category
-      </p>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Categories"
+      aria-hidden={!open}
+      onKeyDown={(event) => event.key === "Escape" && onClose()}
+      className={`fixed inset-0 z-[90] flex flex-col bg-white transition-transform duration-300 ease-out md:hidden ${
+        open ? "translate-x-0" : "pointer-events-none -translate-x-full"
+      }`}
+      style={{ fontFamily: '"Manrope", sans-serif' }}
+    >
+      {/* Header */}
+      <div className="flex h-14 shrink-0 items-center border-b border-[#E5E9F2] px-2">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close menu"
+          className="flex h-10 w-10 items-center justify-center text-[#0E1A3D]"
+        >
+          <ChevronLeft size={24} />
+        </button>
 
-      {tree.map((department) => {
-        const isOpen = expanded === department.slug;
-        const hasChildren = department.children.length > 0;
+        <h2 className="flex-1 text-center text-lg font-bold" style={{ color: COLORS.navy }}>
+          Categories
+        </h2>
 
-        return (
-          <div key={department.slug}>
-            {hasChildren ? (
-              <button
-                type="button"
-                onClick={() => setExpanded(isOpen ? null : department.slug)}
-                aria-expanded={isOpen}
-                className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold transition-colors hover:bg-[#EAF0FF]"
-                style={{ color: isOpen ? COLORS.blue : COLORS.navy }}
-              >
-                <span>{department.name}</span>
-                <ChevronDown
-                  size={17}
-                  className={`text-[#8A93A6] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-            ) : (
-              <Link
-                to={categoryUrl(department.slug)}
-                onClick={onNavigate}
-                className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold transition-colors hover:bg-[#EAF0FF]"
-                style={{ color: COLORS.navy }}
-              >
-                <span>{department.name}</span>
-                <span className="text-[#8A93A6]">→</span>
-              </Link>
-            )}
+        <Link
+          to="/"
+          onClick={onClose}
+          aria-label="Home"
+          className="flex h-10 w-10 items-center justify-center text-[#0E1A3D]"
+        >
+          <Home size={21} />
+        </Link>
+      </div>
 
-            {isOpen && (
-              <div className="mb-1 ml-3 border-l border-[#E5E9F2] pl-2">
-                <Link
-                  to={categoryUrl(department.slug)}
-                  onClick={onNavigate}
-                  className="block rounded-lg px-3 py-2 text-sm font-semibold"
-                  style={{ color: COLORS.blue }}
-                >
-                  All {department.name} ({department.productCount})
-                </Link>
+      <div className="flex min-h-0 flex-1">
+        {/* Left rail */}
+        <nav className="w-[92px] shrink-0 overflow-y-auto border-r border-[#E5E9F2] py-3" aria-label="Departments">
+          {tree.map((item) => (
+            <RailItem
+              key={item.slug}
+              label={item.name}
+              image={item.image}
+              active={item.slug === selectedSlug}
+              onSelect={() => setSelected(item.slug)}
+            />
+          ))}
 
-                {department.children.map((category) => (
-                  <div key={category.slug}>
-                    <Link
-                      to={categoryUrl(category.slug)}
-                      onClick={onNavigate}
-                      className="block rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-[#EAF0FF]"
-                      style={{ color: COLORS.navy }}
-                    >
-                      {category.name}
-                    </Link>
+          {brands.length > 0 && (
+            <RailItem
+              label="Brands"
+              icon={<Tags size={26} style={{ color: COLORS.blue }} />}
+              active={selectedSlug === BRANDS}
+              onSelect={() => setSelected(BRANDS)}
+            />
+          )}
+        </nav>
 
-                    {category.children.map((sub) => (
-                      <Link
-                        key={sub.slug}
-                        to={categoryUrl(sub.slug)}
-                        onClick={onNavigate}
-                        className="block rounded-lg py-1.5 pl-6 pr-3 text-[13px] transition-colors hover:bg-[#EAF0FF]"
-                        style={{ color: COLORS.slate }}
-                      >
-                        {sub.name}
-                      </Link>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
+        {/* Right pane */}
+        <div key={selectedSlug} className="min-w-0 flex-1 overflow-y-auto px-3 pb-10 pt-4">
+          {selectedSlug === BRANDS ? (
+            <BrandsPane brands={brands} onNavigate={onClose} />
+          ) : department ? (
+            <DepartmentPane department={department} onNavigate={onClose} />
+          ) : null}
+        </div>
+      </div>
     </div>
+  );
+}
+
+/* =========================================================
+   LEFT RAIL
+========================================================= */
+
+function RailItem({ label, image, icon, active, onSelect }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-current={active ? "true" : undefined}
+      className="relative mb-4 flex w-full flex-col items-center px-2"
+    >
+      {/* selected marker on the left edge */}
+      <span
+        className={`absolute left-0 top-5 h-8 w-1 rounded-r-full transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
+        style={{ backgroundColor: COLORS.blue }}
+      />
+
+      <span
+        className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-[#F6F8FC] transition-all"
+        style={{
+          border: active ? `2px solid ${COLORS.blue}` : "1px solid #E5E9F2",
+          boxShadow: active ? "0 0 0 3px rgba(44,98,224,0.12)" : "none",
+        }}
+      >
+        {image ? (
+          <img src={image} alt="" loading="lazy" className="h-full w-full object-contain p-1.5" />
+        ) : (
+          icon
+        )}
+      </span>
+
+      <span
+        className="mt-1.5 text-center text-[12px] leading-tight"
+        style={{ color: active ? COLORS.blue : COLORS.slate, fontWeight: active ? 700 : 500 }}
+      >
+        {label}
+      </span>
+    </button>
+  );
+}
+
+/* =========================================================
+   RIGHT PANE
+========================================================= */
+
+function SectionTitle({ children, large = false }) {
+  return (
+    <div className="mb-3 flex items-center gap-3">
+      <h3
+        className={`shrink-0 ${large ? "text-xl" : "text-base"} font-semibold`}
+        style={{ color: COLORS.navy }}
+      >
+        {children}
+      </h3>
+      <span className="h-px flex-1 bg-[#E5E9F2]" />
+    </div>
+  );
+}
+
+function Tile({ to, image, label, count, onNavigate }) {
+  return (
+    <Link to={to} onClick={onNavigate} className="group block min-w-0">
+      <span className="block aspect-square overflow-hidden rounded-2xl border border-[#E5E9F2] bg-[#F6F8FC]">
+        {image ? (
+          <img
+            src={image}
+            alt=""
+            loading="lazy"
+            className="h-full w-full object-contain p-1.5 transition-transform duration-300 group-active:scale-95"
+          />
+        ) : null}
+      </span>
+      <span className="mt-1.5 line-clamp-2 block text-center text-[12px] font-medium leading-tight" style={{ color: COLORS.navy }}>
+        {label}
+      </span>
+      {count != null && (
+        <span className="block text-center text-[11px]" style={{ color: COLORS.slateLight }}>
+          {count}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function DepartmentPane({ department, onNavigate }) {
+  // Categories with sub-categories get their own section; the rest are grouped.
+  const withChildren = department.children.filter((c) => c.children.length > 0);
+  const leaves = department.children.filter((c) => c.children.length === 0);
+
+  return (
+    <>
+      <SectionTitle large>{department.name}</SectionTitle>
+
+      <Link
+        to={categoryUrl(department.slug)}
+        onClick={onNavigate}
+        className="mb-5 inline-block text-sm font-semibold"
+        style={{ color: COLORS.blue }}
+      >
+        View all {department.productCount} products →
+      </Link>
+
+      {withChildren.map((category) => (
+        <section key={category.slug} className="mb-6">
+          <SectionTitle>{category.name}</SectionTitle>
+          <div className="grid grid-cols-3 gap-x-2.5 gap-y-4">
+            <Tile
+              to={categoryUrl(category.slug)}
+              image={category.image}
+              label={`All ${category.name}`}
+              onNavigate={onNavigate}
+            />
+            {category.children.map((sub) => (
+              <Tile key={sub.slug} to={categoryUrl(sub.slug)} image={sub.image} label={sub.name} onNavigate={onNavigate} />
+            ))}
+          </div>
+        </section>
+      ))}
+
+      {leaves.length > 0 && (
+        <section className="mb-6">
+          <SectionTitle>{withChildren.length ? `More in ${department.name}` : "Shop by Category"}</SectionTitle>
+          <div className="grid grid-cols-3 gap-x-2.5 gap-y-4">
+            {leaves.map((category) => (
+              <Tile
+                key={category.slug}
+                to={categoryUrl(category.slug)}
+                image={category.image}
+                label={category.name}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+function BrandsPane({ brands, onNavigate }) {
+  return (
+    <>
+      <SectionTitle large>Brands</SectionTitle>
+
+      <Link to="/brands" onClick={onNavigate} className="mb-5 inline-block text-sm font-semibold" style={{ color: COLORS.blue }}>
+        View all brands →
+      </Link>
+
+      <div className="grid grid-cols-3 gap-x-2.5 gap-y-4">
+        {brands.map((brand) => (
+          <Tile
+            key={brand.slug}
+            to={brandUrl(brand.slug)}
+            image={brand.image}
+            label={brand.name}
+            count={`${brand.productCount} products`}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </div>
+    </>
   );
 }

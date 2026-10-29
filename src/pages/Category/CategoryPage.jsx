@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
-import { brandService, productService } from "@/api";
+import { productService } from "@/api";
 import { normalizeProducts } from "@/adapters/product.adapter";
 import { COLORS } from "@/config/theme";
 import { SORT_OPTIONS } from "@/constants/productFilters";
 import { CATEGORY_FIELD_BY_LEVEL, categoryUrl, useCategoryTree } from "@/hooks/useCategories";
+import { useBrands } from "@/hooks/useBrands";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import ProductCard from "@/components/product/ProductCard";
 import SortDropdown from "@/components/common/SortDropdown";
@@ -43,11 +44,7 @@ export default function CategoryPage() {
     enabled: Boolean(params),
   });
 
-  const brandsQuery = useQuery({
-    queryKey: ["brands"],
-    queryFn: () => brandService.getBrands(),
-    staleTime: 10 * 60 * 1000,
-  });
+  const { brands } = useBrands();
 
   const products = normalizeProducts(productsQuery.data?.data?.products || []);
   const pagination = productsQuery.data?.data?.pagination || {
@@ -61,9 +58,7 @@ export default function CategoryPage() {
 
   const brandOptions = [
     { label: "All Brands", value: "" },
-    ...(brandsQuery.data?.data?.brands || [])
-      .filter((b) => b.isActive !== false && (b.productCount ?? 1) > 0)
-      .map((b) => ({ label: b.name, value: b.slug })),
+    ...brands.map((b) => ({ label: b.name, value: b.slug })),
   ];
 
   function setParam(name, value) {

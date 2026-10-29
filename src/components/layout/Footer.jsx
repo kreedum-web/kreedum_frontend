@@ -60,8 +60,8 @@ export default function Footer() {
             Shop
           </h2>
           <ul className="space-y-3 text-sm text-white/65">
-            <li><Link className="hover:text-white" to="/products">Shop All</Link></li>
-            <li><Link className="hover:text-white" to="/products">Products</Link></li>
+            <li><Link className="hover:text-white" to="/categories">Categories</Link></li>
+            <li><Link className="hover:text-white" to="/brands">Brands</Link></li>
             <li><Link className="hover:text-white" to="/wishlist">Wishlist</Link></li>
             <li><Link className="hover:text-white" to="/cart">Cart</Link></li>
           </ul>
