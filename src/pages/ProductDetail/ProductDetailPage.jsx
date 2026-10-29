@@ -20,6 +20,7 @@ import { productService } from "@/api";
 import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
+import { productCategoryTrail, useCategoryTree } from "@/hooks/useCategories";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -260,6 +261,18 @@ function handleWishlist() {
       product.maxUserWeight,
     ].some(Boolean);
 
+  // Home / Cardio / Treadmills / Commercial Treadmill — from the category menu.
+  const { bySlug: categoriesBySlug } = useCategoryTree();
+  const categoryTrail = productCategoryTrail(
+    {
+      department: product?.department,
+      parentCategory: product?.parentCategory,
+      childCategory: product?.childCategory,
+    },
+    categoriesBySlug
+  );
+  const productCategoryLink = categoryTrail.at(-1)?.to || "/products";
+
   function increaseQuantity() {
     setQuantity((current) => current + 1);
   }
@@ -329,6 +342,11 @@ function handleWishlist() {
     <InnerPageHeader
      eyebrow="Kreedum Sports"
     title={product.name}
+    breadcrumbs={
+      categoryTrail.length
+        ? [{ label: "Home", to: "/" }, ...categoryTrail]
+        : []
+    }
   />
  
       {/* =====================================================
@@ -883,7 +901,7 @@ function handleWishlist() {
             </div>
 
             <Link
-              to="/products"
+              to={productCategoryLink}
               className="text-sm font-semibold"
               style={{ color: COLORS.blue }}
             >

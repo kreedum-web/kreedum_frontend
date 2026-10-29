@@ -8,87 +8,15 @@ import {
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { productService } from "@/api";
+import { brandService, productService } from "@/api";
 import { normalizeProducts } from "@/adapters/product.adapter";
 import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import SortDropdown from "@/components/common/SortDropdown";
 import Pagination from "@/components/common/Pagination";
-
-const DEPARTMENTS = [
-  { label: "All Departments", value: "" },
-  { label: "Cardio", value: "cardio" },
-  {
-    label: "Strength Equipment",
-    value: "strength-equipment",
-  },
-  {
-    label: "Free Weights",
-    value: "free-weights",
-  },
-  {
-    label: "Sports Equipment",
-    value: "sports-equipment",
-  },
-  {
-    label: "Yoga & Recovery",
-    value: "yoga-recovery",
-  },
-];
-
-const PARENT_CATEGORIES = [
-  { label: "All Categories", value: "" },
-  { label: "Treadmills", value: "treadmills" },
-  {
-    label: "Upright Bikes",
-    value: "upright-bikes",
-  },
-  {
-    label: "Spin Bikes",
-    value: "spin-bikes",
-  },
-  {
-    label: "Rowing Machines",
-    value: "rowing-machines",
-  },
-  {
-    label: "Benches & Racks",
-    value: "benches-racks",
-  },
-  {
-    label: "Home Gyms",
-    value: "home-gyms",
-  },
-  {
-    label: "Pickleball",
-    value: "pickleball",
-  },
-];
-
-const SORT_OPTIONS = [
-  { label: "Latest", value: "latest" },
-  {
-    label: "Price: Low to High",
-    value: "price_low_high",
-  },
-  {
-    label: "Price: High to Low",
-    value: "price_high_low",
-  },
-  {
-    label: "Highest Discount",
-    value: "discount",
-  },
-  {
-    label: "Most Popular",
-    value: "popular",
-  },
-  {
-    label: "Featured",
-    value: "featured",
-  },
-];
+import { SORT_OPTIONS } from "@/constants/productFilters";
+import { useCategoryTree } from "@/hooks/useCategories";
 
 const STOCK_OPTIONS = [
   { label: "All Stock Status", value: "" },
@@ -118,6 +46,15 @@ export default function ProductsPage() {
 
   const [filtersOpen, setFiltersOpen] =
     useState(false);
+
+  // Filter options from the real category tree and brands (same as the menu).
+  const { tree, bySlug } = useCategoryTree();
+
+  const brandsQuery = useQuery({
+    queryKey: ["brands"],
+    queryFn: () => brandService.getBrands(),
+    staleTime: 10 * 60 * 1000,
+  });
 
   const [filters, setFilters] = useState(() => ({
     department:
@@ -202,11 +139,58 @@ const queryParams = useMemo(() => {
     };
 
   function updateFilter(name, value) {
-    setFilters((current) => ({
-      ...current,
-      [name]: value,
-    }));
+    setFilters((current) => {
+      const next = { ...current, [name]: value };
+
+      // Keep Department → Category → Sub-category consistent.
+      if (name === "department") {
+        next.parentCategory = "";
+        next.childCategory = "";
+      }
+
+      if (name === "parentCategory") {
+        next.childCategory = "";
+        if (value) next.department = bySlug.get(value)?.path[0]?.slug || next.department;
+      }
+
+      return next;
+    });
   }
+
+  const departmentOptions = [
+    { label: "All Departments", value: "" },
+    ...tree.map((d) => ({ label: d.name, value: d.slug })),
+  ];
+
+  const categorySource = filters.department
+    ? bySlug.get(filters.department)?.children || []
+    : tree.flatMap((d) => d.children);
+
+  const categoryOptions = [
+    { label: "All Categories", value: "" },
+    ...categorySource.map((c) => ({ label: c.name, value: c.slug })),
+  ];
+
+  const subcategorySource = filters.parentCategory
+    ? bySlug.get(filters.parentCategory)?.children || []
+    : [];
+
+  const subcategoryOptions = [
+    {
+      label: filters.parentCategory
+        ? "All Subcategories"
+        : "Choose a category first",
+      value: "",
+    },
+    ...subcategorySource.map((c) => ({ label: c.name, value: c.slug })),
+  ];
+
+  const brandOptions = [
+    { label: "All Brands", value: "" },
+    ...(brandsQuery.data?.data?.brands || [])
+      .filter((b) => b.isActive !== false && (b.productCount ?? 1) > 0)
+      .map((b) => ({ label: b.name, value: b.slug })),
+  ];
 
   function applyFilters() {
     const nextParams = {};
@@ -472,8 +456,8 @@ const queryParams = useMemo(() => {
                 </h2>
 
                 <p className="text-sm text-gray-500 mt-1">
-                  Refine the catalogue using
-                  backend-supported filters.
+                  Narrow the catalogue by category,
+                  brand and price.
                 </p>
               </div>
 
@@ -492,7 +476,7 @@ const queryParams = useMemo(() => {
               <FilterSelect
                 label="Department"
                 value={filters.department}
-                options={DEPARTMENTS}
+                options={departmentOptions}
                 onChange={(value) =>
                   updateFilter(
                     "department",
@@ -506,7 +490,7 @@ const queryParams = useMemo(() => {
                 value={
                   filters.parentCategory
                 }
-                options={PARENT_CATEGORIES}
+                options={categoryOptions}
                 onChange={(value) =>
                   updateFilter(
                     "parentCategory",
@@ -515,9 +499,9 @@ const queryParams = useMemo(() => {
                 }
               />
 
-              <FilterInput
+              <FilterSelect
                 label="Subcategory"
-                placeholder="e.g. commercial-treadmill"
+                options={subcategoryOptions}
                 value={
                   filters.childCategory
                 }
@@ -529,9 +513,9 @@ const queryParams = useMemo(() => {
                 }
               />
 
-              <FilterInput
+              <FilterSelect
                 label="Brand"
-                placeholder="e.g. aerofit"
+                options={brandOptions}
                 value={filters.brand}
                 onChange={(value) =>
                   updateFilter(

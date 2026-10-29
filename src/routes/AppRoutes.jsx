@@ -25,6 +25,8 @@ import TermsAndConditionsPage from "@/pages/Company/TermsAndConditionsPage";
 import ReturnPolicyPage from "@/pages/Company/ReturnPolicyPage";
 import AboutUsPage from "@/pages/Company/AboutUsPage";
 import OrderDetailsPage from "@/pages/Account/OrderDetailsPage";
+import CategoriesPage from "@/pages/Category/CategoriesPage";
+import CategoryPage from "@/pages/Category/CategoryPage";
 
 
 export default function AppRoutes() {
@@ -37,6 +39,8 @@ export default function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/products/:slug" element={<ProductDetailPage />}/>
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/categories/:slug" element={<CategoryPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/search" element={<SearchResultsPage />} />

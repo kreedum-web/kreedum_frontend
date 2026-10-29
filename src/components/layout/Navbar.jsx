@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import SearchBar from "@/components/search/SearchBar";
 import { cartService,wishlistService} from "@/api";
 import AnnouncementBanner from "./AnnouncementBanner";
+import CategoryMegaMenu from "./CategoryMegaMenu";
+import MobileCategoryMenu from "./MobileCategoryMenu";
 
 export default function Navbar() {
   const location = useLocation();
@@ -375,6 +377,8 @@ onClick={() => {
       );
     })}
 
+    <MobileCategoryMenu onNavigate={() => setOpen(false)} />
+
     {/* <div className="my-2 border-t border-[#E5E9F2]" /> */}
 {/* 
     <Link
@@ -516,7 +520,7 @@ onClick={() => {
 
       {/* Desktop navbar: independent of the mobile rows and scroll behavior */}
       <div
-        className="hidden transition-all duration-300 ease-out md:block"
+        className="relative hidden transition-all duration-300 ease-out md:block"
         style={{
           marginTop: scrolled ? "12px" : "0px",
           marginLeft: scrolled ? "12px" : "0px",
@@ -578,6 +582,11 @@ onClick={() => {
                 </Link>
               );
             })}
+
+            <CategoryMegaMenu
+              linkColor={scrolled ? COLORS.slate : "rgba(255,255,255,0.9)"}
+              activeColor={scrolled ? COLORS.blue : COLORS.white}
+            />
           </nav>
 
           <div className="mx-3 hidden min-w-0 max-w-md flex-1 md:flex">
