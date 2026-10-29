@@ -19,6 +19,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { productService } from "@/api";
 import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
+import ProductOptions from "@/components/product/ProductOptions";
+import { defaultSelection, findVariant, optionNames } from "@/utils/productOptions";
+import { normalizeProduct } from "@/adapters/product.adapter";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import { productCategoryTrail, useCategoryTree } from "@/hooks/useCategories";
 
@@ -29,6 +32,10 @@ export default function ProductDetailPage() {
 
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+
+  // Weight / size chosen on this product (reset when another product opens).
+  const [optionState, setOptionState] = useState({ slug: null, values: {} });
+  const [optionHint, setOptionHint] = useState(false);
 
 const [isImageZoomed, setIsImageZoomed] = useState(false);
 const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
@@ -89,9 +96,16 @@ const [cartSuccess, setCartSuccess] = useState(false);
 const [cartError, setCartError] = useState("");
 
 
-async function handleAddToCart() {
+async function handleAddToCart({ checkout = false } = {}) {
   setCartError("");
   setCartSuccess(false);
+
+  // Products sold in several weights / sizes: one must be chosen first.
+  if (hasOptions && !selectedVariant) {
+    setOptionHint(true);
+    setCartError(`Please choose ${optionNames(productOptions)} first.`);
+    return;
+  }
 
   if (!isAuthenticated) {
     navigate("/login", {
@@ -113,12 +127,18 @@ async function handleAddToCart() {
 
     await cartService.addToCart(
       product._id,
-      quantity
+      quantity,
+      selectedVariant?.variantId || ""
     );
 
     await queryClient.invalidateQueries({
   queryKey: ["cart"],
 });
+
+    if (checkout) {
+      navigate("/checkout");
+      return;
+    }
 
     setCartSuccess(true);
 
@@ -151,6 +171,16 @@ async function handleAddToCart() {
   const data = response?.data;
   const product = data?.product;
   const relatedProducts = data?.relatedProducts || [];
+
+  // ---- options (weight, size …), each with its own price
+  const productOptions = product?.options || [];
+  const productVariants = product?.variants || [];
+  const hasOptions = productOptions.length > 0 && productVariants.length > 0;
+  const selection =
+    optionState.slug === slug ? optionState.values : defaultSelection(productOptions);
+  const selectedVariant = hasOptions
+    ? findVariant(productOptions, productVariants, selection)
+    : null;
 
 
   
@@ -235,19 +265,29 @@ function handleWishlist() {
 }
 
 
-  const images = useMemo(() => {
+  const productImages = useMemo(() => {
     if (!product) return [];
 
-    const productImages = Array.isArray(product.images)
+    const list = Array.isArray(product.images)
       ? product.images.filter(Boolean)
       : [];
 
-    if (product.thumbnail && !productImages.includes(product.thumbnail)) {
-      productImages.unshift(product.thumbnail);
+    if (product.thumbnail && !list.includes(product.thumbnail)) {
+      list.unshift(product.thumbnail);
     }
 
-    return productImages;
+    return list;
   }, [product]);
+
+  // Photos of individual options (a 10 kg plate …) go after the main ones.
+  const images = [
+    ...productImages,
+    ...new Set(
+      productVariants
+        .map((variant) => variant.image)
+        .filter((image) => image && !productImages.includes(image))
+    ),
+  ];
 
   const hasSpecifications =
     product &&
@@ -273,6 +313,21 @@ function handleWishlist() {
   );
   const productCategoryLink = categoryTrail.at(-1)?.to || "/categories";
 
+  function handleOptionChange(name, value) {
+    const values = { ...selection, [name]: value };
+    setOptionState({ slug, values });
+    setOptionHint(false);
+    setCartError("");
+
+    // Show the chosen option's photo.
+    const variant = findVariant(productOptions, productVariants, values);
+    const imageIndex = variant?.image ? images.indexOf(variant.image) : -1;
+    if (imageIndex >= 0) {
+      setActiveImage(imageIndex);
+      setIsImageZoomed(false);
+    }
+  }
+
   function increaseQuantity() {
     setQuantity((current) => current + 1);
   }
@@ -282,6 +337,8 @@ function handleWishlist() {
   }
 
   function getStockLabel() {
+    if (selectedVariant && selectedVariant.inStock === false) return "Out of Stock";
+
     switch (product?.stockStatus) {
       case "in_stock":
         return "In Stock";
@@ -330,12 +387,26 @@ function handleWishlist() {
     );
   }
 
-  const sellingPrice = Number(product.sellingPrice) || 0;
-  const mrp = Number(product.mrp) || 0;
-  const discount = Number(product.discountPercent) || 0;
+  // With options, the chosen option's own price; until one is chosen, the
+  // range from the cheapest to the most expensive.
+  const sellingPrice = Number(selectedVariant ? selectedVariant.sellingPrice : product.sellingPrice) || 0;
+  const mrp = Number(selectedVariant ? selectedVariant.mrp : product.mrp) || 0;
+  const discount = selectedVariant
+    ? mrp > sellingPrice
+      ? Math.round(((mrp - sellingPrice) / mrp) * 100)
+      : 0
+    : Number(product.discountPercent) || 0;
+  const maxPrice = Number(product.maxPrice) || sellingPrice;
+  const showPriceRange = hasOptions && !selectedVariant && maxPrice > sellingPrice;
+  const sku = selectedVariant?.sku || product.sku;
 
-  const isInStock = product.stockStatus === "in_stock";
   const isEnquiryOnly = product.stockStatus === "enquiry_only";
+  const isInStock =
+    product.stockStatus === "in_stock" &&
+    (!hasOptions ||
+      (selectedVariant
+        ? selectedVariant.inStock !== false
+        : productVariants.some((variant) => variant.inStock !== false)));
 
   return (
     <main className="min-h-screen bg-[#F6F8FC]">
@@ -457,9 +528,9 @@ function handleWishlist() {
               {product.name}
             </h1>
 
-            {product.sku && (
+            {sku && (
               <p className="mt-3 text-sm text-gray-500">
-                SKU: {product.sku}
+                SKU: {sku}
               </p>
             )}
 
@@ -538,15 +609,16 @@ function handleWishlist() {
                 style={{ color: COLORS.navy }}
               >
                 ₹{sellingPrice.toLocaleString("en-IN")}
+                {showPriceRange && <> – ₹{maxPrice.toLocaleString("en-IN")}</>}
               </span>
 
-              {mrp > sellingPrice && (
+              {!showPriceRange && mrp > sellingPrice && (
                 <span className="text-lg text-gray-400 line-through">
                   ₹{mrp.toLocaleString("en-IN")}
                 </span>
               )}
 
-              {discount > 0 && (
+              {!showPriceRange && discount > 0 && (
                 <span className="px-3 py-1 rounded-full bg-[#EAF0FF] text-[#2C62E0] text-sm font-bold">
                   {discount}% OFF
                 </span>
@@ -576,6 +648,17 @@ function handleWishlist() {
               <p className="mt-2 text-sm text-gray-500">
                 {product.availabilityMessage}
               </p>
+            )}
+
+            {/* Options: weight, size … */}
+            {hasOptions && !isEnquiryOnly && (
+              <ProductOptions
+                options={productOptions}
+                variants={productVariants}
+                selection={selection}
+                onChange={handleOptionChange}
+                highlight={optionHint}
+              />
             )}
 
             {/* Quantity */}
@@ -630,7 +713,7 @@ function handleWishlist() {
                 <>
                 <button
   type="button"
-  onClick={handleAddToCart}
+  onClick={() => handleAddToCart()}
   disabled={!isInStock || addingToCart}
   className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold border transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#EAF0FF]"
   style={{
@@ -645,8 +728,8 @@ function handleWishlist() {
 
                   <button
                     type="button"
-                    disabled={!isInStock}
-                    onClick={() => navigate("/checkout")}
+                    disabled={!isInStock || addingToCart}
+                    onClick={() => handleAddToCart({ checkout: true })}
                     className="flex-1 px-6 py-3.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{
                       backgroundColor: COLORS.blue,
@@ -916,24 +999,7 @@ function handleWishlist() {
                   relatedProduct._id ||
                   relatedProduct.slug
                 }
-                product={{
-                  id: relatedProduct._id,
-                  name: relatedProduct.name,
-                  slug: relatedProduct.slug,
-                  brand: relatedProduct.brand,
-                  image: relatedProduct.thumbnail,
-                  price:
-                    Number(
-                      relatedProduct.sellingPrice
-                    ) || 0,
-                  originalPrice:
-                    Number(relatedProduct.mrp) || 0,
-                  discount:
-                    Number(
-                      relatedProduct.discountPercent
-                    ) || 0,
-                  badge: relatedProduct.badge,
-                }}
+                product={normalizeProduct(relatedProduct)}
               />
             ))}
           </div>

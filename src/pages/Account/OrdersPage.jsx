@@ -305,6 +305,7 @@ export default function OrdersPage() {
 
         <p className="line-clamp-2 text-sm font-semibold text-[#0E1A3D] sm:text-base">
           {items[0]?.name || "Order"}
+          {items[0]?.variantLabel && ` (${items[0].variantLabel})`}
           {items.length > 1 && ` + ${items.length - 1} more`}
         </p>
 

@@ -12,6 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { cartService, wishlistService } from "@/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { COLORS } from "@/config/theme";
+import { optionNames } from "@/utils/productOptions";
 
 export default function ProductCard({ product, variant = "default" }) {
   const queryClient = useQueryClient();
@@ -26,6 +27,12 @@ export default function ProductCard({ product, variant = "default" }) {
   const price = Number(product?.price ?? product?.sellingPrice) || 0;
   const originalPrice = Number(product?.originalPrice ?? product?.mrp) || 0;
   const discount = Number(product?.discount ?? product?.discountPercent) || 0;
+  // Sold in several weights / sizes: the price shown is the cheapest option,
+  // and the cart button opens the product page to choose one.
+  const hasOptions = Boolean(product?.hasOptions || product?.variants?.length);
+  const maxPrice = Number(product?.maxPrice) || price;
+  const priceVaries = hasOptions && maxPrice > price;
+  const choose = optionNames(product?.options);
   const isWishlistCard = variant === "wishlist";
   const brand = typeof product?.brand === "string"
     ? product.brand
@@ -92,6 +99,10 @@ export default function ProductCard({ product, variant = "default" }) {
   }
 
   function handleCartClick() {
+    if (hasOptions && slug) {
+      navigate(`/products/${slug}`);
+      return;
+    }
     if (!isAuthenticated) {
       navigate("/login", { state: { from: window.location.pathname } });
       return;
@@ -232,6 +243,10 @@ export default function ProductCard({ product, variant = "default" }) {
       {/* Price + Add to Cart */}
 <div className="mt-auto flex min-h-11 items-center justify-between gap-2 pt-2">
   <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+    {priceVaries && (
+      <span className="text-[11px] text-gray-500">From</span>
+    )}
+
     <span
       className="text-base font-extrabold leading-6"
       style={{ color: COLORS.navy }}
@@ -239,7 +254,7 @@ export default function ProductCard({ product, variant = "default" }) {
       ₹{price.toLocaleString("en-IN")}
     </span>
 
-    {originalPrice > price && (
+    {!priceVaries && originalPrice > price && (
       <span className="text-[11px] text-gray-400 line-through">
         ₹{originalPrice.toLocaleString("en-IN")}
       </span>
@@ -249,9 +264,9 @@ export default function ProductCard({ product, variant = "default" }) {
   <button
     type="button"
     onClick={handleCartClick}
-    disabled={!productId || actionPending || unavailable}
-    aria-label={`Add ${product.name} to cart`}
-    title={unavailable ? "Currently unavailable" : "Add to cart"}
+    disabled={!productId || actionPending || (unavailable && !hasOptions)}
+    aria-label={hasOptions ? `Choose ${choose} for ${product.name}` : `Add ${product.name} to cart`}
+    title={hasOptions ? `Choose ${choose}` : unavailable ? "Currently unavailable" : "Add to cart"}
     className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0E1A3D] text-white transition hover:bg-[#2C62E0] disabled:cursor-not-allowed disabled:opacity-50"
   >
     {cartMutation.isPending ? (

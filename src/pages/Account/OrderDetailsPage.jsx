@@ -241,7 +241,7 @@ export default function OrderDetailsPage() {
           <div className="mt-4 divide-y divide-slate-100">
             {items.map((item, index) => (
               <div
-                key={item._id || item.product || index}
+                key={item._id || `${item.product}-${item.variantId || ""}` || index}
                 className="flex gap-3 py-4 first:pt-0 last:pb-0 sm:gap-5"
               >
                 {item.thumbnail ? (
@@ -260,6 +260,10 @@ export default function OrderDetailsPage() {
                   <p className="break-words font-semibold text-[#0E1A3D]">
                     {item.name || "Product"}
                   </p>
+
+                  {item.variantLabel && (
+                    <p className="mt-1 text-sm text-slate-600">{item.variantLabel}</p>
+                  )}
 
                   {item.sku && (
                     <p className="mt-1 text-xs text-slate-500">

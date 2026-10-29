@@ -22,6 +22,8 @@ function normalizeCart(response) {
   const products = Array.isArray(data?.products) ? data.products : [];
   return {
     products,
+    // Lines the server took out because their option (weight, size …) is gone.
+    removedItems: Array.isArray(data?.removedItems) ? data.removedItems : [],
     totalItems:
       Number(data?.totalItems) ||
       products.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0),
@@ -56,7 +58,7 @@ export default function CartPage() {
   const refreshCart = async () => queryClient.invalidateQueries({ queryKey: ["cart"] });
 
   const updateMutation = useMutation({
-    mutationFn: ({ productId, quantity }) => cartService.updateCartItem(productId, quantity),
+    mutationFn: ({ productId, quantity, variantId }) => cartService.updateCartItem(productId, quantity, variantId),
     onMutate: () => setActionError(""),
     onSuccess: refreshCart,
     onError: (error) => setActionError(
@@ -65,7 +67,7 @@ export default function CartPage() {
   });
 
   const removeMutation = useMutation({
-    mutationFn: (productId) => cartService.removeCartItem(productId),
+    mutationFn: ({ productId, variantId }) => cartService.removeCartItem(productId, variantId),
     onMutate: () => setActionError(""),
     onSuccess: refreshCart,
     onError: (error) => setActionError(
@@ -91,7 +93,7 @@ export default function CartPage() {
       setActionError(`You can add up to ${MAX_QUANTITY} units of one product.`);
       return;
     }
-    updateMutation.mutate({ productId, quantity });
+    updateMutation.mutate({ productId, quantity, variantId: product.variantId || "" });
   }
 
   if (authLoading) return <CartPageLoading />;
@@ -136,6 +138,24 @@ export default function CartPage() {
           </div>
         )}
 
+        {cart.removedItems.length > 0 && (
+          <div role="status" className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <p className="font-semibold">
+              {cart.removedItems.length === 1 ? "An item was" : `${cart.removedItems.length} items were`} removed from your cart
+            </p>
+            <p className="mt-0.5">The weight or size you chose is no longer available. Choose again:</p>
+            <ul className="mt-1 list-inside list-disc">
+              {cart.removedItems.map((item) => (
+                <li key={item.productId}>
+                  {item.slug ? (
+                    <Link to={`/products/${item.slug}`} className="font-semibold underline">{item.name}</Link>
+                  ) : item.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {cartQuery.isLoading ? <CartSkeleton /> : cartQuery.isError ? (
           <div className="rounded-3xl border border-[#E5EAF4] bg-white px-6 py-14 text-center shadow-sm">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EAF0FF]"><RefreshCw className="h-7 w-7" style={{ color: COLORS.blue }} /></div>
@@ -171,7 +191,7 @@ export default function CartPage() {
                     const unavailable = product.stockStatus === "out_of_stock" || product.stock === 0;
 
                     return (
-                      <article key={productId || slug || product.name} className="p-4 sm:p-5 md:p-6">
+                      <article key={`${productId || slug || product.name}-${product.variantId || ""}`} className="p-4 sm:p-5 md:p-6">
                         <div className="flex gap-4 sm:gap-5">
                           <Link to={slug ? `/products/${slug}` : "/categories"} className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#EEF1F7] bg-[#F7F9FD] sm:h-32 sm:w-32" aria-label={`View ${product.name || "product"}`}>
                             {image ? <img src={image} alt={product.name || "Kreedum product"} className="h-full w-full object-contain p-2" loading="lazy" /> : <ShoppingBag className="h-9 w-9 text-slate-300" />}
@@ -181,13 +201,14 @@ export default function CartPage() {
                               <div className="min-w-0">
                                 {product.brand && <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.15em]" style={{ color: COLORS.blue }}>{typeof product.brand === "string" ? product.brand : product.brand?.name}</p>}
                                 <Link to={slug ? `/products/${slug}` : "/categories"} className="line-clamp-2 text-sm font-extrabold leading-5 transition hover:text-[#2C62E0] sm:text-base" style={{ color: COLORS.navy }}>{product.name || "Sports product"}</Link>
+                                {product.variantLabel && <p className="mt-1 text-xs font-semibold text-slate-600">{product.variantLabel}</p>}
                                 {product.sku && <p className="mt-1 text-xs text-slate-400">SKU: {product.sku}</p>}
                               </div>
                               <p className="hidden shrink-0 text-base font-extrabold sm:block" style={{ color: COLORS.navy }}>{formatINR(Number(product.total) || price * quantity)}</p>
                             </div>
                             <div className="mt-2 flex flex-wrap items-center gap-2">
                               <span className="text-sm font-bold" style={{ color: COLORS.navy }}>{formatINR(price)}</span>
-                              {mrp > price && <><span className="text-xs text-slate-400 line-through">{formatINR(mrp)}</span><span className="rounded-full bg-[#EAF0FF] px-2 py-0.5 text-[10px] font-extrabold text-[#2C62E0]">{Math.round(((mrp - price) / mrp) * 100)}% OFF</span></>}
+                              {mrp > price && <><span className="text-xs text-slate-400 line-through">{formatINR(mrp)}</span>{Math.round(((mrp - price) / mrp) * 100) > 0 && <span className="rounded-full bg-[#EAF0FF] px-2 py-0.5 text-[10px] font-extrabold text-[#2C62E0]">{Math.round(((mrp - price) / mrp) * 100)}% OFF</span>}</>}
                             </div>
                             {unavailable && <p className="mt-2 text-xs font-semibold text-red-600">Currently unavailable — remove this item to continue.</p>}
                             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -196,7 +217,7 @@ export default function CartPage() {
                                 <span className="min-w-8 text-center text-sm font-bold tabular-nums" aria-live="polite">{quantity}</span>
                                 <button type="button" aria-label={`Increase quantity of ${product.name || "product"}`} disabled={isMutating || quantity >= MAX_QUANTITY} onClick={() => changeQuantity(product, quantity + 1)} className="flex h-9 w-9 items-center justify-center rounded-r-xl transition hover:bg-[#F2F5FB] disabled:cursor-not-allowed disabled:opacity-35"><Plus size={14} /></button>
                               </div>
-                              <button type="button" onClick={() => { if (productId) removeMutation.mutate(productId); }} disabled={isMutating} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 transition hover:text-red-600 disabled:opacity-50"><Trash2 size={14} /> Remove</button>
+                              <button type="button" onClick={() => { if (productId) removeMutation.mutate({ productId, variantId: product.variantId || "" }); }} disabled={isMutating} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 transition hover:text-red-600 disabled:opacity-50"><Trash2 size={14} /> Remove</button>
                             </div>
                             <p className="mt-3 text-sm font-extrabold sm:hidden" style={{ color: COLORS.navy }}>Item total: {formatINR(Number(product.total) || price * quantity)}</p>
                           </div>

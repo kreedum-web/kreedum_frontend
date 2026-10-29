@@ -17,6 +17,10 @@ export function normalizeProduct(product) {
     originalPrice: Number(product.mrp) || 0,
     discount: Number(product.discountPercent) || 0,
 
+    // Sold in several weights / sizes: `price` is the cheapest option.
+    maxPrice: Number(product.maxPrice) || Number(product.sellingPrice) || 0,
+    hasOptions: Array.isArray(product.variants) && product.variants.length > 0,
+
     // Images
     image:
       product.thumbnail ||

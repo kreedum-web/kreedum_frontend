@@ -835,7 +835,7 @@ export default function CheckoutPage() {
               <div className="max-h-72 space-y-4 overflow-y-auto p-5">
                 {cart.products.map((product) => (
                   <div
-                    key={product._id || product.slug || product.name}
+                    key={`${product._id || product.slug || product.name}-${product.variantId || ""}`}
                     className="flex gap-3"
                   >
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#EEF1F7] bg-[#F6F8FC]">
@@ -854,6 +854,9 @@ export default function CheckoutPage() {
                       <p className="line-clamp-2 text-xs font-bold" style={{ color: COLORS.navy }}>
                         {product.name}
                       </p>
+                      {product.variantLabel && (
+                        <p className="mt-0.5 text-xs text-slate-600">{product.variantLabel}</p>
+                      )}
                       <p className="mt-1 text-xs text-slate-500">
                         Qty: {product.quantity}
                       </p>
