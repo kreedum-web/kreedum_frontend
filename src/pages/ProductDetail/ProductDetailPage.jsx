@@ -845,7 +845,7 @@ function handleWishlist() {
     PRODUCT DETAILS
 ====================================================== */}
 
-{(product.descriptionText ||
+{Boolean(product.descriptionText ||
   product.descriptionHtml ||
   product.features?.length ||
   product.highlights?.length) && (
