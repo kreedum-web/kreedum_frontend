@@ -1,10 +1,12 @@
 import { COLORS } from "@/config/theme";
 import { findVariant } from "@/utils/productOptions";
+import Dropdown from "@/components/common/Dropdown";
 
 const formatINR = (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
 
 /**
- * Weight / size buttons for a product sold in several versions.
+ * Weight / size picker for a product sold in several versions: a compact
+ * dropdown on mobile, buttons from tablet up.
  * A value is crossed out when no version with it (and the other chosen
  * options) is in stock. With a single option, each button shows its price.
  */
@@ -48,7 +50,32 @@ export default function ProductOptions({ options, variants, selection, onChange,
               )}
             </legend>
 
-            <div className="flex flex-wrap gap-2">
+            {/* Mobile: dropdown */}
+            <div
+              className={`md:hidden ${
+                highlight && !chosen ? "rounded-xl ring-2 ring-red-300" : ""
+              }`}
+            >
+              <Dropdown
+                variant="field"
+                label={option.name}
+                value={chosen || ""}
+                options={[
+                  { label: `Choose ${option.name.toLowerCase()}`, value: "" },
+                  ...option.values.map((value) => {
+                    const price = singleOption ? variantFor(option.name, value)?.sellingPrice : null;
+                    const parts = [value];
+                    if (price) parts.push(formatINR(price));
+                    if (!available(option.name, value)) parts.push("out of stock");
+                    return { label: parts.join(" · "), value };
+                  }),
+                ]}
+                onChange={(value) => value && onChange(option.name, value)}
+              />
+            </div>
+
+            {/* Tablet / desktop: buttons */}
+            <div className="hidden flex-wrap gap-2 md:flex">
               {option.values.map((value) => {
                 const selected = chosen === value;
                 const inStock = available(option.name, value);
