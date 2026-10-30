@@ -1,5 +1,5 @@
 import { useQuery, } from "@tanstack/react-query";
-import { ArrowRight, ChevronLeft, ChevronRight} from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef,useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -10,6 +10,27 @@ import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
 import homepageTestimonials from "@/data/homepageTestimonials";
 import homepageClients from "@/data/homepageClients";
+import { categoryUrl, useCategoryTree } from "@/hooks/useCategories";
+
+// Category tiles under the price strip (Decathlon-style grid), in this order.
+// Missing or empty categories are skipped; departments fill any gaps.
+const TILE_CATEGORIES = [
+  "treadmill",
+  "home-gym",
+  "dumbbells",
+  "benches-racks",
+  "spin-bike",
+  "massagers",
+  "boxing-and-punching-bags",
+  "yoga",
+];
+
+// Shorter names where the full one doesn't fit on a small tile.
+const TILE_LABELS = {
+  "benches-racks": "Benches",
+  "boxing-and-punching-bags": "Boxing Bags",
+  "weights-bars": "Weights",
+};
 
 
 const HERO_FALLBACK_IMAGES = [
@@ -18,112 +39,83 @@ const HERO_FALLBACK_IMAGES = [
   "/images/home-hero/sports-courts.jpg",
 ];
 
-function TestimonialsSection() {
-const trackRef = useRef(null);
-  const lastTimeRef = useRef(null);
+/* =========================================================
+   CUSTOMER REVIEWS STRIP (top of the page, auto-scrolling)
+========================================================= */
+
+function TestimonialStrip() {
+  const trackRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
 
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return undefined;
 
-useEffect(() => {
-  const track = trackRef.current;
-  if (!track) return;
+    const speed = 28; // pixels per second
+    let frameId;
+    let lastTime = null;
 
-  const speed = 25;
-  let frameId;
-  let lastTime = null;
-
-  const animate = (time) => {
-    if (lastTime !== null && !isPaused) {
-      const delta = time - lastTime;
-      track.scrollLeft += (speed * delta) / 1000;
-
-      if (track.scrollLeft >= track.scrollWidth / 2) {
-        track.scrollLeft -= track.scrollWidth / 2;
+    const animate = (time) => {
+      if (lastTime !== null && !isPaused) {
+        track.scrollLeft += (speed * (time - lastTime)) / 1000;
+        // The cards are listed twice, so jumping back half way is seamless.
+        if (track.scrollLeft >= track.scrollWidth / 2) {
+          track.scrollLeft -= track.scrollWidth / 2;
+        }
       }
-    }
+      lastTime = time;
+      frameId = requestAnimationFrame(animate);
+    };
 
-    lastTime = time;
     frameId = requestAnimationFrame(animate);
-  };
-
-  frameId = requestAnimationFrame(animate);
-
-  return () => cancelAnimationFrame(frameId);
-}, [isPaused]);
+    return () => cancelAnimationFrame(frameId);
+  }, [isPaused]);
 
   return (
-    <section className="relative overflow-hidden bg-[#F6F8FC] py-10 md:py-14">
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-        
-          
-<div className="mb-5 text-center md:mb-9">
-  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#2C62E0]">
-    Customer Stories
-  </p>
-  <h2 className="text-2xl font-bold text-[#0E1A3D] sm:text-3xl">
-    Trusted by Customers
-  </h2>
-
-  <p className="mt-2 text-sm text-gray-500">
-    Real experiences from people who choose Kreedum for sports and fitness.
-  </p>
-</div>
-
-        
+    <section aria-label="Customer reviews" className="bg-[#0E1A3D]">
+      <div className="mx-auto flex max-w-7xl items-stretch gap-2 py-2.5 pl-3 sm:px-4 md:gap-4 md:px-6 md:py-4">
+        <div className="flex w-[84px] shrink-0 flex-col justify-center text-white md:w-[160px]">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-blue-200 md:text-xs">
+            Customer stories
+          </p>
+          <p className="mt-0.5 text-sm font-bold leading-tight md:text-lg">
+            Trusted by customers
+          </p>
+        </div>
 
         <div
           ref={trackRef}
-          className="testimonials-track flex gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex min-w-0 flex-1 gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:gap-3"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onTouchStart={() => setIsPaused(true)}
           onTouchEnd={() => setIsPaused(false)}
-          onWheel={() => setIsPaused(true)}
         >
-          {/* Duplicate cards for seamless looping */}
-          {[...homepageTestimonials, ...homepageTestimonials].map(
-            (testimonial, index) => (
-              <article
-                key={`${testimonial.name}-${index}`}
-                className="flex w-[82vw] max-w-[300px] shrink-0 flex-col rounded-xl border border-white bg-white p-5 shadow-[0_8px_28px_rgba(14,26,61,0.07)] sm:w-[280px]"
+          {[...homepageTestimonials, ...homepageTestimonials].map((testimonial, index) => (
+            <article
+              key={`${testimonial.name}-${index}`}
+              aria-hidden={index >= homepageTestimonials.length || undefined}
+              className="flex w-[150px] shrink-0 flex-col rounded-lg bg-white px-2.5 py-2 md:w-[240px] md:px-3.5 md:py-2.5"
+            >
+              <div
+                className="text-[10px] leading-none text-[#F59E0B] md:text-xs"
+                aria-label={`${testimonial.rating} out of 5 stars`}
               >
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-3xl font-bold leading-none text-[#2C62E0]/25">
-                    &ldquo;
-                  </span>
-
-                  <div
-                    className="flex gap-0.5 text-sm text-[#F59E0B]"
-                    aria-label={`${testimonial.rating} out of 5 stars`}
-                  >
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <span key={i}>
-                        {i < testimonial.rating ? "★" : "☆"}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <p className="mb-5 text-sm leading-6 text-[#4B5568]">
-                  {testimonial.review}
-                </p>
-
-                <div className="mt-auto border-t border-gray-100 pt-3">
-                  <h3 className="text-sm font-semibold text-[#0E1A3D]">
-                    {testimonial.name}
-                  </h3>
-                  <p className="mt-0.5 text-xs text-gray-400">Customer</p>
-                </div>
-              </article>
-            )
-          )}
+                {Array.from({ length: 5 }, (_, i) => (i < testimonial.rating ? "★" : "☆")).join("")}
+              </div>
+              <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-[#4B5568] md:text-[13px]">
+                {testimonial.review}
+              </p>
+              <p className="mt-auto pt-1 text-[10px] font-semibold text-[#0E1A3D] md:text-xs">
+                {testimonial.name}
+              </p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
   );
 }
-
-
 
 function ClientsSection() {
   const trackRef = useRef(null);
@@ -165,36 +157,29 @@ function ClientsSection() {
   const clients = [...homepageClients, ...homepageClients];
 
   return (
-    <section className="overflow-hidden border-y border-gray-100 bg-white py-10 md:py-14">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-7 text-center md:mb-9">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#2C62E0]">
-            Our Trusted Partners
+    <section aria-label="Our clients" className="mt-3 bg-[#0E1A3D] md:mt-5">
+      <div className="mx-auto flex max-w-7xl items-center gap-2 py-2.5 pl-3 sm:px-4 md:gap-4 md:px-6 md:py-3">
+        <div className="w-[84px] shrink-0 md:w-[160px]">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-blue-200 md:text-xs">
+            Our clients
           </p>
-
-          <h2 className="text-2xl font-bold text-[#0E1A3D] sm:text-3xl">
-            Trusted By Our Clients
-          </h2>
-
-          <p className="mt-2 text-sm text-gray-500">
-            Supporting institutions and organizations with quality sports infrastructure.
+          <p className="mt-0.5 text-sm font-bold leading-tight text-white md:text-lg">
+            Trusted by institutions
           </p>
         </div>
 
         <div
           ref={trackRef}
-          className="clients-track flex items-center gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-6"
+          className="clients-track flex min-w-0 flex-1 items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:gap-3"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onTouchStart={() => setIsPaused(true)}
           onTouchEnd={() => setIsPaused(false)}
-          onWheel={() => setIsPaused(true)}
-          aria-label="Our clients"
         >
           {clients.map((client, index) => (
             <div
               key={`${client.name}-${index}`}
-              className="flex h-24 w-36 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-[#F8FAFD] px-4 py-3 transition duration-300 hover:-translate-y-1 hover:border-[#DCE6FF] hover:bg-white hover:shadow-md sm:h-28 sm:w-44"
+              className="flex h-12 w-20 shrink-0 items-center justify-center rounded-lg bg-white px-2 py-1.5 md:h-16 md:w-32 md:px-3"
             >
               <img
                 src={client.image}
@@ -210,7 +195,6 @@ function ClientsSection() {
     </section>
   );
 }
-
 
 function getBackendOrigin() {
   const apiUrl = import.meta.env.VITE_API_BASE_URL || "";
@@ -236,7 +220,8 @@ export default function HomePage() {
   const [activeBanner, setActiveBanner] = useState(0);
   const [heroImageFailed, setHeroImageFailed] = useState(false);
   const touchStartX = useRef(null);
-const touchStartY = useRef(null);
+  const touchStartY = useRef(null);
+  const { tree: categoryTree, bySlug: categoriesBySlug } = useCategoryTree();
 
   const {
     data: response,
@@ -365,119 +350,115 @@ const handleHeroTouchEnd = (event) => {
       className="bg-[#F6F8FC]"
       style={{ color: COLORS.navy }}
     >
+      {/* Clears the fixed navbar (158px on mobile, 114px on desktop).
+          Navy on desktop, where the navbar is see-through at the top. */}
+      <div aria-hidden="true" className="h-[158px] bg-white md:h-[114px] md:bg-[#0E1A3D]" />
+
       {/* =====================================================
-          HERO
+          CUSTOMER REVIEWS
+      ====================================================== */}
+      <TestimonialStrip />
+
+      {/* =====================================================
+          CATEGORY TILES
+      ====================================================== */}
+      <CategoryTiles tree={categoryTree} bySlug={categoriesBySlug} />
+
+      {/* =====================================================
+          CLIENTS
+      ====================================================== */}
+      <ClientsSection />
+
+      {/* =====================================================
+          OFFER BANNER (managed in the admin as homepage banners)
       ====================================================== */}
       {currentBanner && (
 <section
-  className="relative min-h-[400px] sm:min-h-[520px] md:min-h-[680px] overflow-hidden bg-[#0E1A3D] touch-pan-y"
+  className="relative mt-3 h-[210px] overflow-hidden bg-[#0E1A3D] touch-pan-y sm:h-[280px] md:mt-5 md:h-[360px]"
   onTouchStart={handleHeroTouchStart}
   onTouchEnd={handleHeroTouchEnd}
->      {currentBanner.image && (
-           <img
-  src={
-    !heroImageFailed && currentBanner.image
-      ? resolveImageUrl(currentBanner.image)
-      : HERO_FALLBACK_IMAGES[
-          activeBanner % HERO_FALLBACK_IMAGES.length
-        ]
-  }
-  alt={currentBanner.title || "Kreedum Sports fitness equipment"}
-  className="absolute inset-0 h-full w-full object-cover"
-  onError={() => {
-    if (!heroImageFailed) setHeroImageFailed(true);
-  }}
-/>
-          )}
+>
+          <img
+            src={
+              !heroImageFailed && currentBanner.image
+                ? resolveImageUrl(currentBanner.image)
+                : HERO_FALLBACK_IMAGES[activeBanner % HERO_FALLBACK_IMAGES.length]
+            }
+            alt={currentBanner.title || "Kreedum Sports fitness equipment"}
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={() => {
+              if (!heroImageFailed) setHeroImageFailed(true);
+            }}
+          />
 
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0E1A3D]/95 via-[#0E1A3D]/70 to-[#0E1A3D]/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0E1A3D]/90 via-[#0E1A3D]/55 to-transparent" />
 
-<div className="relative mx-auto max-w-7xl px-5 pt-[160px] pb-20 sm:px-6 sm:pt-36 sm:pb-24 md:pt-44 md:pb-32">
-     <div className="max-w-3xl">
-
-              <h1
-                className="mt-6 text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.05]"
-                style={{ color: COLORS.white }}
-              >
+          <div className="relative mx-auto flex h-full max-w-7xl items-end px-5 pb-9 sm:px-6 md:items-center md:pb-0">
+            <div className="max-w-xl">
+              <h1 className="text-2xl font-bold leading-tight text-white sm:text-3xl md:text-5xl">
                 {currentBanner.title}
               </h1>
 
               {currentBanner.subtitle && (
-                <p className="mt-6 max-w-2xl text-base md:text-lg leading-relaxed text-white/75">
+                <p className="mt-1.5 text-sm text-white/80 md:mt-3 md:text-lg">
                   {currentBanner.subtitle}
                 </p>
               )}
 
               {currentBanner.buttonText && (
                 <Link
-                  to={
-                    currentBanner.buttonLink ||
-                    "/categories"
-                  }
-                  className="inline-flex items-center gap-2 mt-8 px-6 py-3.5 rounded-full font-semibold transition-transform hover:scale-105"
-                  style={{
-                    backgroundColor: COLORS.blue,
-                    color: COLORS.white,
-                  }}
+                  to={currentBanner.buttonLink || "/categories"}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#0E1A3D] transition-colors hover:bg-[#EAF0FF] md:mt-6 md:px-6 md:py-3 md:text-sm"
                 >
                   {currentBanner.buttonText}
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 </Link>
               )}
             </div>
           </div>
 
-          {/* Previous */}
           {heroBanners.length > 1 && (
-            <button
-              type="button"
-              onClick={goPrevious}
-              aria-label="Previous banner"
-className="hidden md:flex absolute left-5 md:left-8 bottom-20 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/25 transition"            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-          )}
+            <>
+              <button
+                type="button"
+                onClick={goPrevious}
+                aria-label="Previous banner"
+                className="absolute left-5 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25 md:flex"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
 
-          {/* Next */}
-          {heroBanners.length > 1 && (
-            <button
-              type="button"
-              onClick={goNext}
-              aria-label="Next banner"
-className="hidden md:flex absolute right-5 md:right-8 bottom-20 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/25 transition"            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          )}
+              <button
+                type="button"
+                onClick={goNext}
+                aria-label="Next banner"
+                className="absolute right-5 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25 md:flex"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
 
-          {/* Indicators */}
-          {heroBanners.length > 1 && (
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2">
-              {heroBanners.map((banner, index) => (
-                <button
-                  key={banner.id || index}
-                  type="button"
-                  onClick={() =>
-                    setActiveBanner(index)
-                  }
-                  aria-label={`Go to banner ${
-                    index + 1
-                  }`}
-                  className={`h-2 rounded-full transition-all ${
-                    index === activeBanner
-                      ? "w-8 bg-white"
-                      : "w-2 bg-white/50"
-                  }`}
-                />
-              ))}
-            </div>
+              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5">
+                {heroBanners.map((banner, index) => (
+                  <button
+                    key={banner.id || index}
+                    type="button"
+                    onClick={() => {
+                      setHeroImageFailed(false);
+                      setActiveBanner(index);
+                    }}
+                    aria-label={`Go to banner ${index + 1}`}
+                    className={`h-1.5 rounded-full transition-all ${
+                      index === activeBanner ? "w-6 bg-white" : "w-1.5 bg-white/50"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </section>
       )}
 
 
-
-<TestimonialsSection />
-<ClientsSection />
 
       {/* =====================================================
           FEATURED PRODUCTS
@@ -529,13 +510,14 @@ className="hidden md:flex absolute right-5 md:right-8 bottom-20 md:bottom-auto m
       )}
 
 
+
       {/* =====================================================
           STATS
       ====================================================== */}
       {stats && (
-       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-12">
+       <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 md:py-10">
           <div
-            className="rounded-3xl p-8 md:p-12 grid grid-cols-1 sm:grid-cols-3 gap-8"
+            className="grid grid-cols-3 gap-3 rounded-2xl p-5 md:gap-8 md:p-10"
             style={{
               backgroundColor: COLORS.navy,
             }}
@@ -558,6 +540,45 @@ className="hidden md:flex absolute right-5 md:right-8 bottom-20 md:bottom-auto m
         </section>
       )}
     </div>
+  );
+}
+
+/* =========================================================
+   CATEGORY TILES (4 x 2 on mobile, one row of 8 on desktop)
+========================================================= */
+
+function CategoryTiles({ tree, bySlug }) {
+  const picked = TILE_CATEGORIES.map((slug) => bySlug.get(slug));
+  const tiles = [];
+  for (const item of [...picked, ...tree]) {
+    if (tiles.length === 8) break;
+    if (item?.productCount > 0 && item.image && !tiles.includes(item)) tiles.push(item);
+  }
+
+  if (!tiles.length) return null;
+
+  return (
+    <section className="mx-auto max-w-7xl px-3 pt-3 sm:px-4 md:px-6 md:pt-5">
+      <div className="grid grid-cols-4 gap-1.5 md:grid-cols-8 md:gap-3">
+        {tiles.map((category) => (
+          <Link
+            key={category.slug}
+            to={categoryUrl(category.slug)}
+            className="group relative block aspect-square overflow-hidden rounded-lg bg-white"
+          >
+            <img
+              src={category.image}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-contain p-1.5 pb-5 transition-transform duration-300 group-hover:scale-105"
+            />
+            <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-white via-white/95 to-white/0 px-1 pb-1 pt-3 text-center text-[10px] font-semibold leading-tight text-[#0E1A3D] md:text-xs">
+              {TILE_LABELS[category.slug] || category.name}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -589,10 +610,10 @@ function ProductSection({
 
   return (
     <section className={background ? "bg-white" : ""}>
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 md:py-8">
 
         {/* Section heading */}
-        <div className="mb-4 flex items-end justify-between gap-2 md:mb-8">
+        <div className="mb-3 flex items-end justify-between gap-2 md:mb-5">
           <SectionTitle
             title={title}
             subtitle={subtitle}
@@ -663,7 +684,7 @@ function Stat({ value, label }) {
   return (
     <div className="text-center">
       <div
-        className="text-3xl md:text-4xl font-bold"
+        className="text-xl font-bold md:text-4xl"
         style={{ color: COLORS.white }}
       >
         {Number(value || 0).toLocaleString(
@@ -671,7 +692,7 @@ function Stat({ value, label }) {
         )}
       </div>
 
-      <div className="mt-1 text-sm text-white/55">
+      <div className="mt-0.5 text-xs text-white/55 md:mt-1 md:text-sm">
         {label}
       </div>
     </div>

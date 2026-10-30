@@ -5,9 +5,9 @@ export default function SectionTitle({
   subtitle,
 }) {
   return (
-    <div className="flex flex-col gap-2 mb-6">
+    <div className="flex flex-col gap-0.5">
       <h2
-        className="text-2xl md:text-3xl font-bold tracking-tight"
+        className="text-lg font-bold tracking-tight md:text-2xl"
         style={{
           color: COLORS.navy,
           fontFamily: '"Manrope", sans-serif',
@@ -18,7 +18,7 @@ export default function SectionTitle({
 
       {subtitle && (
         <p
-          className="text-sm md:text-base"
+          className="text-xs md:text-sm"
           style={{
             color: COLORS.slate,
             fontFamily: '"Manrope", sans-serif',
