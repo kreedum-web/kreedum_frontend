@@ -1,6 +1,6 @@
 import { useQuery, } from "@tanstack/react-query";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useRef,useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { homepageService } from "@/api";
@@ -12,8 +12,8 @@ import homepageTestimonials from "@/data/homepageTestimonials";
 import homepageClients from "@/data/homepageClients";
 import { categoryUrl, useCategoryTree } from "@/hooks/useCategories";
 
-// Category tiles under the price strip (Decathlon-style grid), in this order.
-// Missing or empty categories are skipped; departments fill any gaps.
+// Category tiles (swipeable, two rows per page). These come first, then
+// every department and every category that has products and a photo.
 const TILE_CATEGORIES = [
   "treadmill",
   "home-gym",
@@ -27,9 +27,24 @@ const TILE_CATEGORIES = [
 
 // Shorter names where the full one doesn't fit on a small tile.
 const TILE_LABELS = {
-  "benches-racks": "Benches",
+  "benches-racks": "Benches & Racks",
+  "benches-racks-domestic": "Home Benches",
   "boxing-and-punching-bags": "Boxing Bags",
-  "weights-bars": "Weights",
+  "functional-trainer-cable-cross-over": "Cable Crossover",
+  "functional-trainer-smith-machine-combo": "Smith Combo",
+  "plate-loaded-station": "Plate Loaded",
+  "outdoor-gym-equipment": "Outdoor Gym",
+  "air-bikes-orbitracts": "Air Bikes",
+  "elliptical-cross-trainer": "Ellipticals",
+  "fixed-weighted-barbells": "Fixed Barbells",
+  "full-body-vibrator-massager": "Body Vibrator",
+  "leg-foot-massager": "Foot Massager",
+  "attachments-for-machines": "Attachments",
+  "boxes-bags": "Strength Bags",
+  "training-hammer-sled": "Hammer & Sled",
+  "band": "Bands",
+  "tubes": "Tubes",
+  "other-accessories": "More Gear",
 };
 
 
@@ -544,40 +559,132 @@ const handleHeroTouchEnd = (event) => {
 }
 
 /* =========================================================
-   CATEGORY TILES (4 x 2 on mobile, one row of 8 on desktop)
+   CATEGORY TILES — swipeable pages
+   (4 x 2 per page on mobile, one row of 8 on desktop)
 ========================================================= */
 
+// One page of tiles = the visible width plus the gap after it.
+function tilePageWidth(track) {
+  return track.clientWidth + (parseFloat(getComputedStyle(track).columnGap) || 0);
+}
+
 function CategoryTiles({ tree, bySlug }) {
-  const picked = TILE_CATEGORIES.map((slug) => bySlug.get(slug));
+  const trackRef = useRef(null);
+  const [page, setPage] = useState(0);
+  const [pageCount, setPageCount] = useState(1);
+
   const tiles = [];
-  for (const item of [...picked, ...tree]) {
-    if (tiles.length === 8) break;
-    if (item?.productCount > 0 && item.image && !tiles.includes(item)) tiles.push(item);
-  }
+  const seen = new Set();
+  const add = (item) => {
+    if (item?.productCount > 0 && item.image && !seen.has(item.slug)) {
+      seen.add(item.slug);
+      tiles.push(item);
+    }
+  };
+  TILE_CATEGORIES.forEach((slug) => add(bySlug.get(slug)));
+  tree.forEach(add);
+  tree.forEach((department) => department.children.forEach(add));
+
+  const update = useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const width = tilePageWidth(track);
+    const count = Math.max(1, Math.ceil((track.scrollWidth + 1) / width - 0.01));
+    const atEnd = track.scrollLeft >= track.scrollWidth - track.clientWidth - 2;
+    setPageCount(count);
+    setPage(atEnd ? count - 1 : Math.round(track.scrollLeft / width));
+  }, []);
+
+  // Page count changes with the screen size (4 or 8 columns per page).
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return undefined;
+    const observer = new ResizeObserver(() => update());
+    observer.observe(track);
+    return () => observer.disconnect();
+  }, [update, tiles.length]);
+
+  const goTo = (index) => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollTo({ left: index * tilePageWidth(track), behavior: "smooth" });
+  };
 
   if (!tiles.length) return null;
 
   return (
     <section className="mx-auto max-w-7xl px-3 pt-3 sm:px-4 md:px-6 md:pt-5">
-      <div className="grid grid-cols-4 gap-1.5 md:grid-cols-8 md:gap-3">
-        {tiles.map((category) => (
+      <div className="relative">
+      <div
+        ref={trackRef}
+        onScroll={update}
+        className="grid snap-x snap-mandatory grid-flow-col grid-rows-2 md:grid-rows-1 auto-cols-[calc((100%-3*0.375rem)/4)] gap-1.5 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:auto-cols-[calc((100%-7*0.75rem)/8)] md:gap-3"
+      >
+        {tiles.map((category, index) => (
           <Link
             key={category.slug}
             to={categoryUrl(category.slug)}
-            className="group relative block aspect-square overflow-hidden rounded-lg bg-white"
+            title={category.name}
+            // a new page starts every 8 tiles (4 x 2 on mobile, 8 x 1 on desktop)
+            className={`group relative block aspect-square overflow-hidden rounded-lg bg-white ${
+              index % 8 === 0 ? "snap-start" : ""
+            }`}
           >
             <img
               src={category.image}
               alt=""
               loading="lazy"
-              className="h-full w-full object-contain p-1.5 pb-5 transition-transform duration-300 group-hover:scale-105"
+              className="h-full w-full object-contain p-1.5 pb-6 transition-transform duration-300 group-hover:scale-105"
             />
-            <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-white via-white/95 to-white/0 px-1 pb-1 pt-3 text-center text-[10px] font-semibold leading-tight text-[#0E1A3D] md:text-xs">
+            <span className="absolute inset-x-0 bottom-0 line-clamp-2 bg-gradient-to-t from-white via-white/95 to-white/0 px-1 pb-1 pt-3 text-center text-[10px] font-semibold leading-tight text-[#0E1A3D] md:text-xs">
               {TILE_LABELS[category.slug] || category.name}
             </span>
           </Link>
         ))}
       </div>
+
+        {/* Desktop: arrows on the sides of the row */}
+        {page > 0 && (
+          <button
+            type="button"
+            onClick={() => goTo(page - 1)}
+            aria-label="Previous categories"
+            className="absolute -left-4 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#0E1A3D] shadow-md ring-1 ring-black/5 transition hover:text-[#2C62E0] md:flex"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+        )}
+        {page < pageCount - 1 && (
+          <button
+            type="button"
+            onClick={() => goTo(page + 1)}
+            aria-label="More categories"
+            className="absolute -right-4 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#0E1A3D] shadow-md ring-1 ring-black/5 transition hover:text-[#2C62E0] md:flex"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+
+      {pageCount > 1 && (
+        <div className="mt-2 flex items-center justify-center">
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: pageCount }, (_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => goTo(index)}
+                aria-label={`Categories page ${index + 1}`}
+                aria-current={index === page ? "true" : undefined}
+                className={`h-1.5 rounded-full transition-all ${
+                  index === page ? "w-5 bg-[#2C62E0]" : "w-1.5 bg-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+
+        </div>
+      )}
     </section>
   );
 }
