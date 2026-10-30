@@ -16,6 +16,8 @@ import { COLORS } from "@/config/theme";
  *   id          put on the button, so a <label htmlFor> points at it
  *   label       accessible name of the list
  *   className   extra classes for the wrapper (e.g. spacing)
+ *   maxVisible  rows shown before the list scrolls (default: up to 60% of the screen)
+ *   placeholder text on the button while nothing is chosen (not listed as an option)
  */
 export default function Dropdown({
   value,
@@ -28,6 +30,8 @@ export default function Dropdown({
   id,
   label = "Options",
   className = "",
+  maxVisible,
+  placeholder,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -53,8 +57,8 @@ export default function Dropdown({
     };
   }, []);
 
-  const selectedOption =
-    options.find((option) => option.value === value) || options[0];
+   const selectedOption =
+    options.find((option) => option.value === value) || (placeholder ? null : options[0]);
 
   const buttonSize = isField
     ? "min-h-[46px] border-[#DDE4F2] px-3 py-3 text-sm focus:border-[#2C62E0] focus:ring-[#2C62E0]/10"
@@ -80,7 +84,9 @@ export default function Dropdown({
           hover:border-[#2C62E0] focus:outline-none focus:ring-2 ${buttonSize}`}
         style={{ color: COLORS.navy }}
       >
-        <span className="truncate">{selectedOption?.label}</span>
+                <span className={`truncate ${selectedOption ? "" : "text-gray-500"}`}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
         <ChevronDown
           size={16}
           className={`shrink-0 transition-transform duration-200 ${
@@ -93,6 +99,8 @@ export default function Dropdown({
         <div
           role="listbox"
           aria-label={label}
+          // each row is 2.25rem tall, plus the list's 0.5rem padding top and bottom
+          style={maxVisible ? { maxHeight: `calc(${maxVisible} * 2.25rem + 1rem)` } : undefined}
           className={`absolute top-full z-50 mt-2
             max-h-[60vh] overflow-y-auto
             max-w-[calc(100vw-32px)]

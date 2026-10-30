@@ -58,18 +58,17 @@ export default function ProductOptions({ options, variants, selection, onChange,
             >
               <Dropdown
                 variant="field"
+                maxVisible={3}
                 label={option.name}
                 value={chosen || ""}
-                options={[
-                  { label: `Choose ${option.name.toLowerCase()}`, value: "" },
-                  ...option.values.map((value) => {
-                    const price = singleOption ? variantFor(option.name, value)?.sellingPrice : null;
-                    const parts = [value];
-                    if (price) parts.push(formatINR(price));
-                    if (!available(option.name, value)) parts.push("out of stock");
-                    return { label: parts.join(" · "), value };
-                  }),
-                ]}
+               placeholder={`Choose ${option.name.toLowerCase()}`}
+                options={option.values.map((value) => {
+                  const price = singleOption ? variantFor(option.name, value)?.sellingPrice : null;
+                  const parts = [value];
+                  if (price) parts.push(formatINR(price));
+                  if (!available(option.name, value)) parts.push("out of stock");
+                  return { label: parts.join(" · "), value };
+                })}
                 onChange={(value) => value && onChange(option.name, value)}
               />
             </div>
