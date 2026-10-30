@@ -16,6 +16,7 @@ import {
 import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+
 import { productService } from "@/api";
 import { COLORS } from "@/config/theme";
 import ProductCard from "@/components/product/ProductCard";
@@ -39,6 +40,7 @@ export default function ProductDetailPage() {
 
 const [isImageZoomed, setIsImageZoomed] = useState(false);
 const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
+const [detailsExpanded, setDetailsExpanded] = useState(false);
 
 const touchStartRef = useRef(null);
 
@@ -802,163 +804,154 @@ function handleWishlist() {
         </div>
       </section>
 
-      {/* =====================================================
-          PRODUCT DETAILS
-      ====================================================== */}
 
-      {(product.descriptionText ||
-        product.descriptionHtml ||
-        hasSpecifications ||
-        product.features?.length ||
-        product.highlights?.length) && (
-        <section className="max-w-7xl mx-auto px-6 pb-8">
-          <div className="bg-white rounded-3xl border border-gray-100 p-6 md:p-8">
-            <h2
-              className="text-2xl font-bold"
+{/* =====================================================
+    PRODUCT SPECIFICATIONS
+====================================================== */}
+
+{hasSpecifications && (
+  <section className="max-w-7xl mx-auto px-6 pb-8">
+    <div className="bg-white rounded-3xl border border-gray-100 p-6 md:p-8">
+      <h2
+        className="text-2xl font-bold mb-6"
+        style={{ color: COLORS.navy }}
+      >
+        Product Specifications
+      </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 border border-gray-100 rounded-2xl overflow-hidden">
+        <Specification label="SKU" value={product.sku} />
+        <Specification label="Brand" value={product.brand} />
+        <Specification
+          label="Country of Origin"
+          value={product.countryOfOrigin}
+        />
+        <Specification label="Weight" value={product.weight} />
+        <Specification
+          label="Dimensions"
+          value={product.dimensions}
+        />
+        <Specification
+          label="Maximum User Weight"
+          value={product.maxUserWeight}
+        />
+        <Specification label="Warranty" value={product.warranty} />
+      </div>
+    </div>
+  </section>
+)}
+   
+{/* =====================================================
+    PRODUCT DETAILS
+====================================================== */}
+
+{(product.descriptionText ||
+  product.descriptionHtml ||
+  product.features?.length ||
+  product.highlights?.length) && (
+  <section className="max-w-7xl mx-auto px-6 pb-8">
+    <div className="bg-white rounded-3xl border border-gray-100 p-6 md:p-8">
+
+      {/* COLLAPSIBLE CONTENT */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ${
+          detailsExpanded ? "max-h-none" : "max-h-[420px]"
+        }`}
+      >
+        <h2
+          className="text-2xl font-bold"
+          style={{ color: COLORS.navy }}
+        >
+          Product Details
+        </h2>
+
+        {/* Description */}
+        {(product.descriptionText || product.descriptionHtml) && (
+          <div className="mt-6">
+            <h3
+              className="text-lg font-semibold"
               style={{ color: COLORS.navy }}
             >
-              Product Details
-            </h2>
+              Description
+            </h3>
 
-            {/* Description */}
-            {(product.descriptionText ||
-              product.descriptionHtml) && (
-              <div className="mt-6">
-                <h3
-                  className="text-lg font-semibold"
-                  style={{ color: COLORS.navy }}
-                >
-                  Description
-                </h3>
-
-                {product.descriptionText ? (
-                  <p className="mt-3 text-gray-600 leading-7 whitespace-pre-line">
-                    {product.descriptionText}
-                  </p>
-                ) : (
-                  <div
-                    className="mt-3 text-gray-600 leading-7"
-                    dangerouslySetInnerHTML={{
-                      __html: product.descriptionHtml,
-                    }}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* Highlights */}
-            {product.highlights?.length > 0 && (
-              <div className="mt-7">
-                <h3
-                  className="text-lg font-semibold"
-                  style={{ color: COLORS.navy }}
-                >
-                  Highlights
-                </h3>
-
-                <ul className="mt-3 grid sm:grid-cols-2 gap-3">
-                  {product.highlights.map(
-                    (item, index) => (
-                      <li
-                        key={index}
-                        className="flex gap-2 text-gray-600"
-                      >
-                        <Check
-                          className="w-4 h-4 mt-1 flex-shrink-0"
-                          style={{
-                            color: COLORS.blue,
-                          }}
-                        />
-                        {item}
-                      </li>
-                    )
-                  )}
-                </ul>
-              </div>
-            )}
-
-            {/* Features */}
-            {product.features?.length > 0 && (
-              <div className="mt-7">
-                <h3
-                  className="text-lg font-semibold"
-                  style={{ color: COLORS.navy }}
-                >
-                  Features
-                </h3>
-
-                <ul className="mt-3 grid sm:grid-cols-2 gap-3">
-                  {product.features.map(
-                    (item, index) => (
-                      <li
-                        key={index}
-                        className="flex gap-2 text-gray-600"
-                      >
-                        <Check
-                          className="w-4 h-4 mt-1 flex-shrink-0"
-                          style={{
-                            color: COLORS.blue,
-                          }}
-                        />
-                        {item}
-                      </li>
-                    )
-                  )}
-                </ul>
-              </div>
-            )}
-
-            {/* Specifications */}
-            {hasSpecifications && (
-              <div className="mt-8">
-                <h3
-                  className="text-lg font-semibold mb-4"
-                  style={{ color: COLORS.navy }}
-                >
-                  Specifications
-                </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 border border-gray-100 rounded-2xl overflow-hidden">
-                  <Specification
-                    label="SKU"
-                    value={product.sku}
-                  />
-
-                  <Specification
-                    label="Brand"
-                    value={product.brand}
-                  />
-
-                  <Specification
-                    label="Country of Origin"
-                    value={product.countryOfOrigin}
-                  />
-
-                  <Specification
-                    label="Weight"
-                    value={product.weight}
-                  />
-
-                  <Specification
-                    label="Dimensions"
-                    value={product.dimensions}
-                  />
-
-                  <Specification
-                    label="Maximum User Weight"
-                    value={product.maxUserWeight}
-                  />
-
-                  <Specification
-                    label="Warranty"
-                    value={product.warranty}
-                  />
-                </div>
-              </div>
+            {product.descriptionText ? (
+              <p className="mt-3 text-gray-600 leading-7 whitespace-pre-line">
+                {product.descriptionText}
+              </p>
+            ) : (
+              <div
+                className="mt-3 text-gray-600 leading-7"
+                dangerouslySetInnerHTML={{
+                  __html: product.descriptionHtml,
+                }}
+              />
             )}
           </div>
-        </section>
-      )}
+        )}
+
+        {/* Highlights */}
+        {product.highlights?.length > 0 && (
+          <div className="mt-7">
+            <h3
+              className="text-lg font-semibold"
+              style={{ color: COLORS.navy }}
+            >
+              Highlights
+            </h3>
+
+            <ul className="mt-3 grid sm:grid-cols-2 gap-3">
+              {product.highlights.map((item, index) => (
+                <li key={index} className="flex gap-2 text-gray-600">
+                  <Check
+                    className="w-4 h-4 mt-1 flex-shrink-0"
+                    style={{ color: COLORS.blue }}
+                  />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Features */}
+        {product.features?.length > 0 && (
+          <div className="mt-7">
+            <h3
+              className="text-lg font-semibold"
+              style={{ color: COLORS.navy }}
+            >
+              Features
+            </h3>
+
+            <ul className="mt-3 grid sm:grid-cols-2 gap-3">
+              {product.features.map((item, index) => (
+                <li key={index} className="flex gap-2 text-gray-600">
+                  <Check
+                    className="w-4 h-4 mt-1 flex-shrink-0"
+                    style={{ color: COLORS.blue }}
+                  />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* VIEW MORE / LESS */}
+      <button
+        type="button"
+        onClick={() => setDetailsExpanded((prev) => !prev)}
+        aria-expanded={detailsExpanded}
+        className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#2C62E0] hover:text-[#1F49B8] transition-colors"
+      >
+        {detailsExpanded ? "View less ↑" : "View more ↓"}
+      </button>
+    </div>
+  </section>
+)}
+
 
       {/* =====================================================
           RELATED PRODUCTS
