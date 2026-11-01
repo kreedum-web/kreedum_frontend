@@ -8,6 +8,7 @@ const API_ENDPOINTS = {
 
   PRODUCTS: "/products",
   HOMEPAGE: "/homepage",
+  SITE: "/site",
   SEARCH: "/search",
   CATEGORIES: "/categories",
   BRANDS: "/brands",

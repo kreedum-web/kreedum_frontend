@@ -1,6 +1,7 @@
 
 import { Link } from "react-router-dom";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 const values = [
   {
@@ -23,7 +24,8 @@ const values = [
   },
 ];
 
-const leaders = [
+// Shown until leaders are set up in the backend (GET /site).
+const BUILT_IN_LEADERS = [
   {
     name: "Richa Kothari",
     role: "Managing Director",
@@ -41,6 +43,9 @@ const leaders = [
 ];
 
 export default function AboutUsPage() {
+  const { leaders: siteLeaders } = useSiteContent();
+  const leaders = siteLeaders ?? BUILT_IN_LEADERS;
+
   return (
     <main className="min-h-screen bg-white">
       <InnerPageHeader
@@ -153,6 +158,7 @@ export default function AboutUsPage() {
 
 {/* Leadership */}
 {/* Leadership */}
+{leaders.length > 0 && (
 <section className="bg-[#F6F8FC] px-4 py-10 sm:px-6 lg:px-8 lg:py-20">
   <div className="mx-auto max-w-7xl">
     {/* Section Heading */}
@@ -264,6 +270,7 @@ export default function AboutUsPage() {
     </div>
   </div>
 </section>
+)}
 
 
       {/* CTA */}

@@ -11,6 +11,7 @@ import ProductCard from "@/components/product/ProductCard";
 import homepageTestimonials from "@/data/homepageTestimonials";
 import homepageClients from "@/data/homepageClients";
 import { categoryUrl, useCategoryTree } from "@/hooks/useCategories";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 // Category tiles (swipeable, two rows per page). These come first, then
 // every department and every category that has products and a photo.
@@ -169,7 +170,13 @@ function ClientsSection() {
     };
   }, [isPaused]);
 
-  const clients = [...homepageClients, ...homepageClients];
+  // From the backend once set up there; until then the built-in list.
+  const { clients: siteClients } = useSiteContent();
+  const list = siteClients ?? homepageClients;
+  const clients = [...list, ...list];
+
+  // All clients switched off in the backend: no strip.
+  if (!list.length) return null;
 
   return (
     <section aria-label="Our clients" className="mt-3 bg-[#0E1A3D] md:mt-5">
@@ -198,8 +205,8 @@ function ClientsSection() {
             >
               <img
                 src={client.image}
-                alt={index < homepageClients.length ? client.name : ""}
-                aria-hidden={index >= homepageClients.length}
+                alt={index < list.length ? client.name : ""}
+                aria-hidden={index >= list.length}
                 loading="lazy"
                 className="max-h-full max-w-full object-contain"
               />
