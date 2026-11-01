@@ -8,6 +8,8 @@ import { authService } from "@/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button, Input } from "@/components/common";
 import { COLORS } from "@/config/theme";
+import EmailCodeForm from "@/components/auth/EmailCodeForm";
+import { afterLoginPath } from "@/utils/afterLogin";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -27,6 +29,8 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // Account created: waiting for the code emailed to this address.
+  const [pendingEmail, setPendingEmail] = useState("");
 
   function updateField(event) {
     const { name, value } = event.target;
@@ -69,26 +73,21 @@ export default function RegisterPage() {
       });
 
       const result = response?.data?.data;
-      const token = result?.token;
-      const user = result?.user;
 
-      if (!token || !user) {
+      // The account is finished once the emailed code is entered.
+      if (result?.requiresVerification) {
+        setPendingEmail(result.email || form.email.trim().toLowerCase());
+        return;
+      }
+
+      if (!result?.token || !result?.user) {
         throw new Error(
           "The server returned an unexpected registration response."
         );
       }
 
-      login(token, user);
-
-      const requestedPath = location.state?.from;
-      const destination =
-        typeof requestedPath === "string" &&
-        requestedPath.startsWith("/") &&
-        !requestedPath.startsWith("//")
-          ? requestedPath
-          : "/";
-
-      navigate(destination, { replace: true });
+      login(result.token, result.user);
+      navigate(afterLoginPath(location), { replace: true });
     } catch (err) {
       setError(
         err?.response?.data?.message ||
@@ -104,6 +103,21 @@ export default function RegisterPage() {
     onChange: updateField,
     disabled: loading,
   };
+
+  if (pendingEmail) {
+    return (
+      <AuthLayout title="Check your email" subtitle="One last step to create your Kreedum Sports account.">
+        <EmailCodeForm
+          email={pendingEmail}
+          onVerified={({ token, user }) => {
+            login(token, user);
+            navigate(afterLoginPath(location), { replace: true });
+          }}
+          onChangeEmail={() => setPendingEmail("")}
+        />
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout

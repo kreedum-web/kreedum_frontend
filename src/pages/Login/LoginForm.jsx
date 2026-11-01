@@ -7,6 +7,8 @@ import { authService } from "@/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button, Input } from "@/components/common";
 import { COLORS } from "@/config/theme";
+import EmailCodeForm from "@/components/auth/EmailCodeForm";
+import { afterLoginPath } from "@/utils/afterLogin";
 
 export default function LoginForm() {
   const navigate = useNavigate();
@@ -19,6 +21,8 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  // Account not verified yet: the server just emailed a code to this address.
+  const [verifyEmail, setVerifyEmail] = useState("");
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -52,17 +56,12 @@ export default function LoginForm() {
       }
 
       login(token, user);
-
-      const requestedPath = location.state?.from;
-      const destination =
-        typeof requestedPath === "string" &&
-        requestedPath.startsWith("/") &&
-        !requestedPath.startsWith("//")
-          ? requestedPath
-          : "/";
-
-      navigate(destination, { replace: true });
+      navigate(afterLoginPath(location), { replace: true });
     } catch (err) {
+      if (err?.response?.data?.code === "EMAIL_NOT_VERIFIED") {
+        setVerifyEmail(err.response.data.email || normalizedEmail);
+        return;
+      }
       setError(
         err?.response?.data?.message ||
           err?.message ||
@@ -71,6 +70,24 @@ export default function LoginForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (verifyEmail) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm font-semibold" style={{ color: COLORS.navy }}>
+          Please verify your email to finish signing in.
+        </p>
+        <EmailCodeForm
+          email={verifyEmail}
+          onVerified={({ token, user }) => {
+            login(token, user);
+            navigate(afterLoginPath(location), { replace: true });
+          }}
+          onChangeEmail={() => setVerifyEmail("")}
+        />
+      </div>
+    );
   }
 
   return (
@@ -150,18 +167,14 @@ export default function LoginForm() {
         {!loading && <ArrowRight size={18} />}
       </Button>
 
-      <button
-        type="button"
-        onClick={() =>
-          setNotice(
-            "Password recovery is not available yet. Please contact Kreedum Sports for assistance."
-          )
-        }
-        className="w-full py-1 text-sm font-semibold hover:underline"
+      <Link
+        to="/forgot-password"
+        state={{ email: email.trim().toLowerCase(), from: location.state?.from }}
+        className="block w-full py-1 text-center text-sm font-semibold hover:underline"
         style={{ color: COLORS.blue }}
       >
         Forgot password?
-      </button>
+      </Link>
     </form>
   );
 }

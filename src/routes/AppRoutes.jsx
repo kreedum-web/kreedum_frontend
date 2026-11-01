@@ -6,6 +6,7 @@ import HomePage from "@/pages/Home/HomePage";
 import ProductsRedirect from "./ProductsRedirect";
 import LoginPage from "@/pages/Login";
 import RegisterPage from "@/pages/Register";
+import ForgotPasswordPage from "@/pages/ForgotPassword";
 import AuthContextTest from "@/pages/Test/AuthContextTest";
 import NotFoundPage from "@/pages/Error/NotFoundPage";
 import ScrollToTop from "@/components/layout/ScrollToTop";
@@ -64,6 +65,7 @@ export default function AppRoutes() {
       {/* Auth pages */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
       {/* Development QA */}
       <Route

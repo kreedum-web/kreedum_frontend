@@ -4,6 +4,10 @@ const API_ENDPOINTS = {
     LOGIN: "/auth/login",
     ME: "/auth/me",
     PROFILE: "/auth/profile",
+    VERIFY_EMAIL: "/auth/verify-email",
+    RESEND_CODE: "/auth/resend-code",
+    FORGOT_PASSWORD: "/auth/forgot-password",
+    RESET_PASSWORD: "/auth/reset-password",
   },
 
   PRODUCTS: "/products",
