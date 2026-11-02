@@ -2,6 +2,25 @@ import api from "./axios";
 import API_ENDPOINTS from "./endpoints";
 
 const authService = {
+  // Which sign-in buttons to show: { googleClientId, emailCode, phone }
+  getOptions() {
+    return api.get(API_ENDPOINTS.AUTH.OPTIONS);
+  },
+
+  // Sign in / sign up with a code sent to the email (no password)
+  startEmailLogin(payload) {
+    return api.post(API_ENDPOINTS.AUTH.EMAIL_START, payload);
+  },
+
+  verifyEmailLogin(payload) {
+    return api.post(API_ENDPOINTS.AUTH.EMAIL_VERIFY, payload);
+  },
+
+  // Continue with Google: { credential } from Google's button
+  googleLogin(payload) {
+    return api.post(API_ENDPOINTS.AUTH.GOOGLE, payload);
+  },
+
   register(payload) {
     return api.post(API_ENDPOINTS.AUTH.REGISTER, payload);
   },

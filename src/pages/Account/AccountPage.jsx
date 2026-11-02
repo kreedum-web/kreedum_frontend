@@ -14,6 +14,7 @@ import {
 import { profileService } from "@/api";
 import { useAuth } from "@/contexts/AuthContext";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
+import { displayName } from "@/utils/displayName";
 
 function getDashboardData(response) {
   return response?.data?.data;
@@ -157,7 +158,7 @@ export default function AccountPage() {
                       Welcome back,
                     </p>
                     <h2 className="mt-1 truncate text-xl font-bold text-[#0E1A3D] sm:text-2xl">
-                      {fullName || "Kreedum customer"}
+                      {fullName || displayName(user, "Kreedum customer")}
                     </h2>
                     <p className="mt-1 break-all text-sm text-slate-500">
                       {user?.email || ""}

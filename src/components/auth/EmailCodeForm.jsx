@@ -10,12 +10,22 @@ const RESEND_SECONDS = 60;
 const apiError = (error, fallback) => error?.response?.data?.message || error?.message || fallback;
 
 /**
- * "Enter the 6-digit code we emailed you" — finishes sign-up.
- * The code has just been sent when this shows (by sign-up or login).
+ * "Enter the 6-digit code we emailed you". The code has just been sent when
+ * this shows.
  *
- * onVerified({ token, user }) is called once the code is accepted.
+ * verify(code) and resend() call the backend; by default they finish an
+ * old-style sign-up (verify-email / resend-code). The sign-in page passes
+ * the email-code sign-in calls instead.
+ * onVerified({ token, user, isNew }) is called once the code is accepted.
  */
-export default function EmailCodeForm({ email, onVerified, onChangeEmail }) {
+export default function EmailCodeForm({
+  email,
+  onVerified,
+  onChangeEmail,
+  verify = (code) => authService.verifyEmail({ email, code }),
+  resend = () => authService.resendCode({ email }),
+  submitLabel = "Verify email",
+}) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,7 +50,7 @@ export default function EmailCodeForm({ email, onVerified, onChangeEmail }) {
 
     try {
       setLoading(true);
-      const response = await authService.verifyEmail({ email, code });
+      const response = await verify(code);
       const result = response?.data?.data;
       if (!result?.token || !result?.user) throw new Error("Unexpected response. Please try again.");
       onVerified(result);
@@ -56,7 +66,7 @@ export default function EmailCodeForm({ email, onVerified, onChangeEmail }) {
     setError("");
     setNotice("");
     try {
-      await authService.resendCode({ email });
+      await resend();
       setNotice("A new code is on its way. Check your inbox (and the spam folder).");
       setCooldown(RESEND_SECONDS);
     } catch (err) {
@@ -78,7 +88,7 @@ export default function EmailCodeForm({ email, onVerified, onChangeEmail }) {
 
       <div className="flex flex-col gap-2">
         <label htmlFor="email-code" className="text-sm font-semibold" style={{ color: COLORS.navy }}>
-          Verification code
+          6-digit code
         </label>
         <input
           id="email-code"
@@ -110,7 +120,7 @@ export default function EmailCodeForm({ email, onVerified, onChangeEmail }) {
       )}
 
       <Button type="submit" variant="primary" size="lg" fullWidth loading={loading} className="min-h-12 rounded-xl">
-        {loading ? "Checking..." : "Verify email"}
+        {loading ? "Checking..." : submitLabel}
         {!loading && <ArrowRight size={18} />}
       </Button>
 

@@ -12,6 +12,7 @@ import { cartService,wishlistService} from "@/api";
 import AnnouncementBanner from "./AnnouncementBanner";
 import CategoryMegaMenu from "./CategoryMegaMenu";
 import MobileCategoryMenu from "./MobileCategoryMenu";
+import { displayName, fullDisplayName } from "@/utils/displayName";
 
 export default function Navbar() {
   const location = useLocation();
@@ -336,7 +337,7 @@ onClick={() => {
     </p>
     <p className="mt-1 truncate text-sm font-bold text-[#0E1A3D]">
       {isAuthenticated
-        ? user?.name || user?.firstName || "Account"
+        ? fullDisplayName(user)
         : "Sign in to your account"}
     </p>
   </div>
@@ -394,17 +395,8 @@ onClick={() => {
         onClick={() => setAccountOpen(false)}
         className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-[#0E1A3D] hover:bg-[#EAF0FF]"
       >
-        Login
+        Sign in / Create account
         <User size={17} />
-      </Link>
-
-      <Link
-        to="/register"
-        onClick={() => setAccountOpen(false)}
-        className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-[#0E1A3D] hover:bg-[#EAF0FF]"
-      >
-        Create Account
-        <UserRoundPen size={17} />
       </Link>
     </>
   )}
@@ -558,9 +550,7 @@ onClick={() => {
       <User className="h-5 w-5 shrink-0" />
 
       <span className="max-w-28 truncate">
-        {user?.firstName ||
-          user?.name?.trim().split(/\s+/)[0] ||
-          "Account"}
+        {displayName(user)}
       </span>
 
       <ChevronDown
@@ -579,7 +569,7 @@ onClick={() => {
         <div className="border-b border-[#E5E9F2] px-3 py-3">
           <p className="text-xs text-[#8A93A6]">Signed in as</p>
           <p className="mt-1 truncate text-sm font-bold text-[#0E1A3D]">
-            {user?.name || user?.firstName || "Account"}
+            {fullDisplayName(user)}
           </p>
         </div>
 

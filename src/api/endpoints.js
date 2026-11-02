@@ -8,6 +8,10 @@ const API_ENDPOINTS = {
     RESEND_CODE: "/auth/resend-code",
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
+    OPTIONS: "/auth/options",
+    EMAIL_START: "/auth/email/start",
+    EMAIL_VERIFY: "/auth/email/verify",
+    GOOGLE: "/auth/google",
   },
 
   PRODUCTS: "/products",

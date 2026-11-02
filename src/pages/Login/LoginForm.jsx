@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, ArrowRight } from "lucide-react";
 
 import { authService } from "@/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,12 +10,16 @@ import { COLORS } from "@/config/theme";
 import EmailCodeForm from "@/components/auth/EmailCodeForm";
 import { afterLoginPath } from "@/utils/afterLogin";
 
-export default function LoginForm() {
+/**
+ * Email + password sign-in, for accounts created with a password.
+ * onUseCode(email): the account has no password, go back to the email code.
+ */
+export default function LoginForm({ initialEmail = "", onUseCode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,6 +62,11 @@ export default function LoginForm() {
       login(token, user);
       navigate(afterLoginPath(location), { replace: true });
     } catch (err) {
+      if (err?.response?.data?.code === "NO_PASSWORD" && onUseCode) {
+        setNotice("This account doesn't have a password. Sign in with an email code instead.");
+        setTimeout(() => onUseCode(normalizedEmail), 1800);
+        return;
+      }
       if (err?.response?.data?.code === "EMAIL_NOT_VERIFIED") {
         setVerifyEmail(err.response.data.email || normalizedEmail);
         return;
