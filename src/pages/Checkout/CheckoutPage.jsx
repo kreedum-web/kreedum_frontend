@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ChevronRight,
   LoaderCircle,
+  Mail,
   MapPin,
   PackageCheck,
   Plus,
@@ -17,6 +18,7 @@ import {
 
 import {
   addressService,
+  authService,
   cartService,
   orderService,
 } from "@/api";
@@ -61,6 +63,9 @@ export default function CheckoutPage() {
   const [formError, setFormError] = useState("");
   const [pincodeMessage, setPincodeMessage] = useState("");
   const [orderNotes, setOrderNotes] = useState("");
+  // Accounts that sign in with a phone number have no email: ask for one so
+  // the order confirmation (and any cancellation) can be emailed.
+  const [contactEmail, setContactEmail] = useState(null); // null = not edited yet
   const [placedOrder, setPlacedOrder] = useState(null);
 
 
@@ -81,6 +86,17 @@ export default function CheckoutPage() {
     enabled: isAuthenticated && !authLoading,
     retry: false,
   });
+
+  const meQuery = useQuery({
+    queryKey: ["me"],
+    queryFn: () => authService.getCurrentUser(),
+    enabled: isAuthenticated && !authLoading,
+    staleTime: 60 * 1000,
+    retry: 1,
+  });
+  const me = getData(meQuery.data) || null;
+  const needsEmail = Boolean(me) && !me.email;
+  const emailValue = contactEmail ?? me?.contactEmail ?? "";
 
   const addressesQuery = useQuery({
     queryKey: ["addresses"],
@@ -313,8 +329,16 @@ export default function CheckoutPage() {
       pincode: selectedAddress.pincode,
     };
 
+    const typedEmail = emailValue.trim().toLowerCase();
+    if (needsEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typedEmail)) {
+      setFormError("Enter your email address so we can send your order updates.");
+      document.getElementById("checkout-email")?.focus();
+      return;
+    }
+
     placeOrderMutation.mutate({
       shippingAddress,
+      ...(needsEmail ? { contactEmail: typedEmail } : {}),
       paymentMethod: "COD",
       notes: orderNotes.trim(),
     });
@@ -807,6 +831,31 @@ export default function CheckoutPage() {
                   Available
                 </span>
               </div>
+
+              {needsEmail && (
+                <div className="mb-4 mt-5 rounded-2xl border border-[#DDE4F2] bg-[#F6F8FC] p-4">
+                  <label htmlFor="checkout-email" className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                    <Mail size={15} color={COLORS.blue} />
+                    Email for order updates <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="checkout-email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={emailValue}
+                    onChange={(event) => {
+                      setContactEmail(event.target.value);
+                      setFormError("");
+                    }}
+                    className={inputClass}
+                  />
+                  <p className="mt-2 text-[11px] leading-4 text-slate-500">
+                    We'll email your order confirmation here. You'll keep signing in with your mobile number.
+                  </p>
+                </div>
+              )}
 
               <Field label="Order notes (optional)">
                 <textarea
