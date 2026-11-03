@@ -1,72 +1,46 @@
 import api from "./axios";
 import API_ENDPOINTS from "./endpoints";
 
+const A = API_ENDPOINTS.AUTH;
+
+/**
+ * Accounts sign in with the email or mobile number they signed up with + a
+ * password (or Google). A one-time code is only sent to create an account or
+ * to set / reset a password.
+ */
 const authService = {
-  // Which sign-in buttons to show: { googleClientId, emailCode, phone }
-  getOptions() {
-    return api.get(API_ENDPOINTS.AUTH.OPTIONS);
-  },
+  // Which options to show: { googleClientId, phone: null | "firebase" | "sms", firebase }
+  getOptions: () => api.get(A.OPTIONS),
 
-  // Sign in / sign up with a code sent to the email (no password)
-  startEmailLogin(payload) {
-    return api.post(API_ENDPOINTS.AUTH.EMAIL_START, payload);
-  },
+  // { identifier } → { type: "email" | "phone", value, exists, hasPassword }
+  identify: (payload) => api.post(A.IDENTIFY, payload),
 
-  verifyEmailLogin(payload) {
-    return api.post(API_ENDPOINTS.AUTH.EMAIL_VERIFY, payload);
-  },
+  // { identifier, password }
+  login: (payload) => api.post(A.LOGIN, payload),
 
-  // Phone OTP checked by Firebase: { idToken }
-  firebasePhoneLogin(payload) {
-    return api.post(API_ENDPOINTS.AUTH.PHONE_FIREBASE, payload);
-  },
+  // Email sign-up: { email, password } emails a code; verifyEmail({ email, code }) finishes it.
+  register: (payload) => api.post(A.REGISTER, payload),
+  verifyEmail: (payload) => api.post(A.VERIFY_EMAIL, payload),
+  resendCode: (payload) => api.post(A.RESEND_CODE, payload),
 
-  // Phone OTP sent by our own SMS provider: { phone } then { phone, code }
-  startPhoneLogin(payload) {
-    return api.post(API_ENDPOINTS.AUTH.PHONE_START, payload);
-  },
+  // Phone sign-up after the SMS code: { idToken, password } (Firebase) or { phone, code, password }.
+  registerPhone: (payload) => api.post(A.REGISTER_PHONE, payload),
+  // Own SMS provider only (Firebase sends its own SMS from the website).
+  startPhoneCode: (payload) => api.post(A.PHONE_START, payload),
 
-  verifyPhoneLogin(payload) {
-    return api.post(API_ENDPOINTS.AUTH.PHONE_VERIFY, payload);
-  },
+  // Forgot / set password by email: { email } then { email, code, password }.
+  forgotPassword: (payload) => api.post(A.FORGOT_PASSWORD, payload),
+  resetPassword: (payload) => api.post(A.RESET_PASSWORD, payload),
+  // By phone, after the SMS code: { idToken | phone+code, password }.
+  resetPasswordWithPhone: (payload) => api.post(A.RESET_PASSWORD_PHONE, payload),
 
-  // Continue with Google: { credential } from Google's button
-  googleLogin(payload) {
-    return api.post(API_ENDPOINTS.AUTH.GOOGLE, payload);
-  },
+  // Continue with Google: { credential } from Google's button.
+  googleLogin: (payload) => api.post(A.GOOGLE, payload),
 
-  register(payload) {
-    return api.post(API_ENDPOINTS.AUTH.REGISTER, payload);
-  },
-
-  login(payload) {
-    return api.post(API_ENDPOINTS.AUTH.LOGIN, payload);
-  },
-
-  getCurrentUser() {
-    return api.get(API_ENDPOINTS.AUTH.ME);
-  },
-
-  updateProfile(payload) {
-    return api.put(API_ENDPOINTS.AUTH.PROFILE, payload);
-  },
-
-  // 6-digit codes sent by email (sign-up and forgot password)
-  verifyEmail(payload) {
-    return api.post(API_ENDPOINTS.AUTH.VERIFY_EMAIL, payload);
-  },
-
-  resendCode(payload) {
-    return api.post(API_ENDPOINTS.AUTH.RESEND_CODE, payload);
-  },
-
-  forgotPassword(payload) {
-    return api.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, payload);
-  },
-
-  resetPassword(payload) {
-    return api.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, payload);
-  },
+  getCurrentUser: () => api.get(A.ME),
+  updateProfile: (payload) => api.put(A.PROFILE, payload),
+  // { currentPassword?, newPassword, confirmPassword? }
+  changePassword: (payload) => api.put(A.PASSWORD, payload),
 };
 
 export default authService;

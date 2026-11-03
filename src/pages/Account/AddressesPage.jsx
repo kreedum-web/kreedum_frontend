@@ -32,6 +32,7 @@ const INITIAL_ADDRESS = {
   label: "Home",
   fullName: "",
   phone: "",
+  email: "",
   addressLine1: "",
   addressLine2: "",
   locality: "",
@@ -41,6 +42,14 @@ const INITIAL_ADDRESS = {
   country: "India",
   pincode: "",
 };
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** A new address starts with the customer's own name, number and email (all editable). */
+function newAddressFor(user) {
+  const name = [user?.firstName, user?.lastName].filter(Boolean).join(" ");
+  return { ...INITIAL_ADDRESS, fullName: name, phone: user?.phone || "", email: user?.email || "" };
+}
 
 const REQUIRED_FIELDS = [
   "fullName",
@@ -75,7 +84,7 @@ function getErrorMessage(error, fallback) {
 }
 
 export default function AddressesPage() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, user } = useAuth();
   const queryClient = useQueryClient();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -110,7 +119,7 @@ export default function AddressesPage() {
   }
 
   function startAddAddress() {
-    setAddressForm(INITIAL_ADDRESS);
+    setAddressForm(newAddressFor(user));
     setEditingAddressId(null);
     setFormError("");
     setPincodeMessage("");
@@ -124,6 +133,7 @@ export default function AddressesPage() {
       label: address.label || "Home",
       fullName: address.fullName || "",
       phone: address.phone || "",
+      email: address.email || user?.email || "",
       addressLine1: address.addressLine1 || "",
       addressLine2: address.addressLine2 || "",
       locality: address.locality || "",
@@ -235,9 +245,7 @@ export default function AddressesPage() {
         locality: data.locality || current.locality,
       }));
 
-      setPincodeMessage(
-        "Location details found. Please verify them before saving."
-      );
+      setPincodeMessage("Location filled in from the PIN code. Please check it before saving.");
     },
 
     onError: (error) => {
@@ -251,7 +259,9 @@ export default function AddressesPage() {
   });
 
   function updateField(event) {
-    const { name, value } = event.target;
+    const { name } = event.target;
+    let { value } = event.target;
+    if (name === "pincode" || name === "phone") value = value.replace(/\D/g, "").slice(0, name === "pincode" ? 6 : 10);
 
     setAddressForm((current) => ({
       ...current,
@@ -262,19 +272,12 @@ export default function AddressesPage() {
 
     if (name === "pincode") {
       setPincodeMessage("");
+      // The 6th digit fills in city, district and state by itself.
+      if (value.length === 6) {
+        if (/^[1-9][0-9]{5}$/.test(value)) pincodeMutation.mutate(value);
+        else setPincodeMessage("Enter a valid 6-digit Indian PIN code.");
+      }
     }
-  }
-
-  function lookupPincode() {
-    const pincode = addressForm.pincode.trim();
-
-    if (!/^[1-9][0-9]{5}$/.test(pincode)) {
-      setPincodeMessage("Enter a valid 6-digit Indian PIN code.");
-      return;
-    }
-
-    setPincodeMessage("");
-    pincodeMutation.mutate(pincode);
   }
 
   function saveAddress(event) {
@@ -290,6 +293,11 @@ export default function AddressesPage() {
 
     if (!/^[1-9][0-9]{5}$/.test(addressForm.pincode.trim())) {
       setFormError("Enter a valid 6-digit Indian PIN code.");
+      return;
+    }
+
+    if (!EMAIL_PATTERN.test(String(addressForm.email || "").trim())) {
+      setFormError("Enter an email address for order updates.");
       return;
     }
 
@@ -523,8 +531,22 @@ export default function AddressesPage() {
                   />
                 </Field>
 
+                <Field label="Email for order updates" required>
+                  <input
+                    name="email"
+                    type="email"
+                    inputMode="email"
+                    value={addressForm.email}
+                    onChange={updateField}
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    className={inputClass}
+                    required
+                  />
+                </Field>
+
                 <Field label="PIN code" required>
-                  <div className="flex gap-2">
+                  <div className="relative">
                     <input
                       name="pincode"
                       inputMode="numeric"
@@ -536,25 +558,16 @@ export default function AddressesPage() {
                       className={inputClass}
                       required
                     />
-
-                    <button
-                      type="button"
-                      onClick={lookupPincode}
-                      disabled={pincodeMutation.isPending}
-                      className="mt-1 shrink-0 rounded-xl border border-[#DDE4F2] px-3 text-xs font-bold transition hover:border-[#2C62E0] disabled:opacity-50"
-                      style={{ color: COLORS.blue }}
-                    >
-                      {pincodeMutation.isPending
-                        ? "Checking…"
-                        : "Lookup"}
-                    </button>
+                    {pincodeMutation.isPending && (
+                      <LoaderCircle size={16} className="absolute right-3 top-1/2 mt-0.5 -translate-y-1/2 animate-spin text-slate-400" />
+                    )}
                   </div>
 
-                  {pincodeMessage && (
-                    <p className="mt-2 text-xs leading-5 text-slate-500">
-                      {pincodeMessage}
-                    </p>
-                  )}
+                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                    {pincodeMutation.isPending
+                      ? "Finding your location…"
+                      : pincodeMessage || "City, district and state fill in by themselves."}
+                  </p>
                 </Field>
 
                 <Field label="Flat, house or building" required>
@@ -826,6 +839,12 @@ export default function AddressesPage() {
                           {address.phone}
                         </span>
                       </p>
+                      {address.email && (
+                        <p className="mt-1 break-all text-xs text-slate-500">
+                          Email:{" "}
+                          <span className="font-semibold text-slate-700">{address.email}</span>
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 border-t border-[#EEF1F7] bg-[#FCFDFF] px-4 py-4">

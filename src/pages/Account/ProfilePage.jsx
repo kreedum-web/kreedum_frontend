@@ -160,6 +160,11 @@ export default function ProfilePage() {
     retry: false,
   });
 
+  // How this account signs in: that email / number can't be changed here.
+  const account = responseData(profileQuery.data) || {};
+  const signsInWithPhone = account.loginMethod === "phone";
+  const hasPassword = account.hasPassword !== false;
+
   useEffect(() => {
     if (!profileQuery.data) return;
 
@@ -215,8 +220,10 @@ export default function ProfilePage() {
       setPassword(emptyPassword);
       setPasswordNotice({
         error: false,
-        text: "Your password has been changed successfully.",
+        text: hasPassword ? "Your password has been changed." : "Your password is set. Next time, sign in with it.",
       });
+      setUser?.((current) => (current ? { ...current, hasPassword: true } : current));
+      queryClient.invalidateQueries({ queryKey: ["account-profile"] });
     },
 
     onError: (error) => {
@@ -254,14 +261,14 @@ export default function ProfilePage() {
 
     const firstName = profile.firstName.trim();
     const lastName = profile.lastName.trim();
-    const phone = profile.phone.trim();
+    const phone = profile.phone.replace(/\D/g, "").slice(-10);
     const errors = {};
 
     if (!firstName) errors.firstName = "First name is required.";
-    if (!lastName) errors.lastName = "Last name is required.";
 
-    if (!/^[6-9][0-9]{9}$/.test(phone)) {
-      errors.phone = "Enter a valid 10-digit Indian mobile number.";
+    // The sign-in number isn't sent (it can't change); a contact number is optional.
+    if (!signsInWithPhone && phone && !/^[6-9][0-9]{9}$/.test(phone)) {
+      errors.phone = "Enter a valid 10-digit Indian mobile number, or leave it empty.";
     }
 
     setFieldErrors(errors);
@@ -269,7 +276,7 @@ export default function ProfilePage() {
 
     if (Object.keys(errors).length) return;
 
-    updateProfile.mutate({ firstName, lastName, phone });
+    updateProfile.mutate(signsInWithPhone ? { firstName, lastName } : { firstName, lastName, phone });
   }
 
   function handlePasswordSubmit(event) {
@@ -278,21 +285,17 @@ export default function ProfilePage() {
 
     const { currentPassword, newPassword, confirmPassword } = password;
 
-    if (
-      newPassword.length < 8 ||
-      !/[A-Z]/.test(newPassword) ||
-      !/[a-z]/.test(newPassword) ||
-      !/[0-9]/.test(newPassword) ||
-      !/[@$!%*?&]/.test(newPassword)
-    ) {
-      setPasswordNotice({
-        error: true,
-        text: "Use at least 8 characters, including uppercase and lowercase letters, a number, and a special character (@$!%*?&).",
-      });
+    if (newPassword.length < 8) {
+      setPasswordNotice({ error: true, text: "Use at least 8 characters." });
       return;
     }
 
-    if (newPassword === currentPassword) {
+    if (hasPassword && !currentPassword) {
+      setPasswordNotice({ error: true, text: "Enter your current password." });
+      return;
+    }
+
+    if (hasPassword && newPassword === currentPassword) {
       setPasswordNotice({
         error: true,
         text: "Your new password must differ from your current password.",
@@ -309,7 +312,7 @@ export default function ProfilePage() {
     }
 
     updatePassword.mutate({
-      currentPassword,
+      ...(hasPassword ? { currentPassword } : {}),
       newPassword,
       confirmPassword,
     });
@@ -400,26 +403,30 @@ export default function ProfilePage() {
                   />
 
                   <Field
-                    label="Mobile number"
+                    label={signsInWithPhone ? "Mobile number (used to sign in)" : "Mobile number (optional)"}
                     name="phone"
                     type="tel"
                     value={profile.phone}
                     onChange={handleProfileChange}
                     placeholder="10-digit mobile number"
                     error={fieldErrors.phone}
+                    readOnly={signsInWithPhone}
                   />
 
-                  <Field
-                    label="Email address"
-                    name="email"
-                    value={profile.email}
-                    readOnly
-                  />
+                  {!signsInWithPhone && (
+                    <Field
+                      label="Email address (used to sign in)"
+                      name="email"
+                      value={profile.email}
+                      readOnly
+                    />
+                  )}
                 </div>
 
                 <p className="text-xs leading-5 text-slate-500">
-                  Your email is read-only because email changes are not
-                  supported by the current profile API.
+                  {signsInWithPhone
+                    ? "You sign in with your mobile number, so it can't be changed here. Phone numbers and emails in your delivery addresses are only for deliveries."
+                    : "You sign in with your email, so it can't be changed here. Phone numbers and emails in your delivery addresses are only for deliveries."}
                 </p>
 
                 {profileNotice && (
@@ -475,10 +482,12 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-[#0E1A3D]">
-                    Change password
+                    {hasPassword ? "Change password" : "Set a password"}
                   </h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    Keep your account secure with a strong password.
+                    {hasPassword
+                      ? "Keep your account secure with a strong password."
+                      : "Your account doesn't have a password yet. Set one to sign in with it next time."}
                   </p>
                 </div>
               </header>
@@ -488,17 +497,21 @@ export default function ProfilePage() {
                 className="space-y-5 p-5 sm:p-7"
               >
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                  <PasswordField
-                    label="Current password"
-                    name="currentPassword"
-                    value={password.currentPassword}
-                    onChange={(e) => {
-                      setPassword((p) => ({ ...p, [e.target.name]: e.target.value }));
-                      setPasswordNotice(null);
-                    }}
-                  />
+                  {hasPassword && (
+                    <>
+                      <PasswordField
+                        label="Current password"
+                        name="currentPassword"
+                        value={password.currentPassword}
+                        onChange={(e) => {
+                          setPassword((p) => ({ ...p, [e.target.name]: e.target.value }));
+                          setPasswordNotice(null);
+                        }}
+                      />
 
-                  <div className="hidden md:block" />
+                      <div className="hidden md:block" />
+                    </>
+                  )}
 
                   <PasswordField
                     label="New password"
@@ -524,8 +537,8 @@ export default function ProfilePage() {
                 <div className="flex items-start gap-3 rounded-xl bg-[#F6F8FC] p-4">
                   <ShieldCheck size={19} className="mt-0.5 shrink-0 text-[#2C62E0]" />
                   <p className="text-xs leading-5 text-slate-600">
-                    Minimum 8 characters, including uppercase and lowercase
-                    letters, a number, and a special character: @$!%*?&.
+                    At least 8 characters. A mix of letters, numbers and
+                    symbols makes it harder to guess.
                   </p>
                 </div>
 
@@ -550,8 +563,10 @@ export default function ProfilePage() {
                       <LockKeyhole size={17} />
                     )}
                     {updatePassword.isPending
-                      ? "Updating password..."
-                      : "Update password"}
+                      ? "Saving password..."
+                      : hasPassword
+                        ? "Update password"
+                        : "Set password"}
                   </button>
                 </div>
               </form>

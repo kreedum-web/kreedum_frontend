@@ -32,6 +32,7 @@ const INITIAL_ADDRESS = {
   label: "Home",
   fullName: "",
   phone: "",
+  email: "",
   addressLine1: "",
   addressLine2: "",
   locality: "",
@@ -41,6 +42,14 @@ const INITIAL_ADDRESS = {
   country: "India",
   pincode: "",
 };
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** A new address starts with the customer's own name, number and email (all editable). */
+function newAddressFor(user) {
+  const name = [user?.firstName, user?.lastName].filter(Boolean).join(" ");
+  return { ...INITIAL_ADDRESS, fullName: name, phone: user?.phone || "", email: user?.email || "" };
+}
 
 const formatINR = (value) =>
   new Intl.NumberFormat("en-IN", {
@@ -54,7 +63,7 @@ function getData(response) {
 }
 
 export default function CheckoutPage() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, user } = useAuth();
   const queryClient = useQueryClient();
 
   const [selectedAddressId, setSelectedAddressId] = useState("");
@@ -95,8 +104,6 @@ export default function CheckoutPage() {
     retry: 1,
   });
   const me = getData(meQuery.data) || null;
-  const needsEmail = Boolean(me) && !me.email;
-  const emailValue = contactEmail ?? me?.contactEmail ?? "";
 
   const addressesQuery = useQuery({
     queryKey: ["addresses"],
@@ -136,6 +143,11 @@ export default function CheckoutPage() {
     (address) => address._id === selectedAddressId
   );
 
+  // Older saved addresses have no email. If the account has none either
+  // (signed up with a mobile number), ask for one here for the order emails.
+  const needsEmail = Boolean(selectedAddress) && !selectedAddress.email && Boolean(me) && !me.email;
+  const emailValue = contactEmail ?? "";
+
   useEffect(() => {
     if (!addresses.length) return;
 
@@ -168,7 +180,7 @@ export default function CheckoutPage() {
         setSelectedAddressId(savedAddress._id);
       }
 
-      setAddressForm(INITIAL_ADDRESS);
+      setAddressForm(newAddressFor(me || user));
       setShowAddressForm(false);
       setFormError("");
       setPincodeMessage("");
@@ -203,9 +215,7 @@ export default function CheckoutPage() {
         locality: data.locality || current.locality,
       }));
 
-      setPincodeMessage(
-        "Location details found. Please verify the locality."
-      );
+      setPincodeMessage("Location filled in from the PIN code. Please check the locality.");
     },
 
     onError: (error) => {
@@ -240,7 +250,9 @@ export default function CheckoutPage() {
   });
 
   function updateAddressField(event) {
-    const { name, value } = event.target;
+    const { name } = event.target;
+    let { value } = event.target;
+    if (name === "pincode" || name === "phone") value = value.replace(/\D/g, "").slice(0, name === "pincode" ? 6 : 10);
 
     setAddressForm((current) => ({
       ...current,
@@ -249,18 +261,21 @@ export default function CheckoutPage() {
 
     if (name === "pincode") {
       setPincodeMessage("");
+      // The 6th digit fills in city, district and state by itself.
+      if (value.length === 6) {
+        if (/^[1-9][0-9]{5}$/.test(value)) pincodeMutation.mutate(value);
+        else setPincodeMessage("Enter a valid 6-digit Indian PIN code.");
+      }
     }
 
     setFormError("");
   }
 
-  function lookupPincode() {
-    if (!/^[1-9][0-9]{5}$/.test(addressForm.pincode)) {
-      setPincodeMessage("Enter a valid 6-digit Indian PIN code.");
-      return;
-    }
-
-    pincodeMutation.mutate(addressForm.pincode);
+  function openNewAddressForm() {
+    setAddressForm(newAddressFor(me || user));
+    setShowAddressForm(true);
+    setFormError("");
+    setPincodeMessage("");
   }
 
   function saveAddress(event) {
@@ -274,6 +289,11 @@ export default function CheckoutPage() {
 
     if (!/^[1-9][0-9]{5}$/.test(addressForm.pincode)) {
       setFormError("Enter a valid 6-digit Indian PIN code.");
+      return;
+    }
+
+    if (!EMAIL_PATTERN.test(addressForm.email.trim())) {
+      setFormError("Enter an email address for order updates.");
       return;
     }
 
@@ -319,6 +339,7 @@ export default function CheckoutPage() {
       label: selectedAddress.label,
       fullName: selectedAddress.fullName,
       phone: selectedAddress.phone,
+      email: selectedAddress.email || "",
       addressLine1: selectedAddress.addressLine1,
       addressLine2: selectedAddress.addressLine2 || "",
       locality: selectedAddress.locality,
@@ -330,7 +351,7 @@ export default function CheckoutPage() {
     };
 
     const typedEmail = emailValue.trim().toLowerCase();
-    if (needsEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typedEmail)) {
+    if (needsEmail && !EMAIL_PATTERN.test(typedEmail)) {
       setFormError("Enter your email address so we can send your order updates.");
       document.getElementById("checkout-email")?.focus();
       return;
@@ -524,11 +545,7 @@ export default function CheckoutPage() {
                 {!showAddressForm && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setAddressForm(INITIAL_ADDRESS);
-                      setShowAddressForm(true);
-                      setFormError("");
-                    }}
+                    onClick={openNewAddressForm}
                     className="inline-flex shrink-0 items-center gap-1 text-sm font-bold"
                     style={{ color: COLORS.blue }}
                   >
@@ -589,6 +606,7 @@ export default function CheckoutPage() {
                         <p className="mt-1 text-xs text-slate-500">
                           Phone: {address.phone}
                         </p>
+                        {address.email && <p className="mt-0.5 break-all text-xs text-slate-500">Email: {address.email}</p>}
                       </div>
                     </label>
                   ))}
@@ -606,7 +624,7 @@ export default function CheckoutPage() {
                   </p>
                   <button
                     type="button"
-                    onClick={() => setShowAddressForm(true)}
+                    onClick={openNewAddressForm}
                     className="mt-4 rounded-xl px-4 py-2 text-sm font-bold text-white"
                     style={{ backgroundColor: COLORS.blue }}
                   >
@@ -667,8 +685,22 @@ export default function CheckoutPage() {
                       />
                     </Field>
 
+                    <Field label="Email for order updates" required>
+                      <input
+                        name="email"
+                        type="email"
+                        inputMode="email"
+                        value={addressForm.email}
+                        onChange={updateAddressField}
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        className={inputClass}
+                        required
+                      />
+                    </Field>
+
                     <Field label="PIN code" required>
-                      <div className="flex gap-2">
+                      <div className="relative">
                         <input
                           name="pincode"
                           inputMode="numeric"
@@ -680,23 +712,16 @@ export default function CheckoutPage() {
                           className={inputClass}
                           required
                         />
-
-                        <button
-                          type="button"
-                          onClick={lookupPincode}
-                          disabled={pincodeMutation.isPending}
-                          className="shrink-0 rounded-xl border border-[#DDE4F2] px-3 text-xs font-bold disabled:opacity-50"
-                          style={{ color: COLORS.blue }}
-                        >
-                          {pincodeMutation.isPending ? "Checking…" : "Lookup"}
-                        </button>
+                        {pincodeMutation.isPending && (
+                          <LoaderCircle size={16} className="absolute right-3 top-1/2 mt-0.5 -translate-y-1/2 animate-spin text-slate-400" />
+                        )}
                       </div>
 
-                      {pincodeMessage && (
-                        <p className="mt-1 text-xs text-slate-500">
-                          {pincodeMessage}
-                        </p>
-                      )}
+                      <p className="mt-1 text-xs text-slate-500">
+                        {pincodeMutation.isPending
+                          ? "Finding your location…"
+                          : pincodeMessage || "City, district and state fill in by themselves."}
+                      </p>
                     </Field>
 
                     <Field label="Flat, house or building" required>
@@ -852,7 +877,7 @@ export default function CheckoutPage() {
                     className={inputClass}
                   />
                   <p className="mt-2 text-[11px] leading-4 text-slate-500">
-                    We'll email your order confirmation here. You'll keep signing in with your mobile number.
+                    This address has no email yet. We'll send your order confirmation here.
                   </p>
                 </div>
               )}
