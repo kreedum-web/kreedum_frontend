@@ -25,6 +25,9 @@ export default function EmailCodeForm({
   verify = (code) => authService.verifyEmail({ email, code }),
   resend = () => authService.resendCode({ email }),
   submitLabel = "Verify email",
+  // Replaces the "We've sent a code to <email>" text (e.g. for an SMS code).
+  message,
+  changeLabel = "Change email",
 }) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,7 +70,7 @@ export default function EmailCodeForm({
     setNotice("");
     try {
       await resend();
-      setNotice("A new code is on its way. Check your inbox (and the spam folder).");
+      setNotice(message ? "A new code is on its way." : "A new code is on its way. Check your inbox (and the spam folder).");
       setCooldown(RESEND_SECONDS);
     } catch (err) {
       const retryAfter = err?.response?.data?.retryAfter;
@@ -80,10 +83,12 @@ export default function EmailCodeForm({
     <form onSubmit={handleSubmit} className="space-y-3" noValidate>
       <div className="flex items-start gap-3 rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: COLORS.tint, color: COLORS.navy }}>
         <MailCheck size={20} className="mt-0.5 shrink-0" style={{ color: COLORS.blue }} />
-        <p>
-          We've sent a 6-digit code to <strong className="break-all">{email}</strong>. It expires in 10 minutes. Can't
-          find it? Check the spam folder.
-        </p>
+        {message || (
+          <p>
+            We've sent a 6-digit code to <strong className="break-all">{email}</strong>. It expires in 10 minutes.
+            Can't find it? Check the spam folder.
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -136,7 +141,7 @@ export default function EmailCodeForm({
         </button>
         {onChangeEmail && (
           <button type="button" onClick={onChangeEmail} className="font-semibold hover:underline" style={{ color: COLORS.slate }}>
-            Change email
+            {changeLabel}
           </button>
         )}
       </div>

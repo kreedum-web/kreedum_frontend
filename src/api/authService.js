@@ -16,6 +16,20 @@ const authService = {
     return api.post(API_ENDPOINTS.AUTH.EMAIL_VERIFY, payload);
   },
 
+  // Phone OTP checked by Firebase: { idToken }
+  firebasePhoneLogin(payload) {
+    return api.post(API_ENDPOINTS.AUTH.PHONE_FIREBASE, payload);
+  },
+
+  // Phone OTP sent by our own SMS provider: { phone } then { phone, code }
+  startPhoneLogin(payload) {
+    return api.post(API_ENDPOINTS.AUTH.PHONE_START, payload);
+  },
+
+  verifyPhoneLogin(payload) {
+    return api.post(API_ENDPOINTS.AUTH.PHONE_VERIFY, payload);
+  },
+
   // Continue with Google: { credential } from Google's button
   googleLogin(payload) {
     return api.post(API_ENDPOINTS.AUTH.GOOGLE, payload);

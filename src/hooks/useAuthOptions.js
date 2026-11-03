@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { authService } from "@/api";
 
-/** Sign-in methods the backend has set up. Google stays hidden until it is. */
+/** Sign-in methods the backend has set up. Google and phone stay hidden until they are. */
 export function useAuthOptions() {
   const query = useQuery({
     queryKey: ["auth-options"],
@@ -13,6 +13,9 @@ export function useAuthOptions() {
   });
   return {
     googleClientId: query.data?.googleClientId || null,
+    // null (hidden) · "firebase" · "sms" (our own SMS provider)
+    phoneProvider: query.data?.phone || null,
+    firebaseConfig: query.data?.firebase || null,
     isLoading: query.isLoading,
   };
 }

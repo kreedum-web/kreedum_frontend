@@ -12,6 +12,9 @@ const API_ENDPOINTS = {
     EMAIL_START: "/auth/email/start",
     EMAIL_VERIFY: "/auth/email/verify",
     GOOGLE: "/auth/google",
+    PHONE_FIREBASE: "/auth/phone/firebase",
+    PHONE_START: "/auth/phone/start",
+    PHONE_VERIFY: "/auth/phone/verify",
   },
 
   PRODUCTS: "/products",
