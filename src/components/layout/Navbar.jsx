@@ -335,11 +335,6 @@ onClick={() => {
     <p className="text-xs text-[#8A93A6]">
       {isAuthenticated ? "Signed in as" : "Welcome to Kreedum"}
     </p>
-    <p className="mt-1 truncate text-sm font-bold text-[#0E1A3D]">
-      {isAuthenticated
-        ? fullDisplayName(user)
-        : "Sign in to your account"}
-    </p>
   </div>
 
   {isAuthenticated ? (
