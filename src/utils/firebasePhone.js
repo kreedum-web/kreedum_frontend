@@ -31,6 +31,7 @@ const MESSAGES = {
   "auth/missing-phone-number": "Enter your mobile number.",
   "auth/too-many-requests": "Too many attempts from this device. Please try again later or use email.",
   "auth/quota-exceeded": "We can't send more SMS codes right now. Please use email or try again later.",
+  // Usually: this website address isn't in Firebase → Authentication → Settings → Authorized domains.
   "auth/captcha-check-failed": "The security check failed. Please reload the page and try again.",
   "auth/invalid-app-credential": "The security check failed. Please reload the page and try again.",
   "auth/invalid-verification-code": "Wrong code. Please check the SMS and try again.",
@@ -42,11 +43,27 @@ const MESSAGES = {
   "auth/unauthorized-domain": "Phone sign-in isn't allowed on this website address yet. Please use email for now.",
 };
 
-/** A Firebase error as a message the customer can act on. */
+/**
+ * A Firebase error as a message the customer can act on. The Firebase code
+ * is added in small brackets (e.g. "auth/captcha-check-failed") so a
+ * screenshot is enough to know what went wrong, and the full error goes to
+ * the browser console.
+ */
 function friendly(error) {
-  const message = MESSAGES[error?.code];
-  if (!message) console.error("Firebase phone sign-in:", error?.code || error);
-  return new Error(message || "Couldn't complete phone sign-in. Please try again or use email.");
+  console.error("Firebase phone sign-in:", error?.code, error?.message, error);
+  const message = MESSAGES[error?.code] || "Couldn't complete phone sign-in. Please try again or use email.";
+  return new Error(error?.code ? `${message} (${error.code.replace(/^auth\//, "")})` : message);
+}
+
+/** Forget the "I'm not a robot" check after a failure, so the next try starts clean. */
+function resetVerifier() {
+  try {
+    verifier?.clear?.();
+  } catch {
+    // already cleared
+  }
+  verifier = null;
+  document.getElementById("kreedum-recaptcha")?.remove();
 }
 
 /**
@@ -58,8 +75,7 @@ export async function sendFirebaseOtp(config, tenDigitPhone) {
     const { auth, mod } = await loadFirebase(config);
 
     // A fresh check each time (also for "send a new code").
-    verifier?.clear?.();
-    document.getElementById("kreedum-recaptcha")?.remove();
+    resetVerifier();
     const holder = document.createElement("div");
     holder.id = "kreedum-recaptcha";
     document.body.appendChild(holder);
@@ -67,6 +83,7 @@ export async function sendFirebaseOtp(config, tenDigitPhone) {
 
     return await mod.signInWithPhoneNumber(auth, `+91${tenDigitPhone}`, verifier);
   } catch (error) {
+    resetVerifier();
     throw friendly(error);
   }
 }
