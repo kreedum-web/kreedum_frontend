@@ -17,6 +17,7 @@ const PLACEHOLDERS = [
 export default function SearchBar({ className = "" }) {
   const navigate = useNavigate();
   const wrapperRef = useRef(null);
+  const inputRef = useRef(null);
 
   const [query, setQuery] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -157,7 +158,10 @@ export default function SearchBar({ className = "" }) {
         </button>
 
         <input
+          ref={inputRef}
           type="text"
+          inputMode="search"
+          enterKeyHint="search"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
@@ -173,21 +177,25 @@ export default function SearchBar({ className = "" }) {
           aria-label="Search Kreedum Sports products"
           aria-autocomplete="list"
           autoComplete="off"
-          className="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-gray-500 md:text-base"
+          className="w-full min-w-0 bg-transparent text-base outline-none placeholder:text-gray-500"
           style={{ color: COLORS.navy }}
         />
 
+        {/* Our own ✕: iPhone Safari never shows the browser's clear button. */}
         {query && (
           <button
             type="button"
             aria-label="Clear search"
+            // Keep the keyboard open: don't take focus away from the text box.
+            onMouseDown={(event) => event.preventDefault()}
             onClick={() => {
               setQuery("");
               setSuggestions([]);
               setError("");
               setIsOpen(true);
+              inputRef.current?.focus();
             }}
-            className="shrink-0 text-gray-500 hover:text-gray-800"
+            className="-my-1 -mr-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
           >
             <X className="h-4 w-4" />
           </button>

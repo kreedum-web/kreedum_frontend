@@ -27,6 +27,21 @@
   --font-weight-black: 750;     /* default 900 */
 }
 
+/*
+ * iPhone (Safari) zooms the page in whenever a text box with text smaller
+ * than 16px is tapped. Our type scale makes fields 13-15px, so on touch
+ * screens every text field is set to 16px. Bigger fields (like the 6-digit
+ * code box) keep their size. Written outside Tailwind's layers on purpose,
+ * so it wins over text-sm / text-base on the fields.
+ */
+@media (pointer: coarse) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"], .text-lg, .text-xl, .text-2xl, .text-3xl),
+  select:not(.text-lg, .text-xl, .text-2xl),
+  textarea:not(.text-lg, .text-xl, .text-2xl) {
+    font-size: 16px;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .product-image-zoom {
     will-change: transform;
