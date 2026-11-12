@@ -32,7 +32,7 @@ const stores = [
   },
 ];
 
-const EMAIL = "info@kreedum.com";
+const EMAIL = "kreedumsports.official@gmail.com";
 const WHATSAPP = "917570002458";
 
 function StoreCard({ store }) {

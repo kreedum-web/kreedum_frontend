@@ -120,7 +120,7 @@ const sections = [
     paragraphs: [
       "Kreedum International Private Limited",
       "Upper Ground Floor, Krishna Plaza, Nazirabad Road, Aminabad, Lucknow, Uttar Pradesh 226018, India",
-      "Email: info@kreedum.com",
+      "Email: kreedumsports.official@gmail.com",
       "Phone: +91 75700 02458",
     ],
   },

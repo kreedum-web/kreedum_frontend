@@ -167,10 +167,10 @@ export default function ReturnPolicyPage() {
             <p>
               <strong>Email:</strong>{" "}
               <a
-                href="mailto:info@kreedum.com"
+                href="mailto:kreedumsports.official@gmail.com"
                 className="text-[#2C62E0] hover:underline"
               >
-                info@kreedum.com
+                kreedumsports.official@gmail.com
               </a>
             </p>
             <p>

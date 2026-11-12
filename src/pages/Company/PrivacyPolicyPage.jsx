@@ -6,7 +6,7 @@ const sections = [
     title: "1. Who We Are",
     paragraphs: [
       'This Privacy Policy explains how Kreedum International Private Limited ("Kreedum", "we", "us" or "our") collects, uses, stores and shares information when you visit or shop through our website, create an account, contact us or otherwise interact with our services.',
-      "Website: https://www.kreedum.com. For privacy questions or requests, contact info@kreedum.com or write to our business address listed at the end of this policy.",
+      "Website: https://www.kreedum.com. For privacy questions or requests, contact kreedumsports.official@gmail.com or write to our business address listed at the end of this policy.",
     ],
   },
   {
@@ -84,7 +84,7 @@ const sections = [
     title: "9. Your Privacy Choices and Requests",
     paragraphs: [
       "Subject to applicable law and records we must retain, you may contact us to request access to personal information associated with you, correction of inaccurate details, deletion, withdrawal of consent where processing relies on consent, or help with a privacy concern.",
-      'Email info@kreedum.com with the subject line "Privacy Request". Tell us what you are requesting and provide enough information for us to locate the relevant account or transaction. We may ask for reasonable verification before acting on a request and will respond within the time required by applicable law.',
+      'Email kreedumsports.official@gmail.com with the subject line "Privacy Request". Tell us what you are requesting and provide enough information for us to locate the relevant account or transaction. We may ask for reasonable verification before acting on a request and will respond within the time required by applicable law.',
       "A deletion request may not remove information we are legally required to retain. Some services may no longer be available if essential information is deleted.",
       "You can update some account details through your account features, where available. You may opt out of promotional emails using the unsubscribe method provided in the message or by contacting us. Essential transactional and service messages may still be sent when necessary.",
     ],
@@ -119,7 +119,7 @@ const sections = [
       "For questions, concerns or privacy requests, contact:",
       "Kreedum International Private Limited",
       "Upper Ground Floor, Krishna Plaza, Nazirabad Road, Aminabad, Lucknow, Uttar Pradesh 226018, India",
-      "Email: info@kreedum.com",
+      "Email: kreedumsports.official@gmail.com",
       "Phone: +91 75700 02458",
     ],
   },

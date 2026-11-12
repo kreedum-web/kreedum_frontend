@@ -110,8 +110,8 @@ export default function Footer() {
 
             <li className="flex items-center gap-3">
               <Mail size={17} className="shrink-0 text-[#8FADFF]" />
-              <a href="mailto:info@kreedum.com" className="break-all hover:text-white">
-                info@kreedum.com
+              <a href="mailto:kreedumsports.official@gmail.com" className="break-all hover:text-white">
+                kreedumsports.official@gmail.com
               </a>
             </li>
           </ul>
