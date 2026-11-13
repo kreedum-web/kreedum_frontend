@@ -2,7 +2,7 @@ import { next } from "@vercel/functions";
 
 const API_BASE_URL = "https://api.kreedum.com/api/v1";
 const FALLBACK_IMAGE =
-  "https://shop.kreedum.com/kreedum-share.png";
+  "https://shop.kreedum.com/kreedum-share-square.png";
 
 const SOCIAL_CRAWLERS =
   /WhatsApp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|TelegramBot|Slackbot|Discordbot|Pinterest/i;
