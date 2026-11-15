@@ -1,5 +1,6 @@
 
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import SignInRequired from "@/components/auth/SignInRequired";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -96,7 +97,7 @@ export default function AccountPage() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <SignInRequired title="Sign in to your account" message="See your orders, addresses and account details." />;
   }
 
   const dashboard = getDashboardData(dashboardQuery.data);

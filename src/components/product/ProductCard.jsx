@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSignIn } from "@/contexts/SignInContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
@@ -17,6 +18,7 @@ import { optionNames } from "@/utils/productOptions";
 export default function ProductCard({ product, variant = "default" }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { openSignIn } = useSignIn();
   const { isAuthenticated } = useAuth();
   const [feedback, setFeedback] = useState("");
   const [actionError, setActionError] = useState("");
@@ -89,7 +91,7 @@ export default function ProductCard({ product, variant = "default" }) {
 
   function handleWishlistClick() {
     if (!isAuthenticated) {
-      navigate("/login", { state: { from: window.location.pathname } });
+      openSignIn();
       return;
     }
     if (!productId || wishlistMutation.isPending) return;
@@ -104,7 +106,7 @@ export default function ProductCard({ product, variant = "default" }) {
       return;
     }
     if (!isAuthenticated) {
-      navigate("/login", { state: { from: window.location.pathname } });
+      openSignIn();
       return;
     }
     if (!productId || cartMutation.isPending) return;

@@ -1,5 +1,6 @@
 
 import { statusClasses, statusLabel } from "@/utils/orderStatus";
+import SignInRequired from "@/components/auth/SignInRequired";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -113,25 +114,7 @@ export default function OrdersPage() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <main className="min-h-screen bg-[#F6F8FC] px-4 pb-12 pt-40">
-        <div className="mx-auto max-w-lg rounded-2xl bg-white p-8 text-center shadow-sm">
-          <Package className="mx-auto mb-4 h-10 w-10 text-[#2C62E0]" />
-          <h1 className="text-xl font-bold text-[#0E1A3D]">
-            Sign in to view your orders
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Log in to see your purchases and order status.
-          </p>
-          <Link
-            to="/login"
-            className="mt-6 inline-flex rounded-xl bg-[#2C62E0] px-5 py-3 text-sm font-semibold text-white"
-          >
-            Sign in
-          </Link>
-        </div>
-      </main>
-    );
+    return <SignInRequired title="Sign in to view your orders" message="Log in to see your purchases and order status." icon={Package} />;
   }
 
   return (

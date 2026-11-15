@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SignInRequired from "@/components/auth/SignInRequired";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -131,22 +132,7 @@ export default function OrderDetailsPage() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <main className="min-h-screen bg-[#F6F8FC] px-4 pt-28">
-        <div className="mx-auto max-w-lg rounded-2xl bg-white p-8 text-center">
-          <h1 className="text-xl font-bold text-[#0E1A3D]">
-            Sign in to view this order
-          </h1>
-
-          <Link
-            to="/login"
-            className="mt-5 inline-flex rounded-xl bg-[#2C62E0] px-5 py-3 font-semibold text-white"
-          >
-            Sign in
-          </Link>
-        </div>
-      </main>
-    );
+    return <SignInRequired title="Sign in to view this order" message="Sign in with the account you used to place the order." />;
   }
 
   if (ordersQuery.isError) {

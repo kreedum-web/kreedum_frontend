@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import SignInRequired from "@/components/auth/SignInRequired";
 import { Heart, RefreshCw, ShoppingBag } from "lucide-react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { wishlistService } from "@/api";
 import { normalizeProducts } from "@/adapters/product.adapter";
@@ -37,7 +38,7 @@ export default function WishlistPage() {
   if (authLoading) return <WishlistLoading />;
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: "/wishlist" }} />;
+    return <SignInRequired title="Sign in to see your wishlist" message="Save products you like and find them again on any device." />;
   }
 
   return (

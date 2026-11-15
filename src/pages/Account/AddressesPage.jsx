@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import SignInRequired from "@/components/auth/SignInRequired";
+import { Link } from "react-router-dom";
 import {
   useMutation,
   useQuery,
@@ -366,13 +367,7 @@ export default function AddressesPage() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-        state={{ from: "/account/addresses" }}
-      />
-    );
+    return <SignInRequired title="Sign in to see your addresses" message="Your saved delivery addresses are kept in your account." />;
   }
 
   return (

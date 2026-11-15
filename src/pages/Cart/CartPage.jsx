@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import SignInRequired from "@/components/auth/SignInRequired";
+import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, ArrowRight, BadgeCheck, LockKeyhole, Minus, Plus, RefreshCw,
@@ -97,7 +98,7 @@ export default function CartPage() {
   }
 
   if (authLoading) return <CartPageLoading />;
-  if (!isAuthenticated) return <Navigate to="/login" replace state={{ from: "/cart" }} />;
+  if (!isAuthenticated) return <SignInRequired title="Sign in to see your cart" message="Your cart is saved to your account, so it's there on every device." />;
 
   return (
     <main className="min-h-screen bg-[#F6F8FC] pb-12">

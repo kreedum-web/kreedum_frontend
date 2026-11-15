@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import SignInRequired from "@/components/auth/SignInRequired";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, CircleAlert, LoaderCircle, RotateCcw } from "lucide-react";
@@ -70,7 +71,7 @@ export default function PaymentReturnPage() {
   }
 
   if (authLoading) return <Shell><Checking /></Shell>;
-  if (!isAuthenticated) return <Navigate to="/login" replace state={{ from: { pathname: "/payment/return", search: `?order=${orderId}` } }} />;
+  if (!isAuthenticated) return <SignInRequired title="Sign in to see your payment" message="Sign in with the same account you used to place the order." />;
   if (!orderId) return <Navigate to="/account/orders" replace />;
 
   const { phase, data } = state;

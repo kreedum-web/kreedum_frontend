@@ -1,4 +1,5 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import SignInRequired from "@/components/auth/SignInRequired";
 import { useAuth } from "@/contexts";
 import Loader from "@/components/common/Loader";
 
@@ -15,12 +16,7 @@ export default function ProtectedRoute() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    );
+    return <SignInRequired />;
   }
 
   return <Outlet />;

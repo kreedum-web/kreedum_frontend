@@ -7,6 +7,7 @@ import { Heart, Menu, ShoppingCart, User, X , LogOut,  ChevronDown,  Package,Map
 import { COLORS } from "@/config/theme";
 import logo from "@/assets/logo.png";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSignIn } from "@/contexts/SignInContext";
 import SearchBar from "@/components/search/SearchBar";
 import { cartService,wishlistService} from "@/api";
 import AnnouncementBanner from "./AnnouncementBanner";
@@ -19,6 +20,7 @@ export default function Navbar() {
   const navigate = useNavigate();
 const queryClient = useQueryClient();
   const { user, isAuthenticated,logout } = useAuth();
+  const { openSignIn } = useSignIn();
 
   const userKey = user?.id || user?._id || "current";
 
@@ -131,9 +133,9 @@ useEffect(() => {
   // Clear authentication state and stored credentials.
   logout();
 
-  // Return to Login and prevent navigating back to the prior page.
+  // Back to the home page.
   setOpen(false);
-  navigate("/login", { replace: true });
+  navigate("/", { replace: true });
 }
 
   const desktopTransparent = location.pathname === "/" && !scrolled;
@@ -400,14 +402,17 @@ onClick={() => {
     </>
   ) : (
     <>
-      <Link
-        to="/login"
-        onClick={() => setAccountOpen(false)}
-        className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-[#0E1A3D] hover:bg-[#EAF0FF]"
+      <button
+        type="button"
+        onClick={() => {
+          setAccountOpen(false);
+          openSignIn();
+        }}
+        className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-[#0E1A3D] hover:bg-[#EAF0FF]"
       >
         Sign in / Create account
         <User size={17} />
-      </Link>
+      </button>
     </>
   )}
 </div>
@@ -671,8 +676,9 @@ onClick={() => {
     </div>
   </div>
 ) : (
-  <Link
-    to="/login"
+  <button
+    type="button"
+    onClick={() => openSignIn()}
     className="rounded-full border px-5 py-2.5 text-sm
       font-semibold transition-all duration-300 ease-out
       hover:-translate-y-1 hover:border-[#2C62E0]
@@ -685,7 +691,7 @@ onClick={() => {
     }}
   >
     Login
-  </Link>
+  </button>
 )}
 
           </div>

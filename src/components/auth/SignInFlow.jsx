@@ -1,8 +1,6 @@
 import { useRef, useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, KeyRound } from "lucide-react";
 
-import AuthLayout from "@/layouts/AuthLayout";
 import { authService } from "@/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button, Input } from "@/components/common";
@@ -12,7 +10,6 @@ import GoogleButton from "@/components/auth/GoogleButton";
 import PasswordInput from "@/components/auth/PasswordInput";
 import CodeInput from "@/components/auth/CodeInput";
 import { useAuthOptions } from "@/hooks/useAuthOptions";
-import { afterLoginPath } from "@/utils/afterLogin";
 import { confirmFirebaseOtp, sendFirebaseOtp } from "@/utils/firebasePhone";
 import NameStep from "./NameStep";
 
@@ -21,7 +18,7 @@ const apiError = (error, fallback) => error?.response?.data?.message || error?.m
 const showId = (id) => (id?.type === "phone" ? `+91 ${id.value.slice(0, 5)} ${id.value.slice(5)}` : id?.value || "");
 
 /**
- * One page to sign in or create an account (/login and /register).
+ * Sign in or create an account (shown in the sign-in popup).
  *
  *   1. Email or mobile number → we check whether it's already a customer.
  *   2a. Existing account → password → signed in. No code is sent.
@@ -33,15 +30,13 @@ const showId = (id) => (id?.type === "phone" ? `+91 ${id.value.slice(0, 5)} ${id
  * The email / number used here is the account's only way to sign in; phone
  * and email typed in delivery addresses are just for deliveries.
  */
-export default function LoginPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login, isAuthenticated, setUser } = useAuth();
+export default function SignInFlow({ Frame, initialIdentifier = "", onFinished }) {
+  const { login, setUser } = useAuth();
   const { googleClientId, phoneProvider, firebaseConfig } = useAuthOptions();
 
   // start · password · create · verify-email · phone-code · needs-password · reset · name
   const [step, setStep] = useState("start");
-  const [identifier, setIdentifier] = useState(location.state?.identifier || location.state?.email || "");
+  const [identifier, setIdentifier] = useState(initialIdentifier);
   const [account, setAccount] = useState(null); // { type, value, exists, hasPassword }
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -51,9 +46,6 @@ export default function LoginPage() {
   const [notice, setNotice] = useState("");
   const [googleFailed, setGoogleFailed] = useState(false);
   const confirmation = useRef(null); // Firebase: checks the SMS code
-
-  // Already signed in (and not in the middle of the name step): nothing to do here.
-  if (isAuthenticated && step !== "name") return <Navigate to={afterLoginPath(location)} replace />;
 
   const go = (next) => {
     setError("");
@@ -75,16 +67,12 @@ export default function LoginPage() {
     }
   }
 
-  /** Signed in: new accounts get the name step, everyone else goes back to where they were. */
+  /** Signed in: new accounts get the name step, everyone else is done. */
   function finish(result) {
     if (!result?.token || !result?.user) throw new Error("Unexpected response. Please try again.");
-    if (result.isNew) {
-      setStep("name"); // before login(), so the page doesn't redirect away
-      login(result.token, result.user);
-      return;
-    }
     login(result.token, result.user);
-    navigate(afterLoginPath(location), { replace: true });
+    if (result.isNew) setStep("name");
+    else onFinished?.();
   }
 
   const dataOf = (response) => response?.data?.data;
@@ -261,20 +249,20 @@ export default function LoginPage() {
   // ---------- steps
   if (step === "name") {
     return (
-      <AuthLayout title="What should we call you?" subtitle="Add your name, or skip for now. You can change it later in your profile.">
+      <Frame title="What should we call you?" subtitle="Add your name, or skip for now. You can change it later in your profile.">
         <NameStep
           onDone={(updated) => {
             if (updated) setUser((current) => ({ ...current, ...updated }));
-            navigate(afterLoginPath(location), { replace: true });
+            onFinished?.();
           }}
         />
-      </AuthLayout>
+      </Frame>
     );
   }
 
   if (step === "password") {
     return (
-      <AuthLayout title="Welcome back" subtitle={`Enter the password for ${showId(account)}.`}>
+      <Frame title="Welcome back" subtitle={`Enter the password for ${showId(account)}.`}>
         <form onSubmit={submitPassword} className="space-y-3" noValidate>
           {/* Lets password managers save the right username. */}
           <input type="text" name="username" autoComplete="username" value={account.value} readOnly hidden />
@@ -292,13 +280,13 @@ export default function LoginPage() {
           </button>
           {changeIdentifier}
         </form>
-      </AuthLayout>
+      </Frame>
     );
   }
 
   if (step === "create") {
     return (
-      <AuthLayout
+      <Frame
         title="Create your account"
         subtitle={`Choose a password for ${showId(account)}. We'll send one code to confirm it's yours.`}
       >
@@ -309,13 +297,13 @@ export default function LoginPage() {
           {submit(account.type === "email" ? "Create account" : "Send code by SMS", "Sending code...")}
           {changeIdentifier}
         </form>
-      </AuthLayout>
+      </Frame>
     );
   }
 
   if (step === "verify-email") {
     return (
-      <AuthLayout title="Check your email" subtitle="Enter the code to finish creating your account.">
+      <Frame title="Check your email" subtitle="Enter the code to finish creating your account.">
         <EmailCodeForm
           email={account.value}
           submitLabel="Create account"
@@ -324,13 +312,13 @@ export default function LoginPage() {
           onVerified={finish}
           onChangeEmail={() => go("start")}
         />
-      </AuthLayout>
+      </Frame>
     );
   }
 
   if (step === "phone-code") {
     return (
-      <AuthLayout title="Check your SMS" subtitle={`We've sent a 6-digit code to ${showId(account)}.`}>
+      <Frame title="Check your SMS" subtitle={`We've sent a 6-digit code to ${showId(account)}.`}>
         <form onSubmit={submitPhoneCode} className="space-y-3" noValidate>
           <CodeInput value={code} onChange={setCode} disabled={loading} />
           {alerts}
@@ -351,13 +339,13 @@ export default function LoginPage() {
           </button>
           {changeIdentifier}
         </form>
-      </AuthLayout>
+      </Frame>
     );
   }
 
   if (step === "needs-password") {
     return (
-      <AuthLayout
+      <Frame
         title="Set a password"
         subtitle={`Your account for ${showId(account)} doesn't have a password yet. We'll send a code to confirm it's you, then you choose one.`}
       >
@@ -385,13 +373,13 @@ export default function LoginPage() {
           )}
           {changeIdentifier}
         </div>
-      </AuthLayout>
+      </Frame>
     );
   }
 
   if (step === "reset") {
     return (
-      <AuthLayout title="Set a new password" subtitle={`Enter the code we sent to ${showId(account)} and choose a password.`}>
+      <Frame title="Set a new password" subtitle={`Enter the code we sent to ${showId(account)} and choose a password.`}>
         <form onSubmit={submitReset} className="space-y-3" noValidate>
           <input type="text" name="username" autoComplete="username" value={account.value} readOnly hidden />
           <CodeInput value={code} onChange={setCode} disabled={loading} />
@@ -409,13 +397,13 @@ export default function LoginPage() {
           </button>
           {changeIdentifier}
         </form>
-      </AuthLayout>
+      </Frame>
     );
   }
 
   // ---------- start
   return (
-    <AuthLayout
+    <Frame
       title="Sign in or create account"
       subtitle={phoneProvider ? "Enter your email or mobile number to continue." : "Enter your email to continue."}
     >
@@ -453,6 +441,6 @@ export default function LoginPage() {
           Returning customers sign in with their password. New here? We'll help you create an account.
         </p>
       </div>
-    </AuthLayout>
+    </Frame>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import SignInRequired from "@/components/auth/SignInRequired";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -401,13 +402,7 @@ export default function CheckoutPage() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-        state={{ from: "/checkout" }}
-      />
-    );
+    return <SignInRequired title="Sign in to check out" message="Sign in or create an account to place your order and track it." />;
   }
 
  if (placedOrder) {

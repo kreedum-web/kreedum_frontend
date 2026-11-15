@@ -1,3 +1,4 @@
+import { useSignIn } from "@/contexts/SignInContext";
 import { useMutation,
   useQuery,
   useQueryClient, } from "@tanstack/react-query";
@@ -29,6 +30,7 @@ import { productCategoryTrail, useCategoryTree } from "@/hooks/useCategories";
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { openSignIn } = useSignIn();
   const { isAuthenticated } = useAuth();
 
   const [quantity, setQuantity] = useState(1);
@@ -110,11 +112,7 @@ async function handleAddToCart({ checkout = false } = {}) {
   }
 
   if (!isAuthenticated) {
-    navigate("/login", {
-      state: {
-        from: window.location.pathname,
-      },
-    });
+    openSignIn();
 
     return;
   }
@@ -250,11 +248,7 @@ async function handleShare() {
 
 function handleWishlist() {
   if (!isAuthenticated) {
-    navigate("/login", {
-      state: {
-        from: window.location.pathname,
-      },
-    });
+    openSignIn();
     return;
   }
 

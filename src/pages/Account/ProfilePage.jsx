@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import SignInRequired from "@/components/auth/SignInRequired";
+import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -245,7 +246,7 @@ export default function ProfilePage() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <SignInRequired title="Sign in to see your profile" message="See your orders, addresses and account details." />;
   }
 
   function handleProfileChange(event) {

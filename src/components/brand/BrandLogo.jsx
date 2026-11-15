@@ -1,14 +1,13 @@
 import { useState } from "react";
 
-import { brandLogoUrl } from "@/data/brandLogos";
-
 /**
- * A brand's logo, centred in its box. Without a logo (or if it fails to
- * load), the brand name in bold so the tile still reads like a logo.
+ * A brand's logo, centred in its box. Logos are in Cloudinary and come from
+ * the database (backend: npm run brands:logos). Without one (or if it fails
+ * to load), the brand name in bold so the tile still reads like a logo.
  */
 export default function BrandLogo({ brand, className = "", textClassName = "text-xl md:text-2xl" }) {
   const [failed, setFailed] = useState(false);
-  const src = brandLogoUrl(brand);
+  const src = brand?.logo || "";
 
   if (src && !failed) {
     return (

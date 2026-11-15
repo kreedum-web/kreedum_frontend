@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CheckCircle2, Loader2, MessageCircle, Phone, Send } from "lucide-react";
+import { CheckCircle2, MessageCircle, Phone } from "lucide-react";
 
 import { enquiryService } from "@/api";
 import Dropdown from "@/components/common/Dropdown";
@@ -14,7 +14,6 @@ import {
   FACILITY_TYPES,
   TIMELINES,
 } from "@/data/bulkEnquiryOptions";
-import { fullDisplayName } from "@/utils/displayName";
 
 const INPUT =
   "w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#0E1A3D] outline-none transition focus:border-[#2C62E0] focus:ring-4 focus:ring-blue-100";
@@ -24,12 +23,15 @@ function FieldError({ message }) {
   return message ? <p className="mt-1.5 text-xs font-medium text-red-600">{message}</p> : null;
 }
 
+/** The customer's real name if we have one (not the email / number shown when there's none). */
+const realName = (user) => [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() || user?.name || "";
+
 const toOptions = (list) => list.map((item) => ({ label: item, value: item }));
 
-/** The enquiry as a WhatsApp message (used when the website can't send it). */
+/** The enquiry as the WhatsApp message the customer sends us. */
 function whatsappText(form) {
   return [
-    "Bulk enquiry",
+    "Hi Kreedum Sports, I have a bulk enquiry.",
     "",
     `Name: ${form.name}`,
     `Mobile: ${form.phone}`,
@@ -48,14 +50,16 @@ function whatsappText(form) {
 
 /**
  * /bulk-enquiry — quote request for gyms, schools, offices and other bulk
- * buyers. No sign-in needed: it goes straight to our team by email.
+ * buyers. No sign-in needed. "Send enquiry" saves it in our database
+ * (marked signed-in or not) and opens WhatsApp with the details typed in,
+ * like the Contact page.
  */
 export default function BulkEnquiryPage() {
   const location = useLocation();
   const { user } = useAuth();
 
   const [form, setForm] = useState(() => ({
-    name: user ? fullDisplayName(user) : "",
+    name: realName(user),
     phone: (user?.phone || "").replace(/\D/g, "").slice(-10),
     email: user?.email || "",
     city: "",
@@ -67,9 +71,21 @@ export default function BulkEnquiryPage() {
     message: "",
     website: "", // hidden: only bots fill this in
   }));
+  // Signed in: fill in their name / number / email once their details arrive
+  // (only fields still empty, so nothing they typed is overwritten).
+  const userKey = user?.id || user?._id || "";
+  const [filledFor, setFilledFor] = useState(userKey);
+  if (userKey && userKey !== filledFor) {
+    setFilledFor(userKey);
+    setForm((current) => ({
+      ...current,
+      name: current.name || realName(user),
+      phone: current.phone || (user.phone || "").replace(/\D/g, "").slice(-10),
+      email: current.email || user.email || "",
+    }));
+  }
   const [errors, setErrors] = useState({});
-  const [status, setStatus] = useState("idle"); // idle | sending | sent | failed
-  const [failMessage, setFailMessage] = useState("");
+  const [sent, setSent] = useState(false);
 
   const set = (name, value) => {
     setForm((current) => ({ ...current, [name]: value }));
@@ -92,25 +108,24 @@ export default function BulkEnquiryPage() {
     return Object.keys(next).length === 0;
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault();
-    if (status === "sending" || !validate()) return;
+  function openWhatsApp() {
+    window.open(whatsappLink(whatsappText(form)), "_blank", "noopener,noreferrer");
+  }
 
-    setStatus("sending");
-    try {
-      await enquiryService.send({ ...form, page: location.state?.from || "" });
-      setStatus("sent");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (error) {
-      const data = error?.response?.data;
-      if (data?.errors) {
-        setErrors(data.errors);
-        setStatus("idle");
-        return;
-      }
-      setFailMessage(data?.message || "We couldn't send your enquiry right now.");
-      setStatus("failed");
-    }
+  function handleSubmit(event) {
+    event.preventDefault();
+    if (!validate()) return;
+
+    // Save it for our records (in the background: WhatsApp opens straight
+    // away, and a problem saving never stops the customer).
+    enquiryService.send({ ...form, page: location.state?.from || "" }).catch((error) => {
+      console.warn("Couldn't save the enquiry:", error?.response?.data?.message || error?.message);
+    });
+
+    // Opened right away, in the click, so browsers don't block it.
+    openWhatsApp();
+    setSent(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   const fieldClass = (name) => `${INPUT} ${errors[name] ? "border-red-400" : "border-slate-200"}`;
@@ -127,16 +142,23 @@ export default function BulkEnquiryPage() {
       <section className="mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 md:py-10 lg:grid-cols-[1fr_330px]">
         {/* Form / thank-you */}
         <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-8">
-          {status === "sent" ? (
+          {sent ? (
             <div className="py-6 text-center sm:py-10">
               <CheckCircle2 className="mx-auto h-14 w-14 text-emerald-500" />
-              <h2 className="mt-4 text-2xl font-bold text-[#0E1A3D]">Enquiry sent</h2>
+              <h2 className="mt-4 text-2xl font-bold text-[#0E1A3D]">Almost done</h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
-                Thank you, {form.name.split(" ")[0]}. Our team will call you on{" "}
-                <strong className="text-[#0E1A3D]">+91 {form.phone}</strong> within one working day
-                {form.email ? ", and we've emailed you a copy" : ""}.
+                Thank you, {form.name.split(" ")[0]}. WhatsApp has opened with your enquiry typed in. Press{" "}
+                <strong className="text-[#0E1A3D]">Send</strong> there and our team will call you on{" "}
+                <strong className="text-[#0E1A3D]">+91 {form.phone}</strong>.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={openWhatsApp}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-6 py-2.5 text-sm font-semibold text-[#08331C] hover:brightness-95"
+                >
+                  <MessageCircle size={16} /> Open WhatsApp again
+                </button>
                 <Link
                   to="/"
                   className="rounded-full bg-[#2C62E0] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#1F49B8]"
@@ -146,7 +168,7 @@ export default function BulkEnquiryPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setStatus("idle");
+                    setSent(false);
                     setForm((current) => ({ ...current, equipmentNeed: "", budget: "", timeline: "", message: "" }));
                   }}
                   className="rounded-full border border-slate-200 px-6 py-2.5 text-sm font-semibold text-[#0E1A3D] hover:border-[#2C62E0]"
@@ -237,30 +259,14 @@ export default function BulkEnquiryPage() {
                 <textarea id="enq-message" name="message" rows={4} value={form.message} onChange={onChange} maxLength={2000} placeholder="Products, quantities, space size, delivery location…" className={`${fieldClass("message")} resize-y`} />
               </div>
 
-              {status === "failed" && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                  <p className="font-semibold">{failMessage}</p>
-                  <p className="mt-1">Send the same details on WhatsApp instead, or call us on {PHONE_DISPLAY}.</p>
-                  <a
-                    href={whatsappLink(whatsappText(form))}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-2 font-semibold text-[#08331C]"
-                  >
-                    <MessageCircle size={16} /> Send on WhatsApp
-                  </a>
-                </div>
-              )}
-
               <button
                 type="submit"
-                disabled={status === "sending"}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#2C62E0] px-7 py-3.5 text-sm font-bold text-white transition hover:bg-[#1F49B8] disabled:opacity-70 sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-7 py-3.5 text-sm font-bold text-[#08331C] transition hover:brightness-95 sm:w-auto"
               >
-                {status === "sending" ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />}
-                {status === "sending" ? "Sending…" : "Send enquiry"}
+                <MessageCircle size={17} />
+                Send enquiry on WhatsApp
               </button>
-              <p className="text-xs text-slate-500">Our team usually calls back within one working day. No spam.</p>
+              <p className="text-xs text-slate-500">WhatsApp opens with your details typed in; just press Send. No spam.</p>
             </form>
           )}
         </div>
