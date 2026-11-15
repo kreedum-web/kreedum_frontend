@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -20,9 +20,11 @@ import {
   addressService,
   authService,
   cartService,
+  paymentService,
   orderService,
 } from "@/api";
 import { COLORS } from "@/config/theme";
+import { payForOrder } from "@/utils/cashfreeCheckout";
 import { useAuth } from "@/contexts/AuthContext";
 import { ADDRESS_TYPE_OPTIONS } from "@/constants/addressTypes";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
@@ -75,7 +77,11 @@ export default function CheckoutPage() {
   // Accounts that sign in with a phone number have no email: ask for one so
   // the order confirmation (and any cancellation) can be emailed.
   const [contactEmail, setContactEmail] = useState(null); // null = not edited yet
+  const navigate = useNavigate();
   const [placedOrder, setPlacedOrder] = useState(null);
+  // "ONLINE" (Cashfree: UPI, cards, netbanking) or "COD". null = not chosen yet → online if available.
+  const [paymentChoice, setPaymentChoice] = useState(null);
+  const [openingPayment, setOpeningPayment] = useState(false);
 
 
 
@@ -104,6 +110,15 @@ export default function CheckoutPage() {
     retry: 1,
   });
   const me = getData(meQuery.data) || null;
+
+  const paymentOptionsQuery = useQuery({
+    queryKey: ["payment-options"],
+    queryFn: () => paymentService.getOptions(),
+    staleTime: 10 * 60 * 1000,
+    retry: 1,
+  });
+  const onlineAvailable = Boolean(getData(paymentOptionsQuery.data)?.online);
+  const paymentMethod = paymentChoice || (onlineAvailable ? "ONLINE" : "COD");
 
   const addressesQuery = useQuery({
     queryKey: ["addresses"],
@@ -231,6 +246,22 @@ export default function CheckoutPage() {
 
     onSuccess: async (response) => {
       const order = getData(response);
+
+      // Online: go straight to Cashfree's payment page. The cart stays until
+      // the payment succeeds; the order page has "Pay now" if anything fails.
+      if (order?.paymentMethod === "ONLINE" && order?._id) {
+        setOpeningPayment(true);
+        queryClient.invalidateQueries({ queryKey: ["orders"] });
+        try {
+          await payForOrder(paymentService, order._id);
+        } catch (error) {
+          setOpeningPayment(false);
+          navigate(`/account/orders/${order._id}`, {
+            state: { paymentError: error?.response?.data?.message || error.message },
+          });
+        }
+        return;
+      }
 
       setPlacedOrder(order || {});
 
@@ -360,7 +391,7 @@ export default function CheckoutPage() {
     placeOrderMutation.mutate({
       shippingAddress,
       ...(needsEmail ? { contactEmail: typedEmail } : {}),
-      paymentMethod: "COD",
+      paymentMethod,
       notes: orderNotes.trim(),
     });
   }
@@ -834,27 +865,25 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="mt-5 flex items-start gap-3 rounded-2xl border border-[#2C62E0] bg-[#F5F8FF] p-4">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  checked
-                  readOnly
-                  className="mt-1 accent-[#2C62E0]"
+              <div className="mt-5 space-y-3" role="radiogroup" aria-label="Payment method">
+                {onlineAvailable && (
+                  <PaymentOption
+                    value="ONLINE"
+                    selected={paymentMethod === "ONLINE"}
+                    onSelect={setPaymentChoice}
+                    title="Pay online"
+                    description="UPI, debit / credit card, netbanking or wallet. Secure payment by Cashfree."
+                    badge="UPI · Cards"
+                  />
+                )}
+                <PaymentOption
+                  value="COD"
+                  selected={paymentMethod === "COD"}
+                  onSelect={setPaymentChoice}
+                  title="Cash on Delivery (COD)"
+                  description="Pay when your order is delivered."
+                  badge="Available"
                 />
-
-                <div className="flex-1">
-                  <p className="text-sm font-extrabold" style={{ color: COLORS.navy }}>
-                    Cash on Delivery (COD)
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    Pay when your order is delivered.
-                  </p>
-                </div>
-
-                <span className="rounded-md bg-white px-2 py-1 text-[10px] font-bold text-[#2C62E0]">
-                  Available
-                </span>
               </div>
 
               {needsEmail && (
@@ -977,6 +1006,7 @@ export default function CheckoutPage() {
                   onClick={placeOrder}
                   disabled={
                     placeOrderMutation.isPending ||
+                    openingPayment ||
                     !selectedAddress ||
                     addressesQuery.isError ||
                     cart.products.length === 0
@@ -984,10 +1014,14 @@ export default function CheckoutPage() {
                   className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                   style={{ backgroundColor: COLORS.blue }}
                 >
-                  {placeOrderMutation.isPending ? (
+                  {placeOrderMutation.isPending || openingPayment ? (
                     <>
                       <LoaderCircle size={17} className="animate-spin" />
-                      Placing order…
+                      {paymentMethod === "ONLINE" ? "Opening secure payment…" : "Placing order…"}
+                    </>
+                  ) : paymentMethod === "ONLINE" ? (
+                    <>
+                      Pay {formatINR(grandTotal)} <ArrowRight size={17} />
                     </>
                   ) : (
                     <>
@@ -1028,6 +1062,33 @@ export default function CheckoutPage() {
 
 const inputClass =
   "mt-1 w-full rounded-xl border border-[#DDE4F2] bg-white px-3 py-3 text-sm text-[#0E1A3D] outline-none transition placeholder:text-slate-400 focus:border-[#2C62E0] focus:ring-2 focus:ring-[#2C62E0]/10";
+
+/** One payment choice (radio card). */
+function PaymentOption({ value, selected, onSelect, title, description, badge }) {
+  return (
+    <label
+      className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
+        selected ? "border-[#2C62E0] bg-[#F5F8FF]" : "border-[#E5EAF4] bg-white hover:border-[#C9D6F2]"
+      }`}
+    >
+      <input
+        type="radio"
+        name="paymentMethod"
+        value={value}
+        checked={selected}
+        onChange={() => onSelect(value)}
+        className="mt-1 accent-[#2C62E0]"
+      />
+      <div className="flex-1">
+        <p className="text-sm font-extrabold" style={{ color: COLORS.navy }}>
+          {title}
+        </p>
+        <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>
+      </div>
+      <span className="rounded-md bg-white px-2 py-1 text-[10px] font-bold text-[#2C62E0]">{badge}</span>
+    </label>
+  );
+}
 
 function Field({ label, required = false, children }) {
   return (

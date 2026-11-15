@@ -1,3 +1,4 @@
+import PaymentReturnPage from "@/pages/Payment/PaymentReturnPage";
 import { Routes, Route } from "react-router-dom";
 
 import MainLayout from "@/components/layout/MainLayout";
@@ -60,6 +61,7 @@ export default function AppRoutes() {
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />}/>
         <Route path="/about-us" element={<AboutUsPage />} />
         <Route path="/account/orders/:orderId" element={<OrderDetailsPage />}/>
+        <Route path="/payment/return" element={<PaymentReturnPage />} />
       </Route>
 
       {/* Auth pages */}

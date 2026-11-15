@@ -1,16 +1,20 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   CalendarDays,
+  CreditCard,
+  LoaderCircle,
   MapPin,
   Package,
   RefreshCw,
   XCircle,
 } from "lucide-react";
 
-import { orderService } from "@/api";
+import { orderService, paymentService } from "@/api";
+import { payForOrder } from "@/utils/cashfreeCheckout";
+import { paymentMethodLabel, statusClasses, statusLabel } from "@/utils/orderStatus";
 import { useAuth } from "@/contexts/AuthContext";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 
@@ -39,30 +43,13 @@ const formatDate = (value) => {
   });
 };
 
-const statusClasses = (status) => {
-  switch ( String(status || "").toUpperCase()) {
-    case "DELIVERED":
-      return "bg-green-100 text-green-700";
-    case "CANCELLED":
-      return "bg-red-100 text-red-700";
-    case "CONFIRMED":
-    case "SHIPPED":
-    case "OUT_FOR_DELIVERY":
-      return "bg-blue-100 text-blue-700";
-    case "PENDING":
-      return "bg-amber-100 text-amber-700";
-    default:
-      return "bg-slate-100 text-slate-700";
-  }
-};
-
 const StatusBadge = ({ status }) => (
   <span
     className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${statusClasses(
       status
     )}`}
   >
-    {String(status || "UNKNOWN").replaceAll("_", " ")}
+    {statusLabel(status)}
   </span>
 );
 
@@ -71,8 +58,22 @@ export default function OrderDetailsPage() {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
 
-  const [actionError, setActionError] = useState("");
+  const location = useLocation();
+  // Checkout couldn't open the payment page: say so here, next to "Pay now".
+  const [actionError, setActionError] = useState(location.state?.paymentError || "");
   const [actionMessage, setActionMessage] = useState("");
+  const [paying, setPaying] = useState(false);
+
+  async function payNow() {
+    setActionError("");
+    setPaying(true);
+    try {
+      await payForOrder(paymentService, orderId);
+    } catch (error) {
+      setActionError(error?.response?.data?.message || error.message);
+      setPaying(false);
+    }
+  }
 
   // Reuse the existing orders API.
   const ordersQuery = useQuery({
@@ -99,7 +100,9 @@ export default function OrderDetailsPage() {
 
     onSuccess: async () => {
       setActionError("");
-      setActionMessage("Your order has been cancelled.");
+      setActionMessage(
+        paidOnline ? "Your order has been cancelled and your refund has been started." : "Your order has been cancelled."
+      );
 
       await queryClient.invalidateQueries({
         queryKey: ["orders"],
@@ -187,7 +190,10 @@ export default function OrderDetailsPage() {
   }
 
   const status = String(order.orderStatus || "").toUpperCase();
-  const canCancel = ["PENDING", "CONFIRMED"].includes(status);
+  const canCancel = ["AWAITING_PAYMENT", "PENDING", "CONFIRMED"].includes(status);
+  const awaitingPayment = status === "AWAITING_PAYMENT";
+  const paidOnline = order.paymentMethod === "ONLINE" && order.paymentStatus === "PAID";
+  const payBefore = order.createdAt ? new Date(new Date(order.createdAt).getTime() + 60 * 60 * 1000) : null;
   const items = Array.isArray(order.items) ? order.items : [];
   const address = order.shippingAddress || {};
   const history = Array.isArray(order.statusHistory)
@@ -324,7 +330,7 @@ export default function OrderDetailsPage() {
             <div className="flex justify-between gap-4">
               <span className="text-slate-500">Payment method</span>
               <span className="text-right font-medium text-[#0E1A3D]">
-                {order.paymentMethod || "Not specified"}
+                {paymentMethodLabel(order)}
               </span>
             </div>
 
@@ -344,6 +350,30 @@ export default function OrderDetailsPage() {
           </div>
         </section>
 
+        {/* Online order not paid yet */}
+        {awaitingPayment && (
+          <section className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-6">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-[#0E1A3D]">
+              <CreditCard size={19} className="text-amber-600" />
+              Payment pending
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Pay {formatPrice(order.pricing?.total)} to place this order
+              {payBefore ? ` before ${payBefore.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}` : ""}. If it isn't
+              paid within an hour of ordering, it's cancelled automatically. Nothing is charged until you pay.
+            </p>
+            <button
+              type="button"
+              onClick={payNow}
+              disabled={paying}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#2C62E0] px-5 py-3 text-sm font-bold text-white hover:opacity-90 disabled:opacity-60 sm:w-auto"
+            >
+              {paying ? <LoaderCircle size={17} className="animate-spin" /> : <CreditCard size={17} />}
+              {paying ? "Opening secure payment…" : `Pay ${formatPrice(order.pricing?.total)} now`}
+            </button>
+          </section>
+        )}
+
         {/* Status history */}
         {history.length > 0 && (
           <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
@@ -361,7 +391,7 @@ export default function OrderDetailsPage() {
 
                   <div>
                     <p className="text-sm font-semibold text-[#0E1A3D]">
-                      {String(entry.status || "").replaceAll("_", " ")}
+                      {statusLabel(entry.status)}
                     </p>
 
                     {entry.note && (
@@ -371,7 +401,7 @@ export default function OrderDetailsPage() {
                     )}
 
                     <p className="mt-1 text-xs text-slate-400">
-                      {formatDate(entry.timestamp || entry.createdAt)}
+                      {formatDate(entry.updatedAt || entry.timestamp || entry.createdAt)}
                     </p>
                   </div>
                 </div>
@@ -388,7 +418,9 @@ export default function OrderDetailsPage() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              You can cancel this order while it is pending or confirmed.
+              {paidOnline
+                ? "You can cancel while it's pending or confirmed. Your full payment is refunded automatically to the same account or card (banks take 5–7 working days)."
+                : "You can cancel this order while it is pending or confirmed."}
             </p>
 
             <button
@@ -396,7 +428,9 @@ export default function OrderDetailsPage() {
               disabled={cancelMutation.isPending}
               onClick={() => {
                 const confirmed = window.confirm(
-                  `Cancel order ${order.orderNumber || orderId}?`
+                  paidOnline
+                    ? `Cancel order ${order.orderNumber || orderId}? Your ${formatPrice(order.pricing?.total)} will be refunded.`
+                    : `Cancel order ${order.orderNumber || orderId}?`
                 );
 
                 if (confirmed) {

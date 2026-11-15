@@ -12,4 +12,6 @@ export { default as wishlistService } from "./wishlistService";
 export { default as cartService } from "./cartService";
 export { default as addressService } from "./addressService";
 export { default as orderService } from "./orderService";
-export { default as profileService } from "./profileService";export { default as siteService } from "./siteService";
+export { default as profileService } from "./profileService";
+export { default as siteService } from "./siteService";
+export { default as paymentService } from "./paymentService";

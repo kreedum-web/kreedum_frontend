@@ -1,4 +1,5 @@
 
+import { statusClasses, statusLabel } from "@/utils/orderStatus";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -45,32 +46,12 @@ function formatDate(value) {
   });
 }
 
-function getStatusClasses(status) {
-  switch (String(status || "").toUpperCase()) {
-    case "DELIVERED":
-      return "bg-green-100 text-green-700";
-    case "CANCELLED":
-      return "bg-red-100 text-red-700";
-    case "CONFIRMED":
-    case "SHIPPED":
-    case "OUT_FOR_DELIVERY":
-      return "bg-blue-100 text-blue-700";
-    case "PENDING":
-      return "bg-amber-100 text-amber-700";
-    default:
-      return "bg-slate-100 text-slate-700";
-  }
-}
-
 function StatusBadge({ status }) {
-  const label = String(status || "UNKNOWN")
-    .replaceAll("_", " ");
+  const label = statusLabel(status);
 
   return (
     <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${getStatusClasses(
-        status
-      )}`}
+      className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${statusClasses(status)}`}
     >
       {label}
     </span>
