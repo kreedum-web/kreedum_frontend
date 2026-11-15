@@ -5,6 +5,7 @@ import { ChevronLeft, Home, Tags } from "lucide-react";
 import { COLORS } from "@/config/theme";
 import { brandUrl, categoryUrl, useCategoryTree } from "@/hooks/useCategories";
 import { useBrands } from "@/hooks/useBrands";
+import BrandLogo from "@/components/brand/BrandLogo";
 
 const BRANDS = "__brands__";
 
@@ -164,11 +165,13 @@ function SectionTitle({ children, large = false }) {
   );
 }
 
-function Tile({ to, image, label, count, onNavigate }) {
+function Tile({ to, image, label, count, onNavigate, children }) {
   return (
     <Link to={to} onClick={onNavigate} className="group block min-w-0">
       <span className="block aspect-square overflow-hidden rounded-2xl border border-[#E5E9F2] bg-[#F6F8FC]">
-        {image ? (
+        {children ? (
+          <span className="flex h-full w-full items-center justify-center bg-white p-2">{children}</span>
+        ) : image ? (
           <img
             src={image}
             alt=""
@@ -258,11 +261,12 @@ function BrandsPane({ brands, onNavigate }) {
           <Tile
             key={brand.slug}
             to={brandUrl(brand.slug)}
-            image={brand.image}
             label={brand.name}
             count={`${brand.productCount} products`}
             onNavigate={onNavigate}
-          />
+          >
+            <BrandLogo brand={brand} textClassName="text-[13px]" />
+          </Tile>
         ))}
       </div>
     </>

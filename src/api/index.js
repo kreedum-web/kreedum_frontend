@@ -15,3 +15,4 @@ export { default as orderService } from "./orderService";
 export { default as profileService } from "./profileService";
 export { default as siteService } from "./siteService";
 export { default as paymentService } from "./paymentService";
+export { default as enquiryService } from "./enquiryService";

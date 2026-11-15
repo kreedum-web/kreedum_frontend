@@ -12,6 +12,7 @@ import homepageTestimonials from "@/data/homepageTestimonials";
 import homepageClients from "@/data/homepageClients";
 import { categoryUrl, useCategoryTree } from "@/hooks/useCategories";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import StatsSection from "./StatsSection";
 
 // Category tiles (swipeable, two rows per page). These come first, then
 // every department and every category that has products and a photo.
@@ -372,9 +373,9 @@ const handleHeroTouchEnd = (event) => {
       className="bg-[#F6F8FC]"
       style={{ color: COLORS.navy }}
     >
-      {/* Clears the fixed navbar (158px on mobile, 114px on desktop).
+      {/* Clears the fixed navbar (154px on mobile, 114px on desktop).
           Navy on desktop, where the navbar is see-through at the top. */}
-      <div aria-hidden="true" className="h-[158px] bg-white md:h-[114px] md:bg-[#0E1A3D]" />
+      <div aria-hidden="true" className="h-[154px] bg-white md:h-[114px] md:bg-[#0E1A3D]" />
 
       {/* =====================================================
           CUSTOMER REVIEWS
@@ -492,6 +493,11 @@ const handleHeroTouchEnd = (event) => {
       />
 
       {/* =====================================================
+          STATS (live numbers, count up when scrolled to)
+      ====================================================== */}
+      <StatsSection stats={stats} />
+
+      {/* =====================================================
           BEST SELLERS
       ====================================================== */}
       <ProductSection
@@ -533,34 +539,6 @@ const handleHeroTouchEnd = (event) => {
 
 
 
-      {/* =====================================================
-          STATS
-      ====================================================== */}
-      {stats && (
-       <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 md:py-10">
-          <div
-            className="grid grid-cols-3 gap-3 rounded-2xl p-5 md:gap-8 md:p-10"
-            style={{
-              backgroundColor: COLORS.navy,
-            }}
-          >
-            <Stat
-              value={stats.totalProducts}
-              label="Products"
-            />
-
-            <Stat
-              value={stats.totalCategories}
-              label="Categories"
-            />
-
-            <Stat
-              value={stats.totalBrands}
-              label="Brands"
-            />
-          </div>
-        </section>
-      )}
     </div>
   );
 }
@@ -771,14 +749,16 @@ className="flex shrink-0 items-center gap-1 text-xs font-semibold sm:text-sm"
         </div>
 
         {/* Horizontal product track */}
+        {/* Phones: the row runs to the screen edge and cards are a bit
+            narrower, so two fit with part of a third showing (swipe hint). */}
         <div
           ref={scrollRef}
-          className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4"
+          className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2.5 overflow-x-auto overscroll-x-contain px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:scroll-px-0 sm:gap-4 sm:px-0"
         >
           {products.slice(0, 8).map((product) => (
             <div
               key={product.id || product.slug}
-  className="w-[calc((100vw-44px)/2)] min-w-0 shrink-0 snap-start sm:w-[240px] md:w-[250px]"
+              className="w-[40vw] min-w-0 shrink-0 snap-start sm:w-[240px] md:w-[250px]"
             >
               <ProductCard product={product} />
             </div>
@@ -786,29 +766,5 @@ className="flex shrink-0 items-center gap-1 text-xs font-semibold sm:text-sm"
         </div>
       </div>
     </section>
-  );
-}
-
-
-/* =========================================================
-   STAT
-========================================================= */
-
-function Stat({ value, label }) {
-  return (
-    <div className="text-center">
-      <div
-        className="text-xl font-bold md:text-4xl"
-        style={{ color: COLORS.white }}
-      >
-        {Number(value || 0).toLocaleString(
-          "en-IN"
-        )}
-      </div>
-
-      <div className="mt-0.5 text-xs text-white/55 md:mt-1 md:text-sm">
-        {label}
-      </div>
-    </div>
   );
 }

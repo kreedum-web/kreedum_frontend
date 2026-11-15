@@ -141,7 +141,7 @@ export default function SearchBar({ className = "" }) {
       <form
         onSubmit={handleSubmit}
         role="search"
-        className="flex items-center gap-3 rounded-full border px-4 py-3 transition-all duration-200 focus-within:ring-2"
+        className="flex items-center gap-2.5 rounded-full border px-3.5 py-2 transition-all duration-200 focus-within:ring-2 md:gap-3 md:px-4 md:py-3"
         style={{
           backgroundColor: COLORS.paper,
           borderColor: "rgba(14,26,61,0.08)",
@@ -154,7 +154,7 @@ export default function SearchBar({ className = "" }) {
           className="shrink-0"
           style={{ color: COLORS.slate }}
         >
-          <Search className="h-5 w-5" />
+          <Search className="h-[18px] w-[18px] md:h-5 md:w-5" />
         </button>
 
         <input

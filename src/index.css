@@ -80,3 +80,13 @@ body {
 
 
 
+
+/* Homepage numbers: the changing word slides up into place. */
+@keyframes kr-word-in {
+  from { opacity: 0; transform: translateY(0.6em); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.kr-word-in { animation: kr-word-in 0.45s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .kr-word-in { animation: none; }
+}

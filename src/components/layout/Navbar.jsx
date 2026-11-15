@@ -2,7 +2,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient} from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Heart, Menu, ShoppingCart, User, X , LogOut,  ChevronDown,  Package,MapPin,UserRoundPen,} from "lucide-react";
+import { Heart, Menu, ShoppingCart, User, X , LogOut,  ChevronDown,  Package,MapPin,UserRoundPen, FileText,} from "lucide-react";
 
 import { COLORS } from "@/config/theme";
 import logo from "@/assets/logo.png";
@@ -296,9 +296,19 @@ onClick={() => {
     </Link>
   </div>
 ) : (
-  /* Normal search row at the top */
-  <div className="bg-white px-4 py-2 shadow-sm">
-    <SearchBar />
+  /* Normal search row at the top, with Bulk Enquiry next to it */
+  <div className="flex items-center gap-2 bg-white px-4 py-2 shadow-sm">
+    <div className="min-w-0 flex-1">
+      <SearchBar />
+    </div>
+    <Link
+      to="/bulk-enquiry"
+      state={{ from: location.pathname }}
+      className="flex h-[42px] shrink-0 flex-col items-center justify-center rounded-2xl bg-[#2C62E0] px-3 text-center text-[11px] font-bold leading-[1.15] text-white active:bg-[#1F49B8]"
+    >
+      <span>Bulk</span>
+      <span>Enquiry</span>
+    </Link>
   </div>
 )}
 
@@ -423,7 +433,7 @@ onClick={() => {
         }}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 md:h-20">
-          <Link to="/" className="group flex items-center gap-2">
+          <Link to="/" className="group flex shrink-0 items-center gap-2">
             <img
               src={logo}
               alt="Kreedum logo"
@@ -440,7 +450,7 @@ onClick={() => {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-7 md:flex">
+          <nav className="ml-6 hidden shrink-0 items-center gap-6 md:flex lg:ml-8 lg:gap-7">
             {navLinks.map((link, index) => {
               const isActive = isNavActive(link.to);
 
@@ -485,6 +495,27 @@ onClick={() => {
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
+            <Link
+              to="/bulk-enquiry"
+              state={{ from: location.pathname }}
+              className="hidden items-center gap-1.5 whitespace-nowrap rounded-full bg-[#2C62E0] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#1F49B8] hover:shadow-md xl:inline-flex"
+              style={{ fontFamily: '"Manrope", sans-serif' }}
+            >
+              <FileText className="h-4 w-4" />
+              Bulk Enquiry
+            </Link>
+
+            {/* Narrow desktops: icon only */}
+            <Link
+              to="/bulk-enquiry"
+              state={{ from: location.pathname }}
+              aria-label="Bulk Enquiry"
+              title="Bulk Enquiry"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2C62E0] text-white transition hover:bg-[#1F49B8] xl:hidden"
+            >
+              <FileText className="h-[18px] w-[18px]" />
+            </Link>
+
             <Link
               to="/wishlist"
               aria-label="Wishlist"

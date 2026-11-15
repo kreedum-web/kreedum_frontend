@@ -4,8 +4,9 @@ import { COLORS } from "@/config/theme";
 import { brandUrl } from "@/hooks/useCategories";
 import { useBrands } from "@/hooks/useBrands";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
+import BrandLogo from "@/components/brand/BrandLogo";
 
-/** /brands — every brand we sell, with its product count. */
+/** /brands — every brand we sell (logo or name), with its product count. */
 export default function BrandsPage() {
   const { brands, isLoading, isError } = useBrands();
 
@@ -34,15 +35,8 @@ export default function BrandsPage() {
               to={brandUrl(brand.slug)}
               className="group overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm"
             >
-              <div className="aspect-[4/3] bg-white">
-                {brand.image && (
-                  <img
-                    src={brand.image}
-                    alt=""
-                    loading="lazy"
-                    className="h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
-                  />
-                )}
+              <div className="flex aspect-[16/9] items-center justify-center bg-white p-5 transition-transform duration-300 group-hover:scale-105 md:p-7">
+                <BrandLogo brand={brand} />
               </div>
               <div className="border-t border-gray-100 p-4">
                 <p className="font-semibold" style={{ color: COLORS.navy }}>

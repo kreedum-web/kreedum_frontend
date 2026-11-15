@@ -31,6 +31,7 @@ import CategoriesPage from "@/pages/Category/CategoriesPage";
 import CategoryPage from "@/pages/Category/CategoryPage";
 import BrandsPage from "@/pages/Brand/BrandsPage";
 import BrandPage from "@/pages/Brand/BrandPage";
+import BulkEnquiryPage from "@/pages/BulkEnquiry/BulkEnquiryPage";
 
 
 export default function AppRoutes() {
@@ -62,6 +63,8 @@ export default function AppRoutes() {
         <Route path="/about-us" element={<AboutUsPage />} />
         <Route path="/account/orders/:orderId" element={<OrderDetailsPage />}/>
         <Route path="/payment/return" element={<PaymentReturnPage />} />
+        <Route path="/bulk-enquiry" element={<BulkEnquiryPage />} />
+        <Route path="/quote" element={<BulkEnquiryPage />} />
       </Route>
 
       {/* Auth pages */}

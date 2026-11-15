@@ -39,6 +39,7 @@ const API_ENDPOINTS = {
     START: (orderId) => `/payments/orders/${orderId}/start`,
     STATUS: (orderId) => `/payments/orders/${orderId}/status`,
   },
+  ENQUIRIES: "/enquiries",
 };
 
 export default API_ENDPOINTS;
