@@ -214,14 +214,18 @@ function DepartmentPane({ department, onNavigate }) {
         <section key={category.slug} className="mb-6">
           <SectionTitle>{category.name}</SectionTitle>
           <div className="grid grid-cols-3 gap-x-2.5 gap-y-4">
-            <Tile
+            {/* <Tile
               to={categoryUrl(category.slug)}
               image={category.image}
               label={`All ${category.name}`}
               onNavigate={onNavigate}
-            />
+            /> */}
             {category.children.map((sub) => (
-              <Tile key={sub.slug} to={categoryUrl(sub.slug)} image={sub.image} label={sub.name} onNavigate={onNavigate} />
+              <Tile key={sub.slug} 
+              to={categoryUrl(sub.slug)} 
+              image={sub.image} 
+              label={sub.name} 
+              onNavigate={onNavigate} />
             ))}
           </div>
         </section>

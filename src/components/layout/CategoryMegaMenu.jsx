@@ -58,7 +58,6 @@ function DepartmentTiles({ department }) {
         <section key={category.slug}>
           <SectionHeading to={categoryUrl(category.slug)}>{category.name}</SectionHeading>
           <div className={grid}>
-            <MenuTile to={categoryUrl(category.slug)} image={category.image} label={`All ${category.name}`} count={category.productCount} />
             {category.children.map((sub) => (
               <MenuTile key={sub.slug} to={categoryUrl(sub.slug)} image={sub.image} label={sub.name} count={sub.productCount} />
             ))}
@@ -202,13 +201,9 @@ export default function CategoryMegaMenu({ linkColor, activeColor }) {
                   </Link>
                 </div>
 
-                {department.children.length === 0 ? (
-                  <div className="grid grid-cols-6 gap-3 xl:grid-cols-8">
-                    <MenuTile to={categoryUrl(department.slug)} image={department.image} label={`All ${department.name}`} count={department.productCount} />
-                  </div>
-                ) : (
-                  <DepartmentTiles department={department} />
-                )}
+               {department.children.length > 0 && (
+  <DepartmentTiles department={department} />
+)}
               </div>
             )}
           </div>
