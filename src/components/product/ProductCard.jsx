@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { brandUrl } from "@/utils/brandUrl";
 import { useSignIn } from "@/contexts/SignInContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -206,11 +207,15 @@ export default function ProductCard({ product, variant = "default" }) {
     <div className="flex flex-1 flex-col p-3">
 
       {brand !== "Unknown" && (
-        <p
-          className="mb-1 truncate text-[10px] font-bold uppercase tracking-[0.1em]"
-          style={{ color: COLORS.slateLight }}
-        >
-          {brand}
+        <p className="mb-1 truncate text-[10px] font-bold uppercase tracking-[0.1em]">
+          {/* The brand name opens that brand's page. */}
+          <Link
+            to={brandUrl(product)}
+            className="transition-colors hover:text-[#2C62E0] hover:underline"
+            style={{ color: COLORS.slateLight }}
+          >
+            {brand}
+          </Link>
         </p>
       )}
 

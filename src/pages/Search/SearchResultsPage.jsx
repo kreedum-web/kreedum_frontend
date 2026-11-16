@@ -1,12 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import {
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Check,
-} from "lucide-react";
+import { Search } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import { searchService } from "@/api";
@@ -60,6 +53,7 @@ const sort = SORT_OPTIONS.some(
   const data = response?.data;
   const products = normalizeProducts(data?.products || []);
   const pagination = data?.pagination;
+  const understood = data?.interpreted;
 
   function changePage(nextPage) {
     if (
@@ -138,7 +132,10 @@ const sort = SORT_OPTIONS.some(
               No products found
             </h2>
             <p className="mt-2 text-sm text-gray-500">
-              No results for "{query}". Try a different product name or keyword.
+              No results for "{query}".{" "}
+              {understood?.minPrice != null || understood?.maxPrice != null
+                ? `Nothing in that price range (${priceText(understood)}): try a different budget.`
+                : "Try a different product name or keyword."}
             </p>
           </div>
         ) : (
@@ -157,6 +154,7 @@ const sort = SORT_OPTIONS.some(
     <p className="mt-1 text-sm text-gray-500">
       {pagination?.totalProducts ?? products.length} products found
     </p>
+    <SearchUnderstood understood={understood} />
   </div>
 
   <div className="flex w-full items-center justify-between gap-3">
@@ -214,5 +212,49 @@ const sort = SORT_OPTIONS.some(
         )}
       </section>
     </main>
+  );
+}
+
+const rupees = (value) => `₹${Number(value).toLocaleString("en-IN")}`;
+
+/** "under ₹1,00,000", "₹10,000 – ₹20,000", "above ₹50,000" */
+function priceText({ minPrice, maxPrice } = {}) {
+  if (minPrice != null && maxPrice != null) return `${rupees(minPrice)} – ${rupees(maxPrice)}`;
+  if (maxPrice != null) return `under ${rupees(maxPrice)}`;
+  if (minPrice != null) return `above ${rupees(minPrice)}`;
+  return "";
+}
+
+/** What the search understood: typo fixes, the price range, closest matches. */
+function SearchUnderstood({ understood }) {
+  if (!understood) return null;
+  const { corrections = [], relaxed } = understood;
+  const price = priceText(understood);
+  if (!corrections.length && !price && !relaxed) return null;
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+      {corrections.length > 0 && (
+        <span className="rounded-full bg-[#EAF0FF] px-3 py-1 text-[#1F49B8]">
+          Showing results for{" "}
+          {corrections.map((c, i) => (
+            <span key={c.from}>
+              {i > 0 && ", "}
+              <strong>{c.to}</strong>
+            </span>
+          ))}
+        </span>
+      )}
+      {price && (
+        <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-800">
+          Price: <strong>{price}</strong>
+        </span>
+      )}
+      {relaxed && (
+        <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-900">
+          No product matches every word. Showing the closest matches.
+        </span>
+      )}
+    </div>
   );
 }

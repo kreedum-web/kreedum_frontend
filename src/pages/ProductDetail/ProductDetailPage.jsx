@@ -1,4 +1,5 @@
 import { useSignIn } from "@/contexts/SignInContext";
+import { brandUrl } from "@/utils/brandUrl";
 import { useMutation,
   useQuery,
   useQueryClient, } from "@tanstack/react-query";
@@ -509,11 +510,11 @@ function handleWishlist() {
           {/* PRODUCT INFO */}
           <div className="flex flex-col">
             {product.brand && product.brand !== "Unknown" && (
-              <p
-                className="text-xs font-bold tracking-[0.18em] uppercase"
-                style={{ color: COLORS.blue }}
-              >
-                {product.brand}
+              <p className="text-xs font-bold tracking-[0.18em] uppercase">
+                {/* The brand name opens that brand's page. */}
+                <Link to={brandUrl(product)} className="hover:underline" style={{ color: COLORS.blue }}>
+                  {product.brand}
+                </Link>
               </p>
             )}
 
@@ -815,7 +816,16 @@ function handleWishlist() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 border border-gray-100 rounded-2xl overflow-hidden">
         <Specification label="SKU" value={product.sku} />
-        <Specification label="Brand" value={product.brand} />
+        <Specification
+          label="Brand"
+          value={
+            product.brand && product.brand !== "Unknown" ? (
+              <Link to={brandUrl(product)} className="text-[#2C62E0] hover:underline">
+                {product.brand}
+              </Link>
+            ) : null
+          }
+        />
         <Specification
           label="Country of Origin"
           value={product.countryOfOrigin}
