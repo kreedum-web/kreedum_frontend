@@ -31,7 +31,7 @@ const toOptions = (list) => list.map((item) => ({ label: item, value: item }));
 /** The enquiry as the WhatsApp message the customer sends us. */
 function whatsappText(form) {
   return [
-    "Hi Kreedum Sports, I have a bulk enquiry.",
+    "Hi Kreedum Sports, I have a Bulk Order Enquiry.",
     "",
     `Name: ${form.name}`,
     `Mobile: ${form.phone}`,
@@ -134,9 +134,9 @@ export default function BulkEnquiryPage() {
     <main className="min-h-screen bg-[#F6F8FC]">
       <InnerPageHeader
         eyebrow="Bulk & institutional orders"
-        title="Bulk Enquiry"
+        title="Bulk Order Enquiry"
         description="Gyms, schools, offices and societies: tell us what you need and we'll call you with the best price."
-        breadcrumbs={[{ label: "Home", to: "/" }, { label: "Bulk Enquiry" }]}
+        breadcrumbs={[{ label: "Home", to: "/" }, { label: "Bulk Order Enquiry" }]}
       />
 
       <section className="mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 md:py-10 lg:grid-cols-[1fr_330px]">
@@ -292,7 +292,7 @@ export default function BulkEnquiryPage() {
               <a href={`tel:${PHONE_TEL}`} className="inline-flex items-center gap-2.5 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-[#0E1A3D] hover:border-[#2C62E0] hover:text-[#2C62E0]">
                 <Phone size={17} /> {PHONE_DISPLAY}
               </a>
-              <a href={whatsappLink("Hi Kreedum, I have a bulk enquiry.")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2.5 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-[#0E1A3D] hover:border-[#25D366] hover:text-[#128C4B]">
+              <a href={whatsappLink("Hi Kreedum, I have a Bulk Order Enquiry.")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2.5 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-[#0E1A3D] hover:border-[#25D366] hover:text-[#128C4B]">
                 <MessageCircle size={17} /> WhatsApp us
               </a>
             </div>

@@ -1,4 +1,4 @@
-// Choices on the Bulk enquiry form. The backend accepts the same list
+// Choices on the Bulk Order Enquiry form. The backend accepts the same list
 // (src/services/enquiryService.js); anything else is saved as "Other".
 export const FACILITY_TYPES = [
   "Commercial Gym",

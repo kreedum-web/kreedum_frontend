@@ -10,7 +10,7 @@ const QUICK_LINKS = [
   { label: "Home", to: "/" },
   { label: "Shop by Category", to: "/categories" },
   { label: "Brands", to: "/brands" },
-  { label: "Bulk Enquiry", to: "/bulk-enquiry" },
+  { label: "Bulk Order Enquiry", to: "/bulk-enquiry" },
   { label: "About Us", to: "/about-us" },
   { label: "Contact Us", to: "/contact" },
 ];

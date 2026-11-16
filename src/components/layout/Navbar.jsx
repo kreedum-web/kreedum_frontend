@@ -298,7 +298,7 @@ onClick={() => {
     </Link>
   </div>
 ) : (
-  /* Normal search row at the top, with Bulk Enquiry next to it */
+  /* Normal search row at the top, with Bulk Order Enquiry next to it */
   <div className="flex items-center gap-2 bg-white px-4 py-2 shadow-sm">
     <div className="min-w-0 flex-1">
       <SearchBar />
@@ -306,7 +306,7 @@ onClick={() => {
     <Link
       to="/bulk-enquiry"
       state={{ from: location.pathname }}
-      className="flex h-[42px] shrink-0 flex-col items-center justify-center rounded-2xl bg-[#2C62E0] px-3 text-center text-[11px] font-bold leading-[1.15] text-white active:bg-[#1F49B8]"
+      className="flex h-[42px] shrink-0 flex-col items-center justify-center rounded-2xl bg-[#880808] px-3 text-center text-[11px] font-bold leading-[1.15] text-white active:bg-[#EE4B2B]"
     >
       <span>Bulk</span>
       <span>Enquiry</span>
@@ -503,20 +503,20 @@ onClick={() => {
             <Link
               to="/bulk-enquiry"
               state={{ from: location.pathname }}
-              className="hidden items-center gap-1.5 whitespace-nowrap rounded-full bg-[#2C62E0] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#1F49B8] hover:shadow-md xl:inline-flex"
+              className="hidden items-center gap-1.5 whitespace-nowrap rounded-full bg-[#880808] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#EE4B2B] hover:shadow-md xl:inline-flex"
               style={{ fontFamily: '"Manrope", sans-serif' }}
             >
               <FileText className="h-4 w-4" />
-              Bulk Enquiry
+              Bulk Order Enquiry
             </Link>
 
             {/* Narrow desktops: icon only */}
             <Link
               to="/bulk-enquiry"
               state={{ from: location.pathname }}
-              aria-label="Bulk Enquiry"
-              title="Bulk Enquiry"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2C62E0] text-white transition hover:bg-[#1F49B8] xl:hidden"
+              aria-label="Bulk Order Enquiry"
+              title="Bulk Order Enquiry"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#880808] text-white transition hover:bg-[#EE4B2B] xl:hidden"
             >
               <FileText className="h-[18px] w-[18px]" />
             </Link>
