@@ -9,6 +9,7 @@ import SignInRoute from "./SignInRoute";
 import AuthContextTest from "@/pages/Test/AuthContextTest";
 import NotFoundPage from "@/pages/Error/NotFoundPage";
 import ScrollToTop from "@/components/layout/ScrollToTop";
+import PageViewTracker from "@/components/layout/PageViewTracker";
 import ProductDetailPage from "@/pages/ProductDetail/ProductDetailPage";
 import SearchResultsPage from "@/pages/Search/SearchResultsPage";
 import FloatingContactActions from "@/components/common/FloatingContactActions";
@@ -36,6 +37,7 @@ export default function AppRoutes() {
   return (
     <>
     <ScrollToTop />
+    <PageViewTracker />
       <FloatingContactActions />
     <Routes>
       <Route element={<MainLayout />}>
