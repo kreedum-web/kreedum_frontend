@@ -7,6 +7,7 @@ import Dropdown from "@/components/common/Dropdown";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import { PHONE_DISPLAY, PHONE_TEL, whatsappLink } from "@/config/contact";
 import { useAuth } from "@/contexts/AuthContext";
+import { logWhatsapp } from "@/utils/enquiryLog";
 import {
   BUDGET_BANDS,
   ENQUIRY_HIGHLIGHTS,
@@ -292,7 +293,7 @@ export default function BulkEnquiryPage() {
               <a href={`tel:${PHONE_TEL}`} className="inline-flex items-center gap-2.5 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-[#0E1A3D] hover:border-[#2C62E0] hover:text-[#2C62E0]">
                 <Phone size={17} /> {PHONE_DISPLAY}
               </a>
-              <a href={whatsappLink("Hi Kreedum, I have a Bulk Order Enquiry.")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2.5 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-[#0E1A3D] hover:border-[#25D366] hover:text-[#128C4B]">
+              <a href={whatsappLink("Hi Kreedum, I have a Bulk Order Enquiry.")} onClick={() => logWhatsapp("bulk-page")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2.5 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-[#0E1A3D] hover:border-[#25D366] hover:text-[#128C4B]">
                 <MessageCircle size={17} /> WhatsApp us
               </a>
             </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { visitorId } from "@/utils/visitor";
 
 /**
  * Counts each page the customer opens, for the admin dashboard's Traffic
@@ -7,21 +8,6 @@ import { useLocation } from "react-router-dom";
  * address (no ?query) and the site they came from: no names or contact
  * details. Never slows the page down or shows errors.
  */
-const VISITOR_KEY = "kreedum_visitor";
-
-function visitorId() {
-  try {
-    let id = localStorage.getItem(VISITOR_KEY);
-    if (!id) {
-      id = crypto.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
-      localStorage.setItem(VISITOR_KEY, id);
-    }
-    return id;
-  } catch {
-    return "";
-  }
-}
-
 export default function PageViewTracker() {
   const { pathname } = useLocation();
   const firstView = useRef(true);

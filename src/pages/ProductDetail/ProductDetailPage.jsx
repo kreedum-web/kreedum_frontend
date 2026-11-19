@@ -19,6 +19,7 @@ import {
 import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { whatsappLink } from "@/config/contact";
+import { logWhatsapp } from "@/utils/enquiryLog";
 
 
 import { productService } from "@/api";
@@ -600,6 +601,13 @@ function handleWishlist() {
       "Please share more details. Thank you!",
     ].join("\n")
   )}
+  onClick={() =>
+    logWhatsapp("product-page", {
+      productSlug: product.slug,
+      sku: selectedVariant?.sku || product.sku || "",
+      quantity,
+    })
+  }
   target="_blank"
   rel="noopener noreferrer"
   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-green-50"

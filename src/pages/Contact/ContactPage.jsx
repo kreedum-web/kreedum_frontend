@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import Dropdown from "@/components/common/Dropdown";
+import { enquiryService } from "@/api";
+import { logWhatsapp } from "@/utils/enquiryLog";
 
 const stores = [
   {
@@ -111,6 +113,12 @@ export default function ContactPage() {
       `Message: ${message}`,
     ].filter(Boolean).join("\n");
 
+    // Save it for the team (in the background: WhatsApp opens straight away,
+    // and a failed save never stops the customer).
+    enquiryService
+      .contact({ name, phone, email, topic: category, message, page: window.location.pathname })
+      .catch(() => {});
+
     window.open(
       `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`,
       "_blank",
@@ -192,6 +200,7 @@ export default function ContactPage() {
 
               <a
                 href={`https://wa.me/${WHATSAPP}`}
+                onClick={() => logWhatsapp("contact-page")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-start gap-3 text-sm hover:text-[#8FADFF]"

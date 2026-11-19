@@ -5,6 +5,7 @@ import { COLORS } from "@/config/theme";
 import { ADDRESS, EMAIL, MAPS_URL, PHONE_DISPLAY, PHONE_TEL, whatsappLink } from "@/config/contact";
 import logo from "@/assets/logo.png";
 import SocialLinks from "@/components/common/SocialLinks";
+import { logWhatsapp } from "@/utils/enquiryLog";
 
 const QUICK_LINKS = [
   { label: "Home", to: "/" },
@@ -100,7 +101,7 @@ export default function Footer() {
             </li>
             <li className="flex items-center gap-3">
               <MessageCircle size={17} className="shrink-0 text-[#8FADFF]" />
-              <a href={whatsappLink()} target="_blank" rel="noopener noreferrer" className="hover:text-white">
+              <a href={whatsappLink()} onClick={() => logWhatsapp("footer")} target="_blank" rel="noopener noreferrer" className="hover:text-white">
                 WhatsApp us
               </a>
             </li>

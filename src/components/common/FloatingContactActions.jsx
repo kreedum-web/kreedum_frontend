@@ -5,6 +5,7 @@ import { useMatch } from "react-router-dom";
 
 import { orderService, productService } from "@/api";
 import { COLORS } from "@/config/theme";
+import { logWhatsapp } from "@/utils/enquiryLog";
 
 const WHATSAPP_NUMBER = "917570002458";
 const CALL_NUMBER = "+917570002458";
@@ -125,6 +126,12 @@ export default function FloatingContactActions() {
     >
       <a
         href={whatsappUrl}
+        onClick={() =>
+          logWhatsapp(orderId ? "order-help" : "floating", {
+            productSlug: orderId ? undefined : slug,
+            orderNumber: order?.orderNumber,
+          })
+        }
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with Kreedum Sports on WhatsApp"
