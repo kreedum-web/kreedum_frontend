@@ -13,10 +13,12 @@ import {
   Plus,
   ShoppingCart,
   Heart,
-  Share2
+  Share2,
+  MessageCircle,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { whatsappLink } from "@/config/contact";
 
 
 import { productService } from "@/api";
@@ -507,6 +509,8 @@ function handleWishlist() {
 </div>
 
 
+
+
           {/* PRODUCT INFO */}
           <div className="flex flex-col">
             {product.brand && product.brand !== "Unknown" && (
@@ -535,18 +539,14 @@ function handleWishlist() {
 {/* Share and Wishlist */}
 <div className="mt-5 flex flex-wrap items-center gap-3">
   <button
-    type="button"
-    onClick={handleShare}
-    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-[#EAF0FF]"
-    style={{
-      color: COLORS.navy,
-      borderColor: "rgba(14,26,61,0.15)",
-      backgroundColor: COLORS.white,
-    }}
-  >
-    <Share2 className="h-4 w-4" />
-    Share
-  </button>
+  type="button"
+  onClick={handleShare}
+  aria-label="Share product"
+  title="Share product"
+  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white transition hover:bg-gray-50"
+>
+  <Share2 className="h-5 w-5" />
+</button>
 
   <button
     type="button"
@@ -562,27 +562,57 @@ function handleWishlist() {
         : "Add product to wishlist"
     }
     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-[#EAF0FF] disabled:cursor-wait disabled:opacity-60"
-    style={{
-      color: isWishlisted ? COLORS.blue : COLORS.navy,
-      borderColor: isWishlisted
-        ? COLORS.blue
-        : "rgba(14,26,61,0.15)",
-      backgroundColor: isWishlisted
-        ? COLORS.tint
-        : COLORS.white,
-    }}
+    // style={{
+    //   color: isWishlisted ? COLORS.blue : COLORS.navy,
+    //   borderColor: isWishlisted
+    //     ? COLORS.blue
+    //     : "rgba(14,26,61,0.15)",
+    //   backgroundColor: isWishlisted
+    //     ? COLORS.tint
+    //     : COLORS.white,
+    // }}
   >
     <Heart
       className="h-4 w-4"
       fill={isWishlisted ? "currentColor" : "none"}
+      style={{ color: isWishlisted ? "#DC2626" : COLORS.navy }}
+
     />
 
-    {wishlistMutation.isPending
+    {/* {wishlistMutation.isPending
       ? "Updating..."
       : isWishlisted
       ? "Wishlisted"
-      : "Add to Wishlist"}
+      : "Add to Wishlist"} */}
   </button>
+
+<a
+  href={whatsappLink(
+    [
+      "Hi Kreedum Sports, I would like to enquire about this product.",
+      "",
+      `Product: ${product.name}`,
+      `SKU: ${selectedVariant?.sku || product.sku || "Not available"}`,
+      `Quantity: ${quantity}`,
+      `Price: ₹${sellingPrice.toLocaleString("en-IN")}`,
+      `Product link: ${window.location.href}`,
+      "",
+      "Please share more details. Thank you!",
+    ].join("\n")
+  )}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-green-50"
+  style={{
+    color: "#128C4A",
+    borderColor: "#B7E4C7",
+    backgroundColor: "#F0FFF5",
+  }}
+>
+  <MessageCircle className="h-4 w-4" />
+  Enquire Now
+</a>
+
 </div>
 
 {shareMessage && (
