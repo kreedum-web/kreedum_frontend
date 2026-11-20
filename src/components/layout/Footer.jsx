@@ -6,12 +6,13 @@ import { ADDRESS, EMAIL, MAPS_URL, PHONE_DISPLAY, PHONE_TEL, whatsappLink } from
 import logo from "@/assets/logo.png";
 import SocialLinks from "@/components/common/SocialLinks";
 import { logWhatsapp } from "@/utils/enquiryLog";
+import { useEnquiry } from "@/contexts/EnquiryContext";
 
 const QUICK_LINKS = [
   { label: "Home", to: "/" },
   { label: "Shop by Category", to: "/categories" },
   { label: "Brands", to: "/brands" },
-  { label: "Bulk Order Enquiry", to: "/bulk-enquiry" },
+  { label: "Bulk Order Enquiry", to: "/bulk-enquiry", popup: "bulk" },
   { label: "About Us", to: "/about-us" },
   { label: "Contact Us", to: "/contact" },
 ];
@@ -29,13 +30,21 @@ function Heading({ children }) {
 }
 
 function LinkList({ links }) {
+  const { openEnquiry } = useEnquiry();
   return (
     <ul className="space-y-3 text-sm text-white/65">
       {links.map((item) => (
         <li key={item.to}>
-          <Link className="transition-colors hover:text-white" to={item.to}>
-            {item.label}
-          </Link>
+          {item.popup ? (
+            // Opens the form as a popup instead of going to a page.
+            <button type="button" className="transition-colors hover:text-white" onClick={() => openEnquiry(item.popup)}>
+              {item.label}
+            </button>
+          ) : (
+            <Link className="transition-colors hover:text-white" to={item.to}>
+              {item.label}
+            </Link>
+          )}
         </li>
       ))}
     </ul>

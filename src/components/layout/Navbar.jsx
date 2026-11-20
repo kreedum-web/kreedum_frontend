@@ -8,6 +8,7 @@ import { COLORS } from "@/config/theme";
 import logo from "@/assets/logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSignIn } from "@/contexts/SignInContext";
+import { useEnquiry } from "@/contexts/EnquiryContext";
 import SearchBar from "@/components/search/SearchBar";
 import { cartService,wishlistService} from "@/api";
 import AnnouncementBanner from "./AnnouncementBanner";
@@ -21,6 +22,7 @@ export default function Navbar() {
 const queryClient = useQueryClient();
   const { user, isAuthenticated,logout } = useAuth();
   const { openSignIn } = useSignIn();
+  const { openEnquiry } = useEnquiry();
 
   const userKey = user?.id || user?._id || "current";
 
@@ -303,14 +305,14 @@ onClick={() => {
     <div className="min-w-0 flex-1">
       <SearchBar />
     </div>
-    <Link
-      to="/bulk-enquiry"
-      state={{ from: location.pathname }}
+    <button
+      type="button"
+      onClick={() => openEnquiry("bulk", { from: location.pathname })}
       className="flex h-[42px] shrink-0 flex-col items-center justify-center rounded-2xl bg-[#880808] px-3 text-center text-[11px] font-bold leading-[1.15] text-white active:bg-[#EE4B2B]"
     >
       <span>Bulk</span>
       <span>Enquiry</span>
-    </Link>
+    </button>
   </div>
 )}
 
@@ -500,26 +502,26 @@ onClick={() => {
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
-            <Link
-              to="/bulk-enquiry"
-              state={{ from: location.pathname }}
+            <button
+              type="button"
+              onClick={() => openEnquiry("bulk", { from: location.pathname })}
               className="hidden items-center gap-1.5 whitespace-nowrap rounded-full bg-[#880808] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#EE4B2B] hover:shadow-md xl:inline-flex"
               style={{ fontFamily: '"Manrope", sans-serif' }}
             >
               <FileText className="h-4 w-4" />
               Bulk Order Enquiry
-            </Link>
+            </button>
 
             {/* Narrow desktops: icon only */}
-            <Link
-              to="/bulk-enquiry"
-              state={{ from: location.pathname }}
+            <button
+              type="button"
+              onClick={() => openEnquiry("bulk", { from: location.pathname })}
               aria-label="Bulk Order Enquiry"
               title="Bulk Order Enquiry"
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#880808] text-white transition hover:bg-[#EE4B2B] xl:hidden"
             >
               <FileText className="h-[18px] w-[18px]" />
-            </Link>
+            </button>
 
             <Link
               to="/wishlist"
