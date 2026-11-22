@@ -1,4 +1,5 @@
 import { useSignIn } from "@/contexts/SignInContext";
+import { isPriceOnEnquiry, productEnquiryLink } from "@/utils/priceOnEnquiry";
 import { brandUrl } from "@/utils/brandUrl";
 import { useMutation,
   useQuery,
@@ -18,7 +19,6 @@ import {
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { whatsappLink } from "@/config/contact";
 import { logWhatsapp } from "@/utils/enquiryLog";
 
 
@@ -400,7 +400,16 @@ function handleWishlist() {
   const showPriceRange = hasOptions && !selectedVariant && maxPrice > sellingPrice;
   const sku = selectedVariant?.sku || product.sku;
 
-  const isEnquiryOnly = product.stockStatus === "enquiry_only";
+  // No price (or marked enquiry only): show "Price on request" and Enquire, never ₹0.
+  const isEnquiryOnly = isPriceOnEnquiry(product);
+  const enquiryLink = productEnquiryLink(product, {
+    sku: selectedVariant?.sku || product.sku,
+    quantity,
+    url: window.location.href,
+    withPrice: isEnquiryOnly ? 0 : sellingPrice,
+  });
+  const logEnquiry = () =>
+    logWhatsapp("product-page", { productSlug: product.slug, sku: selectedVariant?.sku || product.sku || "", quantity });
   const isInStock =
     product.stockStatus === "in_stock" &&
     (!hasOptions ||
@@ -588,26 +597,8 @@ function handleWishlist() {
   </button>
 
 <a
-  href={whatsappLink(
-    [
-      "Hi Kreedum Sports, I would like to enquire about this product.",
-      "",
-      `Product: ${product.name}`,
-      `SKU: ${selectedVariant?.sku || product.sku || "Not available"}`,
-      `Quantity: ${quantity}`,
-      `Price: ₹${sellingPrice.toLocaleString("en-IN")}`,
-      `Product link: ${window.location.href}`,
-      "",
-      "Please share more details. Thank you!",
-    ].join("\n")
-  )}
-  onClick={() =>
-    logWhatsapp("product-page", {
-      productSlug: product.slug,
-      sku: selectedVariant?.sku || product.sku || "",
-      quantity,
-    })
-  }
+  href={enquiryLink}
+  onClick={logEnquiry}
   target="_blank"
   rel="noopener noreferrer"
   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-green-50"
@@ -638,6 +629,16 @@ function handleWishlist() {
 
 
             {/* Price */}
+            {isEnquiryOnly ? (
+              <div className="mt-7">
+                <span className="text-2xl md:text-3xl font-bold" style={{ color: COLORS.navy }}>
+                  Price on request
+                </span>
+                <p className="mt-1 text-sm text-gray-500">
+                  Send us an enquiry and we&apos;ll share the best price.
+                </p>
+              </div>
+            ) : (
             <div className="mt-7 flex items-end gap-3 flex-wrap">
               <span
                 className="text-3xl md:text-4xl font-bold"
@@ -659,6 +660,7 @@ function handleWishlist() {
                 </span>
               )}
             </div>
+            )}
 
             {/* Stock */}
             <div className="mt-6 flex items-center gap-2">
@@ -735,15 +737,19 @@ function handleWishlist() {
             {/* Actions */}
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
               {isEnquiryOnly ? (
-                <button
-                  type="button"
-                  className="flex-1 px-6 py-3.5 rounded-xl font-semibold text-white"
+                <a
+                  href={enquiryLink}
+                  onClick={logEnquiry}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5"
                   style={{
                     backgroundColor: COLORS.blue,
                   }}
                 >
+                  <MessageCircle className="w-5 h-5" />
                   Enquire Now
-                </button>
+                </a>
               ) : (
                 <>
                 <button

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { isPriceOnEnquiry, productEnquiryLink } from "@/utils/priceOnEnquiry";
+import { logWhatsapp } from "@/utils/enquiryLog";
 import { brandUrl } from "@/utils/brandUrl";
 import { useSignIn } from "@/contexts/SignInContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -118,6 +120,8 @@ export default function ProductCard({ product, variant = "default" }) {
 
   const actionPending = wishlistMutation.isPending || cartMutation.isPending;
   const unavailable = Boolean(product.stockStatus && product.stockStatus !== "in_stock");
+  // No price: "Price on enquiry" and an Enquire button (WhatsApp) instead of ₹0 and the cart.
+  const onEnquiry = isPriceOnEnquiry(product);
 
   return (
   <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
@@ -249,6 +253,11 @@ export default function ProductCard({ product, variant = "default" }) {
 
       {/* Price + Add to Cart */}
 <div className="mt-auto flex min-h-11 items-center justify-between gap-2 pt-2">
+  {onEnquiry ? (
+    <span className="text-sm font-semibold leading-6 text-[#2C62E0]">
+      Price on enquiry
+    </span>
+  ) : (
   <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
     {priceVaries && (
       <span className="text-[11px] text-gray-500">From</span>
@@ -267,7 +276,20 @@ export default function ProductCard({ product, variant = "default" }) {
       </span>
     )}
   </div>
+  )}
 
+  {onEnquiry ? (
+    <a
+      href={productEnquiryLink(product)}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => logWhatsapp("product-card", { productSlug: slug })}
+      aria-label={`Enquire about ${product.name} on WhatsApp`}
+      className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-[#0E1A3D] px-3.5 text-xs font-semibold text-white transition hover:bg-[#2C62E0]"
+    >
+      Enquire
+    </a>
+  ) : (
   <button
     type="button"
     onClick={handleCartClick}
@@ -284,6 +306,7 @@ export default function ProductCard({ product, variant = "default" }) {
       <ShoppingCart className="h-4 w-4" />
     )}
   </button>
+  )}
 </div>
 
       {/* Feedback */}

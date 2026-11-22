@@ -129,6 +129,7 @@ export default function SearchBar({ className = "" }) {
     const amount = Number(price);
 
     if (!Number.isFinite(amount)) return null;
+    if (amount <= 0) return "Price on enquiry";
 
     return `₹${amount.toLocaleString("en-IN")}`;
   }
