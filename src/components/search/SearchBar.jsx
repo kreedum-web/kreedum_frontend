@@ -1,7 +1,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, X } from "lucide-react";
+import { Mic, MicOff, Search, X } from "lucide-react";
 
 import { searchService } from "@/api";
 import { COLORS } from "@/config/theme";
@@ -18,6 +18,7 @@ export default function SearchBar({ className = "" }) {
   const navigate = useNavigate();
   const wrapperRef = useRef(null);
   const inputRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   const [query, setQuery] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -25,21 +26,38 @@ export default function SearchBar({ className = "" }) {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState("");
+  const [isListening, setIsListening] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
 
-  // Rotate placeholder examples while the input is empty.
+  const SpeechRecognition =
+    typeof window !== "undefined"
+      ? window.SpeechRecognition ||
+        window.webkitSpeechRecognition
+      : null;
+
+  const supportsVoiceSearch = Boolean(SpeechRecognition);
+
+  // Stop microphone when component unmounts
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.abort();
+    };
+  }, []);
+
+  // Rotate search placeholders
   useEffect(() => {
     if (query) return;
 
     const interval = setInterval(() => {
-      setPlaceholderIndex((current) =>
-        (current + 1) % PLACEHOLDERS.length
+      setPlaceholderIndex(
+        (current) => (current + 1) % PLACEHOLDERS.length
       );
     }, 1000);
 
     return () => clearInterval(interval);
   }, [query]);
 
-  // Close suggestions when clicking outside the search.
+  // Close suggestions when clicking outside
   useEffect(() => {
     function handleOutsideClick(event) {
       if (
@@ -60,7 +78,7 @@ export default function SearchBar({ className = "" }) {
     };
   }, []);
 
-  // Fetch suggestions after the user pauses typing.
+  // Fetch product suggestions
   useEffect(() => {
     const keyword = query.trim();
 
@@ -91,11 +109,11 @@ export default function SearchBar({ className = "" }) {
 
         console.error("Search suggestions failed:", err);
         setSuggestions([]);
-        setError("Suggestions are temporarily unavailable.");
+        setError(
+          "Suggestions are temporarily unavailable."
+        );
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }, 300);
 
@@ -105,6 +123,86 @@ export default function SearchBar({ className = "" }) {
     };
   }, [query]);
 
+  // Voice search
+  function toggleVoiceSearch() {
+    if (!supportsVoiceSearch) {
+      setVoiceError(
+        "Voice search is not supported in this browser. Try Chrome or Edge."
+      );
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    setVoiceError("");
+
+    try {
+      const recognition = new SpeechRecognition();
+
+      recognition.lang = "en-IN";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setIsOpen(true);
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map((result) => result[0]?.transcript || "")
+          .join("")
+          .trim();
+
+        if (transcript) {
+          setQuery(transcript);
+          setIsOpen(true);
+        }
+      };
+
+      recognition.onerror = (event) => {
+        if (
+          event.error === "not-allowed" ||
+          event.error === "service-not-allowed"
+        ) {
+          setVoiceError(
+            "Microphone access blocked. Please allow microphone permission."
+          );
+        } else if (event.error === "no-speech") {
+          setVoiceError(
+            "No speech detected. Please try again."
+          );
+        } else if (event.error !== "aborted") {
+          setVoiceError(
+            "Voice search couldn't start. Please try again."
+          );
+        }
+
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        recognitionRef.current = null;
+        inputRef.current?.focus();
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error("Voice search failed:", err);
+      setIsListening(false);
+      setVoiceError(
+        "Voice search couldn't start. Please try again."
+      );
+    }
+  }
+
+  // Submit search
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -112,19 +210,26 @@ export default function SearchBar({ className = "" }) {
 
     if (!keyword) return;
 
+    recognitionRef.current?.stop();
     setIsOpen(false);
 
-    navigate(`/search?q=${encodeURIComponent(keyword)}`);
+    navigate(
+      `/search?q=${encodeURIComponent(keyword)}`
+    );
   }
 
+  // Select suggested product
   function selectProduct(product) {
     if (!product?.slug) return;
 
+    recognitionRef.current?.stop();
     setIsOpen(false);
     setQuery("");
+
     navigate(`/products/${product.slug}`);
   }
 
+  // Format price
   function formatPrice(price) {
     const amount = Number(price);
 
@@ -145,10 +250,13 @@ export default function SearchBar({ className = "" }) {
         className="flex items-center gap-2.5 rounded-full border px-3.5 py-2 transition-all duration-200 focus-within:ring-2 md:gap-3 md:px-4 md:py-3"
         style={{
           backgroundColor: COLORS.paper,
-          borderColor: "rgba(14,26,61,0.08)",
+          borderColor: isListening
+            ? COLORS.blue
+            : "rgba(14,26,61,0.08)",
           "--tw-ring-color": "rgba(44,98,224,0.18)",
         }}
       >
+        {/* Search icon */}
         <button
           type="submit"
           aria-label="Search products"
@@ -158,6 +266,7 @@ export default function SearchBar({ className = "" }) {
           <Search className="h-[18px] w-[18px] md:h-5 md:w-5" />
         </button>
 
+        {/* Search input */}
         <input
           ref={inputRef}
           type="text"
@@ -167,6 +276,7 @@ export default function SearchBar({ className = "" }) {
           onChange={(event) => {
             setQuery(event.target.value);
             setIsOpen(true);
+            setVoiceError("");
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={(event) => {
@@ -174,7 +284,11 @@ export default function SearchBar({ className = "" }) {
               setIsOpen(false);
             }
           }}
-          placeholder={PLACEHOLDERS[placeholderIndex]}
+          placeholder={
+            isListening
+              ? "Listening... Speak now"
+              : PLACEHOLDERS[placeholderIndex]
+          }
           aria-label="Search Kreedum Sports products"
           aria-autocomplete="list"
           autoComplete="off"
@@ -182,17 +296,51 @@ export default function SearchBar({ className = "" }) {
           style={{ color: COLORS.navy }}
         />
 
-        {/* Our own ✕: iPhone Safari never shows the browser's clear button. */}
+        {/* Microphone button */}
+        <button
+          type="button"
+          onClick={toggleVoiceSearch}
+          disabled={!supportsVoiceSearch}
+          aria-label={
+            isListening
+              ? "Stop voice search"
+              : "Search by voice"
+          }
+          aria-pressed={isListening}
+          title={
+            supportsVoiceSearch
+              ? isListening
+                ? "Stop listening"
+                : "Search by voice"
+              : "Voice search is not supported in this browser"
+          }
+          className={`-my-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${
+            isListening
+              ? "bg-blue-100 text-blue-700"
+              : supportsVoiceSearch
+                ? "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                : "cursor-not-allowed text-gray-300"
+          }`}
+        >
+          {isListening ? (
+            <MicOff className="h-[18px] w-[18px]" />
+          ) : (
+            <Mic className="h-[18px] w-[18px]" />
+          )}
+        </button>
+
+        {/* Clear search */}
         {query && (
           <button
             type="button"
             aria-label="Clear search"
-            // Keep the keyboard open: don't take focus away from the text box.
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => {
+              recognitionRef.current?.stop();
               setQuery("");
               setSuggestions([]);
               setError("");
+              setVoiceError("");
               setIsOpen(true);
               inputRef.current?.focus();
             }}
@@ -203,10 +351,35 @@ export default function SearchBar({ className = "" }) {
         )}
       </form>
 
+      {/* Voice search status */}
+      {voiceError && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="mt-2 px-2 text-xs text-red-600"
+        >
+          {voiceError}
+        </p>
+      )}
+
+      {isListening && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="mt-2 px-2 text-xs font-medium"
+          style={{ color: COLORS.blue }}
+        >
+          Listening... Speak now.
+        </p>
+      )}
+
+      {/* Product suggestions */}
       {isOpen && query.trim().length >= 2 && (
         <div
           className="absolute left-0 right-0 top-full z-[60] mt-2 overflow-hidden rounded-2xl border bg-white shadow-xl"
-          style={{ borderColor: "rgba(14,26,61,0.10)" }}
+          style={{
+            borderColor: "rgba(14,26,61,0.10)",
+          }}
         >
           {loading && (
             <p className="px-4 py-4 text-sm text-gray-500">
@@ -227,6 +400,7 @@ export default function SearchBar({ className = "" }) {
                 <p className="text-sm text-gray-600">
                   No matching products found.
                 </p>
+
                 <button
                   type="button"
                   onClick={handleSubmit}
@@ -239,7 +413,7 @@ export default function SearchBar({ className = "" }) {
             )}
 
           {!loading &&
-            suggestions.slice(0,4).map((product) => (
+            suggestions.slice(0, 4).map((product) => (
               <button
                 key={product._id || product.slug}
                 type="button"
