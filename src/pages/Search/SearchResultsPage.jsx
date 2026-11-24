@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
@@ -9,6 +9,8 @@ import ProductCard from "@/components/product/ProductCard";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import Dropdown from "@/components/common/Dropdown";
 import Pagination from "@/components/common/Pagination";
+import ProductFilters from "@/components/filters/ProductFilters";
+import { activeFilterCount, listingFilterParams, readListingFilters, withListingFilters } from "@/utils/listingFilters";
 
 const LIMIT = 20;
 
@@ -24,51 +26,55 @@ const SORT_OPTIONS = [
 export default function SearchResultsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedSort = searchParams.get("sort");
-
-const sort = SORT_OPTIONS.some(
-  (option) => option.value === requestedSort
-)
-  ? requestedSort
-  : "relevance";
+  const sort = SORT_OPTIONS.some((option) => option.value === requestedSort) ? requestedSort : "relevance";
 
   const query = (searchParams.get("q") || "").trim();
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
+  const filters = readListingFilters(searchParams);
+  const filterParams = listingFilterParams(filters);
 
   const {
     data: response,
     isLoading,
+    isFetching,
     isError,
+    refetch,
   } = useQuery({
-    queryKey: ["search-results", query, page, sort],
-    queryFn: () =>
-      searchService.searchProducts({
-        q: query,
-        page,
-        limit: LIMIT,
-        sort,
-      }),
+    queryKey: ["search-results", query, page, sort, filterParams],
+    queryFn: () => searchService.searchProducts({ q: query, page, limit: LIMIT, sort, ...filterParams }),
     enabled: query.length > 0,
+    // Keep the current results on screen while a filter change loads.
+    placeholderData: keepPreviousData,
   });
 
   const data = response?.data;
   const products = normalizeProducts(data?.products || []);
   const pagination = data?.pagination;
   const understood = data?.interpreted;
+  const facets = data?.facets;
+  const total = pagination?.totalProducts ?? products.length;
+  const filtered = activeFilterCount(filters) > 0;
+
+  // A price typed in the search ("treadmill under 1 lakh") shows on the slider too.
+  const shownFilters = {
+    ...filters,
+    minPrice: filters.minPrice ?? understood?.minPrice ?? null,
+    maxPrice: filters.maxPrice ?? understood?.maxPrice ?? null,
+  };
+
+  function changeFilters(changes) {
+    setSearchParams(withListingFilters(searchParams, changes));
+  }
 
   function changePage(nextPage) {
-    if (
-      !pagination ||
-      nextPage < 1 ||
-      nextPage > pagination.totalPages
-    ) {
-      return;
-    }
-
+    if (!pagination || nextPage < 1 || nextPage > pagination.totalPages) return;
     const nextParams = new URLSearchParams(searchParams);
     nextParams.set("page", String(nextPage));
     setSearchParams(nextParams);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  const filterProps = { facets, filters: shownFilters, onChange: changeFilters };
 
   return (
     <main className="min-h-screen bg-[#F6F8FC]">
@@ -89,43 +95,21 @@ const sort = SORT_OPTIONS.some(
             <h2 className="mt-4 text-xl font-bold" style={{ color: COLORS.navy }}>
               Enter a product to search
             </h2>
-            <p className="mt-2 text-sm text-gray-500">
-              Use the search bar above to find products.
-            </p>
+            <p className="mt-2 text-sm text-gray-500">Use the search bar above to find products.</p>
           </div>
         ) : isLoading ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
-            {Array.from({ length: 8 }, (_, index) => (
-              <div
-                key={index}
-                className="animate-pulse overflow-hidden rounded-2xl bg-white"
-              >
-                <div className="aspect-square bg-gray-200" />
-                <div className="space-y-3 p-4">
-                  <div className="h-4 rounded bg-gray-200" />
-                  <div className="h-4 w-2/3 rounded bg-gray-200" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <ResultsSkeleton />
         ) : isError ? (
           <div className="rounded-2xl bg-white p-10 text-center">
             <h2 className="text-xl font-bold" style={{ color: COLORS.navy }}>
               Unable to load search results
             </h2>
-            <p className="mt-2 text-sm text-gray-500">
-              Please try searching again.
-            </p>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="mt-4 font-semibold"
-              style={{ color: COLORS.blue }}
-            >
+            <p className="mt-2 text-sm text-gray-500">Please try searching again.</p>
+            <button type="button" onClick={() => refetch()} className="mt-4 font-semibold" style={{ color: COLORS.blue }}>
               Try again
             </button>
           </div>
-        ) : products.length === 0 ? (
+        ) : products.length === 0 && !filtered ? (
           <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center">
             <Search className="mx-auto h-10 w-10 text-gray-400" />
             <h2 className="mt-4 text-xl font-bold" style={{ color: COLORS.navy }}>
@@ -139,79 +123,107 @@ const sort = SORT_OPTIONS.some(
             </p>
           </div>
         ) : (
-          <>
-           
+          <div className="flex items-start gap-6">
+            <ProductFilters.Sidebar {...filterProps} />
 
-<div className="mb-5">
-  <div className="mb-4">
-    <h2
-      className="text-lg font-bold md:text-xl"
-      style={{ color: COLORS.navy }}
-    >
-      Products matching "{query}"
-    </h2>
+            <div className="min-w-0 flex-1">
+              <div className="mb-5">
+                <div className="mb-4">
+                  <h2 className="text-lg font-bold md:text-xl" style={{ color: COLORS.navy }}>
+                    Products matching "{query}"
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {total} product{total === 1 ? "" : "s"} found
+                  </p>
+                  {/* The price chip below covers a price set with the slider. */}
+                  <SearchUnderstood
+                    understood={filters.minPrice != null || filters.maxPrice != null ? { ...understood, minPrice: null, maxPrice: null } : understood}
+                  />
+                </div>
 
-    <p className="mt-1 text-sm text-gray-500">
-      {pagination?.totalProducts ?? products.length} products found
-    </p>
-    <SearchUnderstood understood={understood} />
-  </div>
+                <div className="grid grid-cols-2 gap-2 md:flex md:items-center md:justify-between md:gap-3">
+                  <ProductFilters.MobileButton {...filterProps} total={total} />
+                  <span className="hidden whitespace-nowrap text-sm text-gray-500 md:inline">
+                    Page{" "}
+                    <span className="font-semibold" style={{ color: COLORS.navy }}>
+                      {pagination?.page || page}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-semibold" style={{ color: COLORS.navy }}>
+                      {Math.max(pagination?.totalPages || 1, 1)}
+                    </span>
+                  </span>
 
-  <div className="flex w-full items-center justify-between gap-3">
-    <span className="whitespace-nowrap text-sm text-gray-500">
-      Page{" "}
-      <span className="font-semibold" style={{ color: COLORS.navy }}>
-        {pagination?.page || page}
-      </span>{" "}
-      of{" "}
-      <span className="font-semibold" style={{ color: COLORS.navy }}>
-        {pagination?.totalPages || 1}
-      </span>
-    </span>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="hidden whitespace-nowrap text-sm text-gray-500 md:inline">Sort By</span>
+                    <div className="min-w-0 flex-1 md:flex-none">
+                      <Dropdown
+                        value={sort}
+                        options={SORT_OPTIONS}
+                        onChange={(value) => {
+                          const nextParams = new URLSearchParams(searchParams);
+                          nextParams.set("sort", value);
+                          nextParams.set("page", "1");
+                          setSearchParams(nextParams);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
 
-    <div className="flex min-w-0 items-center gap-2">
-      <span className="whitespace-nowrap text-sm text-gray-500">
-        Sort By
-      </span>
+                <div className="mt-3">
+                  <ProductFilters.ActiveChips facets={facets} filters={filters} onChange={changeFilters} />
+                </div>
+              </div>
 
-      <Dropdown
-        value={sort}
-        options={SORT_OPTIONS}
-        onChange={(value) => {
-          const nextParams = new URLSearchParams(searchParams);
-          nextParams.set("sort", value);
-          nextParams.set("page", "1");
-          setSearchParams(nextParams);
+              {products.length === 0 ? (
+                <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center">
+                  <h2 className="text-lg font-bold" style={{ color: COLORS.navy }}>
+                    No products match these filters
+                  </h2>
+                  <p className="mt-2 text-sm text-gray-500">Try another brand or a wider price range.</p>
+                  <button
+                    type="button"
+                    onClick={() => changeFilters({ brands: [], minPrice: null, maxPrice: null })}
+                    className="mt-4 font-semibold"
+                    style={{ color: COLORS.blue }}
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className={`grid grid-cols-2 gap-4 transition-opacity md:grid-cols-3 md:gap-6 ${isFetching ? "opacity-60" : ""}`}
+                >
+                  {products.map((product) => (
+                    <ProductCard key={product.id || product.slug} product={product} />
+                  ))}
+                </div>
+              )}
 
-          window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-          });
-        }}
-      />
-    </div>
-  </div>
-</div>
-
-
-
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
-              {products.map((product) => (
-                <ProductCard
-                  key={product.id || product.slug}
-                  product={product}
-                />
-              ))}
+              <Pagination pagination={pagination} onPageChange={changePage} />
             </div>
-
-            <Pagination
-  pagination={pagination}
-  onPageChange={changePage}
-/>
-          </>
+          </div>
         )}
       </section>
     </main>
+  );
+}
+
+function ResultsSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+      {Array.from({ length: 8 }, (_, index) => (
+        <div key={index} className="animate-pulse overflow-hidden rounded-2xl bg-white">
+          <div className="aspect-square bg-gray-200" />
+          <div className="space-y-3 p-4">
+            <div className="h-4 rounded bg-gray-200" />
+            <div className="h-4 w-2/3 rounded bg-gray-200" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 

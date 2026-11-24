@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { productService } from "@/api";
@@ -6,11 +6,12 @@ import { normalizeProducts } from "@/adapters/product.adapter";
 import { COLORS } from "@/config/theme";
 import { SORT_OPTIONS } from "@/constants/productFilters";
 import { CATEGORY_FIELD_BY_LEVEL, categoryUrl, useCategoryTree } from "@/hooks/useCategories";
-import { useBrands } from "@/hooks/useBrands";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 import ProductCard from "@/components/product/ProductCard";
 import Dropdown from "@/components/common/Dropdown";
 import Pagination from "@/components/common/Pagination";
+import ProductFilters from "@/components/filters/ProductFilters";
+import { activeFilterCount, listingFilterParams, readListingFilters, withListingFilters } from "@/utils/listingFilters";
 
 const LIMIT = 20;
 
@@ -27,7 +28,8 @@ export default function CategoryPage() {
   const category = bySlug.get(slug);
   const page = Number(searchParams.get("page")) || 1;
   const sort = searchParams.get("sort") || "latest";
-  const brand = searchParams.get("brand") || "";
+  const filters = readListingFilters(searchParams);
+  const filtered = activeFilterCount(filters) > 0;
 
   const params = category
     ? {
@@ -35,7 +37,8 @@ export default function CategoryPage() {
         page,
         limit: LIMIT,
         sort,
-        ...(brand ? { brand } : {}),
+        facets: "true", // brands and price range for the filter panel
+        ...listingFilterParams(filters),
       }
     : null;
 
@@ -43,9 +46,10 @@ export default function CategoryPage() {
     queryKey: ["products", params],
     queryFn: () => productService.getProducts(params),
     enabled: Boolean(params),
+    // Keep the products on screen while a filter change loads.
+    placeholderData: keepPreviousData,
   });
-
-  const { brands } = useBrands();
+  const facets = productsQuery.data?.data?.facets;
 
   const products = normalizeProducts(productsQuery.data?.data?.products || []);
   const pagination = productsQuery.data?.data?.pagination || {
@@ -57,10 +61,9 @@ export default function CategoryPage() {
     hasPrevPage: false,
   };
 
-  const brandOptions = [
-    { label: "All Brands", value: "" },
-    ...brands.map((b) => ({ label: b.name, value: b.slug })),
-  ];
+  function changeFilters(changes) {
+    setSearchParams(withListingFilters(searchParams, changes));
+  }
 
   function setParam(name, value) {
     const next = new URLSearchParams(searchParams);
@@ -199,17 +202,16 @@ export default function CategoryPage() {
 
       <section className="mx-auto max-w-6xl px-4 pt-3 sm:px-6 md:pt-6">
         <div className="grid grid-cols-2 gap-2 md:flex md:items-center md:justify-between md:gap-4">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="hidden whitespace-nowrap text-[13px] text-gray-500 md:inline">Brand</span>
-            <div className="min-w-0 flex-1 md:flex-none">
-              <Dropdown
-                align="left"
-                label="Brands"
-                value={brand}
-                options={brandOptions}
-                onChange={(value) => setParam("brand", value)}
-              />
-            </div>
+          <div className="min-w-0 md:hidden">
+            <ProductFilters.MobileButton
+              facets={facets}
+              filters={filters}
+              onChange={changeFilters}
+              total={pagination.totalProducts}
+            />
+          </div>
+          <div className="hidden md:block">
+            <ProductFilters.ActiveChips facets={facets} filters={filters} onChange={changeFilters} />
           </div>
 
           <div className="flex min-w-0 items-center justify-end gap-4">
@@ -240,7 +242,13 @@ export default function CategoryPage() {
           PRODUCTS
       ====================================================== */}
 
-      <section className="mx-auto max-w-6xl px-4 py-5 pb-10 sm:px-6 md:py-7">
+      <section className="mx-auto flex max-w-6xl items-start gap-6 px-4 py-5 pb-10 sm:px-6 md:py-7">
+        <ProductFilters.Sidebar facets={facets} filters={filters} onChange={changeFilters} />
+
+        <div className="min-w-0 flex-1">
+        <div className="mb-3 md:hidden">
+          <ProductFilters.ActiveChips facets={facets} filters={filters} onChange={changeFilters} />
+        </div>
         {productsQuery.isLoading ? (
           <ProductGridSkeleton />
         ) : productsQuery.isError ? (
@@ -263,35 +271,38 @@ export default function CategoryPage() {
               No products found
             </h2>
             <p className="mt-2 text-gray-500">
-              {brand ? "No products from this brand in this category." : "This category has no products right now."}
+              {filtered ? "No products in this category match these filters." : "This category has no products right now."}
             </p>
-            {brand && (
+            {filtered && (
               <button
                 type="button"
-                onClick={() => setParam("brand", "")}
+                onClick={() => changeFilters({ brands: [], minPrice: null, maxPrice: null })}
                 className="mt-5 font-semibold"
                 style={{ color: COLORS.blue }}
               >
-                Show all brands
+                Clear all filters
               </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+          <div
+            className={`grid grid-cols-2 gap-4 transition-opacity md:grid-cols-3 md:gap-6 ${productsQuery.isFetching ? "opacity-60" : ""}`}
+          >
             {products.map((product) => (
               <ProductCard key={product.id || product.slug} product={product} />
             ))}
           </div>
         )}
-      </section>
 
-      <Pagination
-        pagination={pagination}
-        onPageChange={(next) => {
-          if (next < 1 || next > pagination.totalPages || next === pagination.page) return;
-          setParam("page", String(next));
-        }}
-      />
+        <Pagination
+          pagination={pagination}
+          onPageChange={(next) => {
+            if (next < 1 || next > pagination.totalPages || next === pagination.page) return;
+            setParam("page", String(next));
+          }}
+        />
+        </div>
+      </section>
     </main>
   );
 }
