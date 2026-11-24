@@ -1,6 +1,6 @@
 import { useQuery, } from "@tanstack/react-query";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { homepageService } from "@/api";
@@ -296,15 +296,7 @@ export default function HomePage() {
     response?.data?.data
   );
 
-  const {
-    heroBanners,
-    featuredProducts,
-    bestSellers,
-    newArrivals,
-    trendingProducts,
-    deals,
-    stats,
-  } = homepage;
+  const { heroBanners, sections, stats } = homepage;
 
   const currentBanner =
     heroBanners[activeBanner];
@@ -484,60 +476,22 @@ const handleHeroTouchEnd = (event) => {
 
 
       {/* =====================================================
-          FEATURED PRODUCTS
+          PRODUCT ROWS: order, titles and content set in the
+          admin (Home page sections); stats after the first row
       ====================================================== */}
-      <ProductSection
-        title="Featured Products"
-        subtitle="Hand-picked products from Kreedum."
-        products={featuredProducts}
-      />
-
-      {/* =====================================================
-          STATS (live numbers, count up when scrolled to)
-      ====================================================== */}
-      <StatsSection stats={stats} />
-
-      {/* =====================================================
-          BEST SELLERS
-      ====================================================== */}
-      <ProductSection
-        title="Best Sellers"
-        subtitle="Products customers are buying the most."
-        products={bestSellers}
-        background
-      />
-
-      {/* =====================================================
-          NEW ARRIVALS
-      ====================================================== */}
-      <ProductSection
-        title="New Arrivals"
-        subtitle="Fresh products added to the store."
-        products={newArrivals}
-      />
-
-      {/* =====================================================
-          TRENDING
-      ====================================================== */}
-      <ProductSection
-        title="Trending Now"
-        subtitle="Popular products worth checking out."
-        products={trendingProducts}
-        background
-      />
-
-      {/* =====================================================
-          DEALS
-      ====================================================== */}
-      {deals.length > 0 && (
-        <ProductSection
-          title="Today's Deals"
-          subtitle="Grab the best available discounts."
-          products={deals}
-        />
-      )}
-
-
+      {sections.map((section, index) => (
+        <Fragment key={section.key}>
+          <ProductSection
+            title={section.title}
+            subtitle={section.subtitle}
+            products={section.products}
+            viewAll={section.viewAll}
+            background={index % 2 === 1}
+          />
+          {index === 0 && <StatsSection stats={stats} />}
+        </Fragment>
+      ))}
+      {sections.length === 0 && <StatsSection stats={stats} />}
 
     </div>
   );
@@ -682,6 +636,7 @@ function ProductSection({
   title,
   subtitle,
   products,
+  viewAll = "",
   background = false,
 }) {
   const scrollRef = useRef(null);
@@ -715,7 +670,7 @@ function ProductSection({
 
             {/* View all */}
             <Link
-              to="/categories"
+              to={viewAll || "/categories"}
 className="flex shrink-0 items-center gap-1 text-xs font-semibold sm:text-sm"        
       style={{ color: COLORS.blue }}
             >
@@ -755,7 +710,7 @@ className="flex shrink-0 items-center gap-1 text-xs font-semibold sm:text-sm"
           ref={scrollRef}
           className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2.5 overflow-x-auto overscroll-x-contain px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:scroll-px-0 sm:gap-4 sm:px-0"
         >
-          {products.slice(0, 8).map((product) => (
+          {products.slice(0, 16).map((product) => (
             <div
               key={product.id || product.slug}
               className="w-[40vw] min-w-0 shrink-0 snap-start sm:w-[240px] md:w-[250px]"

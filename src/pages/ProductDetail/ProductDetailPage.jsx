@@ -16,6 +16,7 @@ import {
   Heart,
   Share2,
   MessageCircle,
+  Zap,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -680,6 +681,13 @@ function handleWishlist() {
                 {getStockLabel()}
               </span>
             </div>
+
+            {product.readyStock && (
+              <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-sm font-semibold text-emerald-700">
+                <Zap className="h-4 w-4" fill="currentColor" />
+                Ready stock at our store: fastest delivery or pick-up
+              </p>
+            )}
 
             {product.availabilityMessage && (
               <p className="mt-2 text-sm text-gray-500">

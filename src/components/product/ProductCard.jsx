@@ -10,6 +10,7 @@ import {
   LoaderCircle,
   ShoppingCart,
   X,
+  Zap,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -164,6 +165,14 @@ export default function ProductCard({ product, variant = "default" }) {
       {discount > 0 && (
         <span className="absolute left-2.5 top-2.5 rounded-md bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
           {discount}% off
+        </span>
+      )}
+
+      {/* In our store: fastest delivery */}
+      {product.readyStock && (
+        <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+          <Zap className="h-3 w-3" fill="currentColor" />
+          Ready stock
         </span>
       )}
 
