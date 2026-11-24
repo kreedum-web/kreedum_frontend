@@ -115,6 +115,7 @@ body {
   -webkit-appearance: none;
   appearance: none;
 }
+.price-range:focus { outline: none; }
 .price-range::-webkit-slider-runnable-track { background: transparent; border: 0; }
 .price-range::-moz-range-track { background: transparent; border: 0; }
 .price-range::-webkit-slider-thumb {

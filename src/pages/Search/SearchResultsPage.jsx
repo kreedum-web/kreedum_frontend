@@ -123,10 +123,8 @@ export default function SearchResultsPage() {
             </p>
           </div>
         ) : (
-          <div className="flex items-start gap-6">
-            <ProductFilters.Sidebar {...filterProps} />
-
-            <div className="min-w-0 flex-1">
+          <div>
+            <div>
               <div className="mb-5">
                 <div className="mb-4">
                   <h2 className="text-lg font-bold md:text-xl" style={{ color: COLORS.navy }}>
@@ -142,8 +140,13 @@ export default function SearchResultsPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 md:flex md:items-center md:justify-between md:gap-3">
-                  <ProductFilters.MobileButton {...filterProps} total={total} />
-                  <span className="hidden whitespace-nowrap text-sm text-gray-500 md:inline">
+                  <div className="min-w-0">
+                    <ProductFilters.MobileButton {...filterProps} total={total} />
+                    <ProductFilters.Bar {...filterProps} />
+                  </div>
+
+                  <div className="flex min-w-0 items-center justify-end gap-4">
+                  <span className="hidden whitespace-nowrap text-sm text-gray-500 lg:inline">
                     Page{" "}
                     <span className="font-semibold" style={{ color: COLORS.navy }}>
                       {pagination?.page || page}
@@ -170,6 +173,7 @@ export default function SearchResultsPage() {
                       />
                     </div>
                   </div>
+                  </div>
                 </div>
 
                 <div className="mt-3">
@@ -194,7 +198,7 @@ export default function SearchResultsPage() {
                 </div>
               ) : (
                 <div
-                  className={`grid grid-cols-2 gap-4 transition-opacity md:grid-cols-3 md:gap-6 ${isFetching ? "opacity-60" : ""}`}
+                  className={`grid grid-cols-2 gap-4 transition-opacity md:grid-cols-3 md:gap-6 lg:grid-cols-4 ${isFetching ? "opacity-60" : ""}`}
                 >
                   {products.map((product) => (
                     <ProductCard key={product.id || product.slug} product={product} />

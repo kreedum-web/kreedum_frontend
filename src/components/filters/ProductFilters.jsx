@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Check, Search, SlidersHorizontal, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import { COLORS } from "@/config/theme";
 import { activeFilterCount } from "@/utils/listingFilters";
 import PriceRangeSlider from "./PriceRangeSlider";
@@ -14,7 +14,7 @@ const BRANDS_SHOWN = 8;
  *   filters   { brands: [slug], minPrice, maxPrice }
  *   onChange(changes)  e.g. { brands: [...] } or { minPrice, maxPrice }
  *
- * Desktop: a column beside the products (<ProductFilters.Sidebar>).
+ * Desktop: Brand and Price dropdowns in the toolbar (<ProductFilters.Bar>).
  * Phone: a "Filters" button that opens a panel from the bottom (<ProductFilters.MobileButton>).
  */
 function FilterSections({ facets, filters, onChange }) {
@@ -56,7 +56,7 @@ function FilterSections({ facets, filters, onChange }) {
   );
 }
 
-function BrandChecklist({ brands, chosen, onChange }) {
+function BrandChecklist({ brands, chosen, onChange, title = true }) {
   const [find, setFind] = useState("");
   const [all, setAll] = useState(false);
   const text = find.trim().toLowerCase();
@@ -71,7 +71,7 @@ function BrandChecklist({ brands, chosen, onChange }) {
     <section>
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: COLORS.navy }}>
-          Brand
+          {title ? "Brand" : `${chosen.length || "No"} selected`}
         </h3>
         {chosen.length > 0 && (
           <button type="button" onClick={() => onChange([])} className="text-[12px] font-medium text-gray-400 hover:text-gray-600">
@@ -135,20 +135,107 @@ function BrandChecklist({ brands, chosen, onChange }) {
   );
 }
 
-/** Desktop column (hidden on phones). */
-function Sidebar(props) {
+/** A toolbar button that opens a panel under it (closes on a click outside or Esc). */
+function Popover({ label, active, width = "w-72", align = "left", children }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onPointer = (e) => !ref.current?.contains(e.target) && setOpen(false);
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   return (
-    <aside className="hidden w-60 shrink-0 md:block">
-      <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl border border-gray-100 bg-white p-5">
-        <div className="mb-5 flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4" style={{ color: COLORS.blue }} />
-          <h2 className="text-[15px] font-bold" style={{ color: COLORS.navy }}>
-            Filters
-          </h2>
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex min-w-[150px] items-center justify-between gap-3 rounded-xl border bg-white px-3 py-2 text-[13px] shadow-sm transition-colors hover:border-[#2C62E0] focus:outline-none focus:ring-2 focus:ring-[#2C62E0]/20"
+        style={{
+          color: active ? COLORS.blueDark : COLORS.navy,
+          borderColor: active ? "#C9D6F7" : "#E5E9F2",
+          backgroundColor: active ? COLORS.tint : COLORS.white,
+          fontWeight: active ? 600 : 400,
+        }}
+      >
+        <span className="truncate">{label}</span>
+        <ChevronDown size={16} className={`shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div
+          className={`absolute top-full z-50 mt-2 max-w-[calc(100vw-32px)] rounded-2xl border border-[#E5E9F2] bg-white p-4 shadow-xl ${width} ${align === "right" ? "right-0" : "left-0"}`}
+        >
+          {children}
         </div>
-        <FilterSections {...props} />
-      </div>
-    </aside>
+      )}
+    </div>
+  );
+}
+
+const shortRupees = (n) =>
+  n >= 100000 ? `₹${+(n / 100000).toFixed(2)}L` : n >= 1000 ? `₹${+(n / 1000).toFixed(1)}k` : `₹${n}`;
+
+/** Desktop toolbar (hidden on phones): Brand and Price dropdowns. */
+function Bar({ facets, filters, onChange }) {
+  const brands = facets?.brands || [];
+  const price = facets?.price;
+  const chosen = filters.brands;
+  const priced = filters.minPrice != null || filters.maxPrice != null;
+  const nameOf = (slug) => brands.find((b) => b.slug === slug)?.name || slug;
+
+  const brandLabel = !chosen.length ? "All Brands" : chosen.length === 1 ? nameOf(chosen[0]) : `${nameOf(chosen[0])} +${chosen.length - 1}`;
+  const priceLabel = !priced
+    ? "Any Price"
+    : filters.minPrice != null && filters.maxPrice != null
+      ? `${shortRupees(filters.minPrice)} – ${shortRupees(filters.maxPrice)}`
+      : filters.maxPrice != null
+        ? `Under ${shortRupees(filters.maxPrice)}`
+        : `Above ${shortRupees(filters.minPrice)}`;
+
+  return (
+    <div className="hidden items-center gap-2 md:flex">
+      {brands.length > 0 && (
+        <>
+          <span className="whitespace-nowrap text-[13px] text-gray-500">Brand</span>
+          <Popover label={brandLabel} active={chosen.length > 0}>
+            <div className="max-h-[60vh] overflow-y-auto pr-1">
+              <BrandChecklist brands={brands} chosen={chosen} onChange={(next) => onChange({ brands: next })} title={false} />
+            </div>
+          </Popover>
+        </>
+      )}
+      {price && price.max > price.min && (
+        <>
+          <span className="ml-2 whitespace-nowrap text-[13px] text-gray-500">Price</span>
+          <Popover label={priceLabel} active={priced} width="w-80">
+            <PriceRangeSlider
+              bounds={price}
+              min={filters.minPrice}
+              max={filters.maxPrice}
+              onChange={(minPrice, maxPrice) => onChange({ minPrice, maxPrice })}
+            />
+            {priced && (
+              <button
+                type="button"
+                onClick={() => onChange({ minPrice: null, maxPrice: null })}
+                className="mt-3 text-[13px] font-semibold hover:underline"
+                style={{ color: COLORS.blue }}
+              >
+                Any price
+              </button>
+            )}
+          </Popover>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -252,5 +339,5 @@ function ActiveChips({ facets, filters, onChange }) {
   );
 }
 
-const ProductFilters = { Sidebar, MobileButton, ActiveChips };
+const ProductFilters = { Bar, MobileButton, ActiveChips };
 export default ProductFilters;

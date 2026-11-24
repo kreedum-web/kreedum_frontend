@@ -210,9 +210,7 @@ export default function CategoryPage() {
               total={pagination.totalProducts}
             />
           </div>
-          <div className="hidden md:block">
-            <ProductFilters.ActiveChips facets={facets} filters={filters} onChange={changeFilters} />
-          </div>
+          <ProductFilters.Bar facets={facets} filters={filters} onChange={changeFilters} />
 
           <div className="flex min-w-0 items-center justify-end gap-4">
             {pagination.totalPages > 0 && (
@@ -242,11 +240,9 @@ export default function CategoryPage() {
           PRODUCTS
       ====================================================== */}
 
-      <section className="mx-auto flex max-w-6xl items-start gap-6 px-4 py-5 pb-10 sm:px-6 md:py-7">
-        <ProductFilters.Sidebar facets={facets} filters={filters} onChange={changeFilters} />
-
-        <div className="min-w-0 flex-1">
-        <div className="mb-3 md:hidden">
+      <section className="mx-auto max-w-6xl px-4 py-5 pb-10 sm:px-6 md:py-7">
+        <div>
+        <div className="mb-4">
           <ProductFilters.ActiveChips facets={facets} filters={filters} onChange={changeFilters} />
         </div>
         {productsQuery.isLoading ? (
@@ -286,7 +282,7 @@ export default function CategoryPage() {
           </div>
         ) : (
           <div
-            className={`grid grid-cols-2 gap-4 transition-opacity md:grid-cols-3 md:gap-6 ${productsQuery.isFetching ? "opacity-60" : ""}`}
+            className={`grid grid-cols-2 gap-4 transition-opacity md:grid-cols-3 md:gap-6 lg:grid-cols-4 ${productsQuery.isFetching ? "opacity-60" : ""}`}
           >
             {products.map((product) => (
               <ProductCard key={product.id || product.slug} product={product} />
