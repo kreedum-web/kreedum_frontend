@@ -13,6 +13,7 @@ import {
   Package,
   Phone,
   RefreshCw,
+  Truck,
   XCircle,
 } from "lucide-react";
 
@@ -416,6 +417,40 @@ export default function OrderDetailsPage() {
               ))}
             </div>
           </section>
+        )}
+
+        {/* How it was shipped (set by the store when it's shipped) */}
+        {(order.shipment?.courier || order.shipment?.trackingId) && (
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EAF0FF] text-[#2C62E0]">
+                <Truck size={20} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-bold text-[#0E1A3D]">Shipment</h2>
+                <p className="text-sm text-slate-500">
+                  {order.shipment.courier && <>Shipped with <b className="text-[#0E1A3D]">{order.shipment.courier}</b></>}
+                  {order.shipment.trackingId && (
+                    <>
+                      {order.shipment.courier ? " · " : ""}Tracking number{" "}
+                      <b className="text-[#0E1A3D]">{order.shipment.trackingId}</b>
+                    </>
+                  )}
+                </p>
+              </div>
+              {order.shipment.trackingUrl && (
+                <a
+                  href={order.shipment.trackingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2C62E0] px-4 py-2.5 text-sm font-semibold text-white"
+                >
+                  <Truck size={16} />
+                  Track your order
+                </a>
+              )}
+            </div>
+          </div>
         )}
 
         {/* Customer support for this order */}
