@@ -6,6 +6,7 @@ import { useMutation,
   useQueryClient, } from "@tanstack/react-query";
 
 import { cartService,wishlistService } from "@/api";
+import { setWishlisted, useWishlistIds } from "@/hooks/useWishlistIds";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   ArrowLeft,
@@ -192,20 +193,9 @@ async function handleAddToCart({ checkout = false } = {}) {
 const queryClient = useQueryClient();
 const [shareMessage, setShareMessage] = useState("");
 
-const wishlistStatusQuery = useQuery({
-  queryKey: ["wishlist-status", product?._id],
-  queryFn: async () => {
-    const response = await wishlistService.checkWishlist(
-      product._id
-    );
-
-    return Boolean(response?.data?.data?.wishlisted);
-  },
-  enabled: Boolean(product?._id && isAuthenticated),
-  retry: false,
-});
-
-const isWishlisted = Boolean(wishlistStatusQuery.data);
+// Shared with the product cards: one request for the whole wishlist.
+const wishlistIds = useWishlistIds();
+const isWishlisted = Boolean(product?._id) && wishlistIds.has(String(product._id));
 
 const wishlistMutation = useMutation({
   mutationFn: ({ productId, remove }) =>
@@ -213,11 +203,8 @@ const wishlistMutation = useMutation({
       ? wishlistService.removeFromWishlist(productId)
       : wishlistService.addToWishlist(productId),
 
-  onSuccess: async () => {
-    await queryClient.invalidateQueries({
-      queryKey: ["wishlist-status", product?._id],
-    });
-
+  onSuccess: async (_, { productId, remove }) => {
+    setWishlisted(queryClient, productId, !remove);
     await queryClient.invalidateQueries({
       queryKey: ["wishlist"],
     });
@@ -563,8 +550,7 @@ function handleWishlist() {
     type="button"
     onClick={handleWishlist}
     disabled={
-      wishlistMutation.isPending ||
-      wishlistStatusQuery.isLoading
+      wishlistMutation.isPending
     }
     aria-pressed={isWishlisted}
     aria-label={

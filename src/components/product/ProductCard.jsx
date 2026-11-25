@@ -3,7 +3,7 @@ import { isPriceOnEnquiry, productEnquiryLink } from "@/utils/priceOnEnquiry";
 import { logWhatsapp } from "@/utils/enquiryLog";
 import { brandUrl } from "@/utils/brandUrl";
 import { useSignIn } from "@/contexts/SignInContext";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
   Heart,
@@ -15,6 +15,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 import { cartService, wishlistService } from "@/api";
+import { setWishlisted, useWishlistIds } from "@/hooks/useWishlistIds";
 import { useAuth } from "@/contexts/AuthContext";
 import { COLORS } from "@/config/theme";
 import { optionNames } from "@/utils/productOptions";
@@ -44,17 +45,9 @@ export default function ProductCard({ product, variant = "default" }) {
     ? product.brand
     : product?.brand?.name || "Unknown";
 
-  const wishlistStatusQuery = useQuery({
-    queryKey: ["wishlist-status", productId],
-    queryFn: async () => {
-      const response = await wishlistService.checkWishlist(productId);
-      return Boolean(response?.data?.data?.wishlisted);
-    },
-    enabled: Boolean(product && isAuthenticated && productId && !isWishlistCard),
-    retry: false,
-  });
-
-  const isWishlisted = isWishlistCard || Boolean(wishlistStatusQuery.data);
+  // One shared list for all cards (not a request per card).
+  const wishlistIds = useWishlistIds();
+  const isWishlisted = isWishlistCard || wishlistIds.has(String(productId));
 
   const wishlistMutation = useMutation({
     mutationFn: () => isWishlisted
@@ -63,10 +56,8 @@ export default function ProductCard({ product, variant = "default" }) {
     onSuccess: async () => {
       setFeedback(isWishlisted ? "Removed from wishlist" : "Added to wishlist");
       setActionError("");
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["wishlist"] }),
-        queryClient.invalidateQueries({ queryKey: ["wishlist-status", productId] }),
-      ]);
+      setWishlisted(queryClient, productId, !isWishlisted);
+      await queryClient.invalidateQueries({ queryKey: ["wishlist"] });
     },
     onError: (error) => {
       setActionError(
@@ -182,10 +173,7 @@ export default function ProductCard({ product, variant = "default" }) {
         onClick={handleWishlistClick}
         disabled={
           !productId ||
-          actionPending ||
-          (!isWishlistCard &&
-            wishlistStatusQuery.isLoading &&
-            isAuthenticated)
+          actionPending
         }
         aria-label={
           isWishlistCard || isWishlisted

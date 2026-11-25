@@ -15,6 +15,11 @@ const wishlistService = {
     return api.delete(`${API_ENDPOINTS.WISHLIST}/${productId}`);
   },
 
+  /** Ids of all products in the wishlist (one request for every card on a page). */
+  getWishlistIds() {
+    return api.get(`${API_ENDPOINTS.WISHLIST}/ids`);
+  },
+
   checkWishlist(productId) {
     return api.get(
       `${API_ENDPOINTS.WISHLIST}/check/${productId}`
