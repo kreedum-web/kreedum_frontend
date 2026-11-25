@@ -15,7 +15,15 @@ const LABELS = {
   REFUNDED: "Refunded",
 };
 
-export const statusLabel = (status) =>
+// Order statuses that read differently from the same payment status.
+const ORDER_LABELS = {
+  // Placed by the customer; the store checks availability, then confirms it.
+  PENDING: "Order placed",
+};
+
+/** statusLabel(order.orderStatus) or statusLabel(order.paymentStatus, "payment") */
+export const statusLabel = (status, kind = "order") =>
+  (kind === "order" && ORDER_LABELS[String(status || "").toUpperCase()]) ||
   LABELS[String(status || "").toUpperCase()] || String(status || "Unknown").replaceAll("_", " ").toLowerCase().replace(/^./, (c) => c.toUpperCase());
 
 export function statusClasses(status) {

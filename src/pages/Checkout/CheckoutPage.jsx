@@ -406,83 +406,96 @@ export default function CheckoutPage() {
   }
 
  if (placedOrder) {
+  // The store checks availability and confirms the order in the admin; until
+  // then it's "placed".
+  const orderLink = placedOrder._id ? `/account/orders/${placedOrder._id}` : "/account/orders";
   return (
-<main className="min-h-screen bg-[#F6F8FC]">
+    <main className="min-h-screen bg-[#F6F8FC]">
       <InnerPageHeader
         eyebrow="Kreedum Sports"
-        title="Order confirmed"
-        description="Your order has been placed successfully. Keep your order details for reference."
+        title="Order placed"
+        description="We've received your order. We'll check availability and confirm it shortly."
         breadcrumbs={[
           { label: "Home", to: "/" },
-          { label: "Categories", to: "/categories" },
-          { label: "Order confirmed" },
+          { label: "My Orders", to: "/account/orders" },
+          { label: "Order placed" },
         ]}
-      />    
-   
+      />
+
       <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
         <div className="mx-auto w-full max-w-xl rounded-3xl border border-[#E5EAF4] bg-white p-6 text-center shadow-sm sm:p-10">
-            <CheckCircle2
-              size={42}
-              className="text-emerald-600"
-            />
-          
+          <CheckCircle2 size={42} className="mx-auto text-emerald-600" />
 
           <p className="mt-6 text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-700">
-            Order confirmed
+            Order placed
           </p>
 
-          <h1
-            className="mt-2 text-2xl font-extrabold sm:text-3xl"
-            style={{ color: COLORS.navy }}
-          >
+          <h1 className="mt-2 text-2xl font-extrabold sm:text-3xl" style={{ color: COLORS.navy }}>
             Thanks for shopping with Kreedum!
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-500">
-            Your order has been submitted successfully.
-            Keep your order details for reference.
+            We've received your order. Our team will check availability and confirm it shortly: you'll get an email once it's
+            confirmed.
           </p>
 
-          {placedOrder.orderNumber && (
-            <div className="mt-6 rounded-2xl bg-[#F6F8FC] p-4">
-              <p className="text-xs text-slate-500">Order number</p>
-              <p className="mt-1 font-extrabold" style={{ color: COLORS.navy }}>
-                {placedOrder.orderNumber}
-              </p>
-            </div>
-          )}
-
-          <div className="mt-6 rounded-2xl border border-[#E5EAF4] p-4 text-left">
-            <div className="flex items-center justify-between gap-3">
+          {/* The order: tap to see its details */}
+          <Link
+            to={orderLink}
+            className="group mt-6 block rounded-2xl border border-[#E5EAF4] p-4 text-left transition hover:border-[#2C62E0] hover:bg-[#F6F8FC]"
+          >
+            {placedOrder.orderNumber && (
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-slate-500">Order number</span>
+                <span className="text-sm font-extrabold" style={{ color: COLORS.navy }}>
+                  {placedOrder.orderNumber}
+                </span>
+              </div>
+            )}
+            <div className="mt-3 flex items-center justify-between gap-3">
               <span className="text-sm text-slate-500">Payment</span>
               <span className="text-sm font-bold" style={{ color: COLORS.navy }}>
                 Cash on delivery
               </span>
             </div>
-
             <div className="mt-3 flex items-center justify-between gap-3">
               <span className="text-sm text-slate-500">Order total</span>
               <span className="text-lg font-extrabold" style={{ color: COLORS.navy }}>
-                {formatINR(
-                  placedOrder.pricing?.total ?? grandTotal
-                )}
+                {formatINR(placedOrder.pricing?.total ?? grandTotal)}
               </span>
             </div>
-          </div>
-
-          <Link
-            to="/categories"
-            className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold text-white"
-            style={{ backgroundColor: COLORS.blue }}
-          >
-            <ShoppingBag size={17} />
-            Continue shopping
+            <div
+              className="mt-4 flex items-center justify-between border-t border-[#E5EAF4] pt-3 text-sm font-bold"
+              style={{ color: COLORS.blue }}
+            >
+              View order details
+              <ChevronRight size={18} className="transition-transform group-hover:translate-x-0.5" />
+            </div>
           </Link>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <Link
+              to="/account/orders"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold text-white"
+              style={{ backgroundColor: COLORS.blue }}
+            >
+              <PackageCheck size={17} />
+              My orders
+            </Link>
+            <Link
+              to="/categories"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#DDE4F2] px-5 py-3 text-sm font-extrabold"
+              style={{ color: COLORS.navy }}
+            >
+              <ShoppingBag size={17} />
+              Continue shopping
+            </Link>
           </div>
-        </section>
-      </main>
-    );
-  }
+        </div>
+      </section>
+    </main>
+  );
+}
 
   if (cartQuery.isLoading || addressesQuery.isLoading) {
     return <CheckoutLoading />;

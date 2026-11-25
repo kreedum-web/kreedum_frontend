@@ -6,27 +6,12 @@ import { useMatch } from "react-router-dom";
 import { orderService, productService } from "@/api";
 import { COLORS } from "@/config/theme";
 import { logWhatsapp } from "@/utils/enquiryLog";
+import { orderSupportMessage } from "@/utils/orderSupport";
 
 const WHATSAPP_NUMBER = "917570002458";
 const CALL_NUMBER = "+917570002458";
 
 const getResponseData = (response) => response?.data?.data;
-
-const formatDate = (value) => {
-  if (!value) return "Date unavailable";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Date unavailable";
-  }
-
-  return date.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
 
 export default function FloatingContactActions() {
   // Product page
@@ -68,33 +53,8 @@ export default function FloatingContactActions() {
     (item) => String(item._id) === String(orderId)
   );
 
-  const orderItems = Array.isArray(order?.items)
-    ? order.items
-    : [];
-
-  const orderMessage = order
-    ? [
-        "Hi Kreedum Sports Support, I need help with my order.",
-        "",
-        `Customer: ${
-          order.shippingAddress?.fullName || "Customer"
-        }`,
-        `Order number: ${
-          order.orderNumber || order._id
-        }`,
-        `Item(s): ${
-          orderItems.map((item) => item.name).filter(Boolean).join(", ") ||
-          "Order details"
-        }`,
-        `Order date: ${formatDate(order.createdAt)}`,
-        `Payment method: ${order.paymentMethod || "Not specified"}`,
-        `Order total: ₹${(
-          Number(order.pricing?.total) || 0
-        ).toLocaleString("en-IN")}`,
-        "",
-        "Please assist me with this order. Thank you.",
-      ].join("\n")
-    : null;
+  // Same message as the order page's "Need help with this order?"
+  const orderMessage = orderSupportMessage(order);
 
   const productUrl =
     typeof window !== "undefined" ? window.location.href : "";

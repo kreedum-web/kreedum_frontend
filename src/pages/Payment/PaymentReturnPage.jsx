@@ -85,11 +85,12 @@ export default function PaymentReturnPage() {
         <Result
           icon={<CheckCircle2 size={44} color="#16A34A" />}
           tone="#16A34A"
-          eyebrow="Payment received"
+          eyebrow="Payment received · Order placed"
           title="Thank you! Your order is placed."
-          text={`We've received ${formatINR(data.amount)} for order ${data.orderNumber}. A confirmation email is on its way.`}
+          text={`We've received ${formatINR(data.amount)} for order ${data.orderNumber}. Our team will check availability and confirm it shortly: you'll get an email once it's confirmed.`}
         >
-          <Link to={orderLink} className="btn-primary">View order</Link>
+          <Link to={orderLink} className="btn-primary">View order details</Link>
+          <Link to="/account/orders" className="btn-secondary">My orders</Link>
           <Link to="/" className="btn-secondary">Continue shopping</Link>
         </Result>
       )}

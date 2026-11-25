@@ -6,9 +6,12 @@ import {
   ArrowLeft,
   CalendarDays,
   CreditCard,
+  Headset,
   LoaderCircle,
   MapPin,
+  MessageCircle,
   Package,
+  Phone,
   RefreshCw,
   XCircle,
 } from "lucide-react";
@@ -16,6 +19,9 @@ import {
 import { orderService, paymentService } from "@/api";
 import { payForOrder } from "@/utils/cashfreeCheckout";
 import { paymentMethodLabel, statusClasses, statusLabel } from "@/utils/orderStatus";
+import { PHONE_DISPLAY, PHONE_TEL, whatsappLink } from "@/config/contact";
+import { logWhatsapp } from "@/utils/enquiryLog";
+import { orderSupportMessage } from "@/utils/orderSupport";
 import { useAuth } from "@/contexts/AuthContext";
 import InnerPageHeader from "@/components/layout/InnerPageHeader";
 
@@ -44,13 +50,13 @@ const formatDate = (value) => {
   });
 };
 
-const StatusBadge = ({ status }) => (
+const StatusBadge = ({ status, kind = "order" }) => (
   <span
     className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${statusClasses(
       status
     )}`}
   >
-    {statusLabel(status)}
+    {statusLabel(status, kind)}
   </span>
 );
 
@@ -181,6 +187,10 @@ export default function OrderDetailsPage() {
   const paidOnline = order.paymentMethod === "ONLINE" && order.paymentStatus === "PAID";
   const payBefore = order.createdAt ? new Date(new Date(order.createdAt).getTime() + 60 * 60 * 1000) : null;
   const items = Array.isArray(order.items) ? order.items : [];
+
+  // Customer support on WhatsApp, with this order's details typed in.
+  const supportLink = whatsappLink(orderSupportMessage(order));
+  const logSupport = () => logWhatsapp("order-help", { orderNumber: order.orderNumber });
   const address = order.shippingAddress || {};
   const history = Array.isArray(order.statusHistory)
     ? order.statusHistory
@@ -201,13 +211,25 @@ export default function OrderDetailsPage() {
     />
 
     <section className="mx-auto max-w-5xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
-        <Link
-          to="/account/orders"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-[#2C62E0]"
-        >
-          <ArrowLeft size={17} />
-          Back to My Orders
-        </Link>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <Link
+            to="/account/orders"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2C62E0]"
+          >
+            <ArrowLeft size={17} />
+            Back to My Orders
+          </Link>
+          <a
+            href={supportLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={logSupport}
+            className="inline-flex items-center gap-2 rounded-xl border border-[#25D366]/40 bg-white px-3 py-2 text-sm font-semibold text-[#128C4B] hover:bg-[#25D366]/10"
+          >
+            <MessageCircle size={17} />
+            Help with this order
+          </a>
+        </div>
 
 
 
@@ -322,7 +344,7 @@ export default function OrderDetailsPage() {
 
             <div className="flex justify-between gap-4">
               <span className="text-slate-500">Payment status</span>
-              <StatusBadge status={order.paymentStatus} />
+              <StatusBadge status={order.paymentStatus} kind="payment" />
             </div>
 
             <div className="border-t border-slate-100 pt-3">
@@ -396,6 +418,42 @@ export default function OrderDetailsPage() {
           </section>
         )}
 
+        {/* Customer support for this order */}
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#25D366]/15 text-[#128C4B]">
+              <Headset size={20} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-bold text-[#0E1A3D]">Need help with this order?</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Questions about delivery, availability, payment or anything else: our team will help. Your order number is sent
+                with the message.
+              </p>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <a
+                  href={supportLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={logSupport}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white"
+                  style={{ backgroundColor: "#25D366" }}
+                >
+                  <MessageCircle size={17} />
+                  Chat on WhatsApp
+                </a>
+                <a
+                  href={`tel:${PHONE_TEL}`}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-[#0E1A3D] hover:bg-slate-50"
+                >
+                  <Phone size={17} />
+                  Call {PHONE_DISPLAY}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Cancel order */}
         {canCancel && (
           <div className="mt-5 rounded-2xl border border-red-100 bg-white p-4 sm:p-6">
@@ -405,8 +463,8 @@ export default function OrderDetailsPage() {
 
             <p className="mt-1 text-sm text-slate-500">
               {paidOnline
-                ? "You can cancel while it's pending or confirmed. Your full payment is refunded automatically to the same account or card (banks take 5–7 working days)."
-                : "You can cancel this order while it is pending or confirmed."}
+                ? "You can cancel until it's packed. Your full payment is refunded automatically to the same account or card (banks take 5–7 working days)."
+                : "You can cancel this order until it's packed."}
             </p>
 
             <button
